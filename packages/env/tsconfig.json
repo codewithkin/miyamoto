@@ -1,0 +1,3 @@
+{
+  "extends": "@miyamoto/config/tsconfig.base.json"
+}
