@@ -21,7 +21,10 @@ export const env = createEnv({
     /** Native iOS bundle id, required for Sign in with Apple on device. */
     APPLE_APP_BUNDLE_IDENTIFIER: z.string().min(1).optional(),
 
-    DEEPSEEK_API_KEY: z.string().min(1).optional(),
+    // The Masters run through OpenRouter, not DeepSeek directly — one key
+    // covers every model and lets a Master be moved to another provider by
+    // changing its id alone.
+    OPENROUTER_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

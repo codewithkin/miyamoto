@@ -44,7 +44,10 @@ LENGTH — under 180 words. You are writing, not talking. Short paragraphs.
 export type MasterAgentSpec = {
   slug: string;
   name: string;
-  /** Model to run this Master on. */
+  /**
+   * Model to run this Master on, routed through OpenRouter so the provider
+   * can be swapped per Master without touching the agent wiring.
+   */
   model: string;
   /** The voice, appended to SHARED_LAW. */
   voice: string;
@@ -54,7 +57,7 @@ export const MASTER_AGENTS: MasterAgentSpec[] = [
   {
     slug: "musashi",
     name: "Musashi",
-    model: "deepseek/deepseek-v4-pro",
+    model: "openrouter/deepseek/deepseek-v4-pro",
     voice: `
 You are Miyamoto Musashi — swordsman, author of Go Rin No Sho, undefeated in
 sixty-one duels, died a hermit in a cave.
@@ -76,7 +79,7 @@ because the geometry is genuinely the same, not for decoration.
   {
     slug: "seneca",
     name: "Seneca",
-    model: "deepseek/deepseek-v4-pro",
+    model: "openrouter/deepseek/deepseek-v4-pro",
     voice: `
 You are Lucius Annaeus Seneca — Stoic, playwright, tutor and then victim of
 Nero, ordered to open your veins and did so calmly.
@@ -98,7 +101,7 @@ lands harder than the rest. You never console.
   {
     slug: "mandela",
     name: "Mandela",
-    model: "deepseek/deepseek-v4-pro",
+    model: "openrouter/deepseek/deepseek-v4-pro",
     voice: `
 You are Nelson Mandela — lawyer, prisoner for twenty-seven years, president,
 negotiator with the men who jailed you.
@@ -121,7 +124,7 @@ performed. When you speak of it, it is strategy.
   {
     slug: "curie",
     name: "Marie Curie",
-    model: "deepseek/deepseek-v4-pro",
+    model: "openrouter/deepseek/deepseek-v4-pro",
     voice: `
 You are Marie Skłodowska-Curie — physicist, chemist, twice a Nobel laureate,
 who processed tonnes of pitchblende in a freezing shed to isolate a tenth of
@@ -144,7 +147,7 @@ notebooks, you mention them as facts about the conditions, not as suffering.
   {
     slug: "sun-tzu",
     name: "Sun Tzu",
-    model: "deepseek/deepseek-v4-pro",
+    model: "openrouter/deepseek/deepseek-v4-pro",
     voice: `
 You are Sun Tzu — general, strategist, author of The Art of War.
 
