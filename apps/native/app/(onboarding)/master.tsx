@@ -2,32 +2,42 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, View } from "react-native";
 
-import { BladeRail, BladeTick } from "@/components/blade";
+import { Blade, BladeRail, BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
-import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
 /**
  * 05 · Who speaks first.
  *
- * Only Masters available from Day 1 are offered — choosing someone locked
- * behind Day 14 as your *first* voice would be a promise the Path then
- * breaks. Rows swing in from the left one at a time.
+ * Only Musashi is unlocked at the start, so this is not a picker — it is
+ * the ladder. Showing the four you have not earned, with the day each
+ * arrives, is the point: it is the first place the app tells you that
+ * access is something you work towards rather than something you choose.
+ *
+ * The rows are still rendered from MASTERS, so unlocking someone later is a
+ * data change and not a screen rewrite.
  */
 export default function MasterScreen() {
   const router = useRouter();
   const { draft, set } = useOnboarding();
 
-  const choices = MASTERS.filter((m) => !m.proOnly && m.unlockDay === null).concat(
-    MASTERS.filter((m) => !m.proOnly && m.unlockDay !== null),
+  const available = MASTERS.filter((m) => !m.proOnly && m.unlockDay === null);
+  const locked = MASTERS.filter((m) => m.proOnly || m.unlockDay !== null).sort(
+    (a, b) => (a.unlockDay ?? 99) - (b.unlockDay ?? 99),
   );
+  const starter = available[0];
 
-  const chosen = MASTERS.find((m) => m.slug === draft.firstMaster) ?? null;
+  // There is only one hand available, so claim it rather than making the
+  // user tap a choice that has no alternative.
+  React.useEffect(() => {
+    if (starter && draft.firstMaster !== starter.slug) set({ firstMaster: starter.slug });
+  }, [starter, draft.firstMaster, set]);
 
   return (
-    <Screen>
+    <Screen scroll>
       <Enter preset="drop">
         <View
           style={{
@@ -52,66 +62,86 @@ export default function MasterScreen() {
       <View style={{ flex: 1, gap: space.section }}>
         <View style={{ gap: space.md }}>
           <Enter preset="rise" delay={140}>
-            <Text variant="display">Who should take your first question?</Text>
+            <Text variant="display">{starter?.name ?? "Musashi"} takes your first question.</Text>
           </Enter>
           <Enter preset="rise" delay={300}>
             <Text variant="lead">
-              They write, they don&apos;t talk. Pick the hand you&apos;ll actually read.
+              He writes, he doesn&apos;t talk. The other four are earned — you meet them as you
+              go.
             </Text>
           </Enter>
         </View>
 
-        <Stagger initialDelay={460} step={110} style={{ gap: space.base }}>
-          {choices.map((master) => {
-            const picked = draft.firstMaster === master.slug;
-            const locked = master.unlockDay !== null;
-            return (
-              <Enter key={master.slug} preset="swing">
-                <Pressable
-                  disabled={locked}
-                  onPress={() => set({ firstMaster: master.slug })}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: space.base,
-                    padding: space.xl,
-                    borderRadius: radius.card,
-                    backgroundColor: picked ? indigo.tint : ink.surface,
-                    borderWidth: 1,
-                    borderColor: picked ? indigo.base : ink.border,
-                    opacity: locked ? 0.45 : pressed ? 0.85 : 1,
-                  })}
-                >
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <Text variant="title" style={{ fontSize: size.lead }}>
-                      {master.name}
-                    </Text>
-                    <Text variant="caption">{master.domains}</Text>
-                    <Text variant="caption" color={textColor.faintest}>
-                      {master.manner}
-                    </Text>
-                  </View>
-                  {locked ? (
-                    <Text variant="eyebrow">Day {master.unlockDay}</Text>
-                  ) : picked ? (
-                    <BladeTick done />
-                  ) : (
-                    <Text variant="title" color={textColor.faintest}>
-                      ›
-                    </Text>
-                  )}
-                </Pressable>
-              </Enter>
-            );
-          })}
+        {/* The one you have. */}
+        {starter ? (
+          <Enter preset="swing" delay={460}>
+            <View
+              style={{
+                padding: space.xl,
+                borderRadius: radius.card,
+                backgroundColor: indigo.tint,
+                borderWidth: 1,
+                borderColor: indigo.base,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.base,
+              }}
+            >
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text variant="title" style={{ fontSize: size.lead }}>
+                  {starter.name}
+                </Text>
+                <Text variant="caption">{starter.domains}</Text>
+                <Text variant="caption" color={textColor.faintest}>
+                  {starter.manner}
+                </Text>
+              </View>
+              <BladeTick done />
+            </View>
+          </Enter>
+        ) : null}
+
+        <Enter preset="fade" delay={640}>
+          <Text variant="eyebrow">Earned as you go</Text>
+        </Enter>
+
+        {/* The four you don't. */}
+        <Stagger initialDelay={720} step={110} style={{ gap: space.base }}>
+          {locked.map((master) => (
+            <Enter key={master.slug} preset="roll">
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: space.base,
+                  padding: space.xl,
+                  borderRadius: radius.card,
+                  backgroundColor: ink.surface,
+                  borderWidth: 1,
+                  borderColor: ink.border,
+                  opacity: 0.6,
+                }}
+              >
+                <Blade state={master.proOnly ? "locked" : "empty"} length={14} />
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text variant="title" style={{ fontSize: size.lead }}>
+                    {master.name}
+                  </Text>
+                  <Text variant="caption">{master.domains}</Text>
+                </View>
+                <Text variant="eyebrow" color={master.proOnly ? gold.base : textColor.faintest}>
+                  {master.proOnly ? "Pro" : `Day ${master.unlockDay}`}
+                </Text>
+              </View>
+            </Enter>
+          ))}
         </Stagger>
       </View>
 
       <View style={{ paddingVertical: space.xxl }}>
-        <Enter preset="pop" delay={980}>
+        <Enter preset="pop" delay={1180}>
           <Button
-            label={chosen ? `${chosen.name} it is` : "Choose a Master"}
-            disabled={!chosen}
+            label={`${starter?.name ?? "Musashi"} it is`}
             onPress={() => router.push("/(onboarding)/pressure")}
           />
         </Enter>

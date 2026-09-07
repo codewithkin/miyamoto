@@ -50,7 +50,7 @@ export const MASTERS: MasterOption[] = [
     title: "The Stoic",
     domains: "Anxiety, loss, control",
     manner: "Calm, reframing letters.",
-    unlockDay: null,
+    unlockDay: 7,
     proOnly: false,
   },
   {
