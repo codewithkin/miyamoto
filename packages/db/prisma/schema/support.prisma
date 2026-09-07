@@ -1,0 +1,70 @@
+/// Support messages and account-deletion requests.
+///
+/// Both are reachable without a session, because both exist to serve people
+/// who may have lost access to theirs — which is exactly the case the store
+/// requirements are written for.
+
+enum SupportTopic {
+  BILLING
+  BUG
+  MY_DATA
+  REPORT_CONTENT
+  OTHER
+}
+
+model SupportMessage {
+  id String @id @default(cuid())
+
+  /// Whoever wrote in. Not verified — this route is open on purpose.
+  email  String
+  topic  SupportTopic
+  /// What happened, what they expected, which device.
+  details String
+
+  /// Set when the sender happened to be signed in.
+  userId String?
+
+  /// Cleared when a human has replied.
+  handledAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([handledAt, createdAt])
+  @@index([email])
+  @@map("support_message")
+}
+
+enum DeletionStatus {
+  /// Submitted from the web, not yet proven to own the address.
+  PENDING_VERIFICATION
+  /// Verified; the erase is scheduled.
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+/// A request to erase an account, raised from the web route Google Play
+/// requires. Deliberately does not delete anything on submission: the form
+/// is unauthenticated, so acting on it immediately would let anyone erase
+/// an account by typing its email address.
+model DeletionRequest {
+  id String @id @default(cuid())
+
+  email  String
+  /// Resolved at submission when the address matches an account. Null means
+  /// nothing was found, which the response does not reveal.
+  userId String?
+
+  status DeletionStatus @default(PENDING_VERIFICATION)
+
+  /// Single-use token emailed to the address on the account.
+  token       String    @unique
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@map("deletion_request")
+}
