@@ -52,6 +52,46 @@
           },
           "imageWidth": 200
         }
+      ],
+      "expo-dev-client",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Miyamoto uses your photos only when you attach evidence to a Master.",
+          "cameraPermission": "Miyamoto uses the camera only when you photograph evidence for a Master."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Miyamoto uses the microphone only when you record a voice note for a Master."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#4B49B8"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "This lets Miyamoto keep the free tier ad-supported."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1",
+            "useFrameworks": "static"
+          },
+          "android": {
+            "minSdkVersion": 24
+          }
+        }
       ]
     ],
     "experiments": {
