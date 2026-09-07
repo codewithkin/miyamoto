@@ -1,0 +1,131 @@
+/*
+ * Design tokens for the marketing site.
+ *
+ * The same ink system as the app — extracted from
+ * designs/Miyamoto-web-standalone.html — with the additions the web needs:
+ * a longer type scale (the app tops out at 46px, the site at 68px), lighter
+ * body colours for long-form reading, and a parchment accent used only on
+ * the legal pages.
+ *
+ * The site is ink-dark only. There is no light theme, on purpose: the app
+ * has none either, and a marketing site that looks nothing like the product
+ * is a promise it can't keep.
+ */
+
+:root {
+  /* ── Ink: surfaces, darkest to lightest ─────────────────────────── */
+  --ink-void: #08080a;
+  --ink-base: #101012;
+  --ink-surface: #18181d;
+  --ink-raised: #1c1c22;
+  --ink-raised-alt: #1e1e26;
+  --ink-high: #1f1f26;
+  --ink-high-alt: #202028;
+  --ink-elevated: #22222a;
+  --ink-inset: #24242c;
+  --ink-border: #2e2e38;
+  --ink-border-dim: #2a2a34;
+  --ink-border-bright: #33333f;
+
+  /* ── Text ───────────────────────────────────────────────────────── */
+  --text-primary: #f5f4fe;
+  /* Long-form body copy. Lighter than the app's, for reading at length. */
+  --text-body: #cfcce8;
+  --text-body-alt: #c2c0d4;
+  --text-secondary: #c6c3e8;
+  --text-muted: #9a98ad;
+  --text-faint: #918fa4;
+
+  /* ── Indigo: progress, links, primary actions ───────────────────── */
+  --indigo: #4b49b8;
+  --indigo-bright: #6c69e0;
+  --indigo-light: #a9a6f5;
+  --indigo-lighter: #b3b0ff;
+  --indigo-lightest: #cfcbff;
+  --indigo-tint: #242030;
+  --indigo-surface: #322d45;
+
+  /* ── Green: confirmation, only ──────────────────────────────────── */
+  --green: #1f7a4f;
+  --green-fg: #f2fff7;
+
+  /* ── Red: destructive, only ─────────────────────────────────────── */
+  --red: #e0483b;
+  --red-tint: #5c2e28;
+
+  /* ── Gold: earned, premium, rare ────────────────────────────────── */
+  --gold: #e0be63;
+  --gold-tint: #38301c;
+  --gold-tint-deep: #221e14;
+  /* Parchment. Legal pages only — it marks "this is a document". */
+  --parchment: #dfd3b0;
+
+  /* ── Type ───────────────────────────────────────────────────────── */
+  --font-mincho: "Zen Old Mincho", Georgia, serif;
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-condensed: "Barlow Condensed", "Arial Narrow", sans-serif;
+
+  --size-caption: 13px;
+  --size-body: 16px;
+  --size-body-lg: 18px;
+  --size-lead: 20px;
+  --size-title: 26px;
+  --size-heading: 30px;
+  --size-display: 42px;
+  --size-hero: 68px;
+  /* Legal page titles. */
+  --size-legal: 52px;
+
+  /* ── Layout ─────────────────────────────────────────────────────── */
+  /* The site is authored at 1440px. */
+  --page-max: 1200px;
+  /* ~68 characters, the reading measure the legal pages specify. */
+  --measure: 760px;
+  --measure-narrow: 700px;
+
+  --radius-blade: 2px;
+  --radius-sm: 3px;
+  --radius-md: 13px;
+  --radius-card: 18px;
+  --radius-lg: 20px;
+  --radius-panel: 22px;
+  --radius-xl: 26px;
+  --radius-pill: 999px;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--ink-base);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--size-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--indigo);
+  color: var(--text-primary);
+}
+
+/* Keyboard focus must stay visible on every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--indigo-light);
+  outline-offset: 3px;
+  border-radius: var(--radius-blade);
+}
+
+/* The one motion rule: honour a stated preference for less of it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
