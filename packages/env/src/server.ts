@@ -9,6 +9,19 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     CORS_ORIGIN: z.url(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+
+    // Sign-in is Google and Apple only — the design has no password or
+    // magic-link path. Both are optional so the server still boots without
+    // credentials; a provider is only registered when its pair is present,
+    // and sign-in for that provider is unavailable until then.
+    GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+    GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+    APPLE_CLIENT_ID: z.string().min(1).optional(),
+    APPLE_CLIENT_SECRET: z.string().min(1).optional(),
+    /** Native iOS bundle id, required for Sign in with Apple on device. */
+    APPLE_APP_BUNDLE_IDENTIFIER: z.string().min(1).optional(),
+
+    DEEPSEEK_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
