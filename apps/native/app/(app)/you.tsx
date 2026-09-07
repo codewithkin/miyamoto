@@ -1,28 +1,167 @@
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import { Enter } from "@/components/motion";
+import { Blade } from "@/components/blade";
+import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
-import { space } from "@/theme/tokens";
+import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/utils/trpc";
+import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
 /**
- * PLACEHOLDER — not yet implemented.
+ * 19 · Profile and your Code.
  *
- * This route exists so the tab shell is navigable while You is built. It
- * is deliberately obvious rather than a convincing empty state, so it
- * cannot be mistaken for finished work.
+ * The Code is the emotional centre of the screen, so it is set in Caveat —
+ * the user's own hand — and unfurls line by line rather than appearing as a
+ * block of text. Before Day 29 it shows what is coming instead.
  */
 export default function YouScreen() {
+  const router = useRouter();
+  const today = useQuery(trpc.path.today.queryOptions());
+  const code = useQuery(trpc.path.code.queryOptions());
+  const usage = useQuery(trpc.chat.usage.queryOptions());
+
+  const d = today.data;
+
   return (
-    <Screen>
-      <View style={{ flex: 1, justifyContent: "center", gap: space.base }}>
-        <Enter preset="rise">
-          <Text variant="display">You</Text>
+    <Screen scroll>
+      <View style={{ gap: space.section, paddingVertical: space.xl }}>
+        <Enter preset="drop">
+          <View style={{ gap: space.xxs }}>
+            <Text variant="display">{d?.displayName ?? "You"}</Text>
+            <Text variant="caption">
+              {d?.streak ?? 0}-day streak · Day {d?.currentDay ?? 1}
+            </Text>
+          </View>
         </Enter>
-        <Enter preset="fade" delay={160}>
-          <Text variant="lead">Not built yet.</Text>
+
+        <Stagger initialDelay={200} step={90} style={{ flexDirection: "row", gap: space.base }}>
+          <Enter preset="pop" style={{ flex: 1 }}>
+            <Stat value={String(d?.bushidoScore ?? 0)} label="Bushido" />
+          </Enter>
+          <Enter preset="pop" style={{ flex: 1 }}>
+            <Stat value={String(d?.longestStreak ?? 0)} label="Best streak" />
+          </Enter>
+          <Enter preset="pop" style={{ flex: 1 }}>
+            <Stat value={usage.data?.isPro ? "Pro" : "Free"} label="Plan" />
+          </Enter>
+        </Stagger>
+
+        {/* The Code. */}
+        <Enter preset="rise" delay={520}>
+          <View
+            style={{
+              padding: space.section,
+              borderRadius: radius.panel,
+              backgroundColor: ink.surface,
+              borderWidth: 1,
+              borderColor: ink.border,
+              gap: space.base,
+            }}
+          >
+            <Text variant="eyebrow">Your Bushido Code</Text>
+
+            {code.data?.lines?.length ? (
+              <Stagger initialDelay={680} step={200} style={{ gap: space.md }}>
+                {code.data.lines.map((line, i) => (
+                  <Enter key={i} preset="slideLeft">
+                    <View style={{ flexDirection: "row", gap: space.base }}>
+                      <Text variant="hand" color={indigo.light}>
+                        {i + 1}.
+                      </Text>
+                      <Text variant="hand" style={{ flex: 1 }}>
+                        {line}
+                      </Text>
+                    </View>
+                  </Enter>
+                ))}
+              </Stagger>
+            ) : (
+              <View style={{ gap: space.sm }}>
+                <Text variant="caption">
+                  Written on Day 29. {Math.max(0, 29 - (d?.currentDay ?? 1))} days away.
+                </Text>
+                <Blade state="empty" length={40} />
+              </View>
+            )}
+          </View>
         </Enter>
+
+        <Stagger initialDelay={900} step={80} style={{ gap: space.md }}>
+          <Enter preset="slideLeft">
+            <Row label="The Masters" onPress={() => router.push("/masters")} />
+          </Enter>
+          <Enter preset="slideLeft">
+            <Row
+              label={usage.data?.isPro ? "Miyamoto Pro · active" : "Miyamoto Pro"}
+              accent={!usage.data?.isPro}
+              onPress={() => router.push("/paywall")}
+            />
+          </Enter>
+          <Enter preset="slideLeft">
+            <Row
+              label="Sign out"
+              onPress={async () => {
+                await authClient.signOut();
+                router.replace("/(onboarding)");
+              }}
+            />
+          </Enter>
+        </Stagger>
       </View>
     </Screen>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <View
+      style={{
+        padding: space.base,
+        borderRadius: radius.card,
+        backgroundColor: ink.surface,
+        borderWidth: 1,
+        borderColor: ink.border,
+        gap: 2,
+      }}
+    >
+      <Text variant="numeral">{value}</Text>
+      <Text variant="caption">{label}</Text>
+    </View>
+  );
+}
+
+function Row({
+  label,
+  accent,
+  onPress,
+}: {
+  label: string;
+  accent?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        padding: space.xl,
+        borderRadius: radius.card,
+        backgroundColor: ink.surface,
+        borderWidth: 1,
+        borderColor: accent ? gold.tintAlt : ink.border,
+        opacity: pressed ? 0.85 : 1,
+      })}
+    >
+      <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
+        {label}
+      </Text>
+      <Text variant="eyebrow" color={accent ? gold.base : textColor.faintest}>
+        {accent ? "Upgrade" : "›"}
+      </Text>
+    </Pressable>
   );
 }
