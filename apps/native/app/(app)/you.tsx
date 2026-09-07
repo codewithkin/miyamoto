@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
 import { authClient } from "@/lib/auth-client";
@@ -143,9 +144,9 @@ function Row({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <Touchable feel="row"
       onPress={onPress}
-      style={({ pressed }) => ({
+      style={{
         flexDirection: "row",
         alignItems: "center",
         padding: space.xl,
@@ -153,8 +154,7 @@ function Row({
         backgroundColor: ink.surface,
         borderWidth: 1,
         borderColor: accent ? gold.tintAlt : ink.border,
-        opacity: pressed ? 0.85 : 1,
-      })}
+      }}
     >
       <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
         {label}
@@ -162,6 +162,6 @@ function Row({
       <Text variant="eyebrow" color={accent ? gold.base : textColor.faintest}>
         {accent ? "Upgrade" : "›"}
       </Text>
-    </Pressable>
+    </Touchable>
   );
 }

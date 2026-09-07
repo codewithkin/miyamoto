@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { SAMPLE_ANSWERS } from "@/content/sample-answers";
@@ -61,11 +62,11 @@ export default function AnswerScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
           <View>
             <Text variant="title">{answer.masterName}</Text>
             <Text variant="caption">{answer.masterEra}</Text>

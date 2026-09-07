@@ -1,21 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Sheet } from "@/components/sheet";
+import { Touchable } from "@/components/touchable";
 import { Button, Text } from "@/components/ui";
+import { showRewardedAd } from "@/lib/ads";
+import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
-import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
 /**
  * 21 · Switch Master.
  *
  * "The thread stays. Only the hand writing it changes." Locked Masters are
  * listed but refused, and the server refuses them again — the sheet is a
- * courtesy, not the gate.
+ * courtesy, not the gate. Pressing a locked one gives the warning haptic,
+ * so the refusal is felt before it is read.
  */
 export function SwitchMasterSheet({
   visible,
@@ -29,7 +33,7 @@ export function SwitchMasterSheet({
   currentSlug?: string;
 }) {
   const qc = useQueryClient();
-  const router = useRouter();
+  const { buy } = usePurchases();
   const masters = useQuery(trpc.library.masters.queryOptions());
 
   const switchTo = useMutation(
@@ -53,12 +57,14 @@ export function SwitchMasterSheet({
           const speaking = m.slug === currentSlug;
           return (
             <Enter key={m.id} preset="slideLeft">
-              <Pressable
-                disabled={!m.available || speaking || switchTo.isPending}
-                onPress={() =>
-                  threadId && switchTo.mutate({ threadId, masterSlug: m.slug })
-                }
-                style={({ pressed }) => ({
+              <Touchable
+                feel={m.available && !speaking ? "row" : "danger"}
+                disabled={speaking || switchTo.isPending}
+                onPress={() => {
+                  if (!m.available) return;
+                  if (threadId) switchTo.mutate({ threadId, masterSlug: m.slug });
+                }}
+                style={{
                   flexDirection: "row",
                   alignItems: "center",
                   gap: space.base,
@@ -67,11 +73,19 @@ export function SwitchMasterSheet({
                   backgroundColor: speaking ? indigo.tint : ink.surface,
                   borderWidth: 1,
                   borderColor: speaking ? indigo.base : ink.border,
-                  opacity: m.available ? (pressed ? 0.85 : 1) : 0.5,
-                })}
+                  opacity: m.available ? 1 : 0.55,
+                }}
               >
                 <Blade
-                  state={speaking ? "active" : m.available ? "complete" : m.lockReason === "PRO" ? "locked" : "empty"}
+                  state={
+                    speaking
+                      ? "active"
+                      : m.available
+                        ? "complete"
+                        : m.lockReason === "PRO"
+                          ? "locked"
+                          : "empty"
+                  }
                   length={14}
                 />
                 <View style={{ flex: 1 }}>
@@ -82,7 +96,13 @@ export function SwitchMasterSheet({
                 </View>
                 <Text
                   variant="eyebrow"
-                  color={speaking ? indigo.light : m.lockReason === "PRO" ? gold.base : textColor.faintest}
+                  color={
+                    speaking
+                      ? indigo.light
+                      : m.lockReason === "PRO"
+                        ? gold.base
+                        : textColor.faintest
+                  }
                 >
                   {speaking
                     ? "Speaking"
@@ -92,26 +112,30 @@ export function SwitchMasterSheet({
                         ? "Pro"
                         : `Day ${m.unlockDay}`}
                 </Text>
-              </Pressable>
+              </Touchable>
             </Enter>
           );
         })}
       </Stagger>
 
       {switchTo.error ? (
-        <Text variant="caption" color="#E0483B">
-          {switchTo.error.message === "PRO_REQUIRED"
-            ? "That one is behind Pro."
-            : "You haven't earned that Master yet."}
-        </Text>
+        <Enter preset="slideLeft">
+          <Text variant="caption" color={red.base}>
+            {switchTo.error.message === "PRO_REQUIRED"
+              ? "That one is behind Pro."
+              : "You haven't earned that Master yet."}
+          </Text>
+        </Enter>
       ) : null}
 
       <Button
         label="See Pro"
         variant="secondary"
-        onPress={() => {
-          onClose();
-          router.push("/paywall");
+        onPress={async () => {
+          if (await buy()) {
+            void qc.invalidateQueries();
+            onClose();
+          }
         }}
       />
     </Sheet>
@@ -121,29 +145,66 @@ export function SwitchMasterSheet({
 /**
  * 22 · Attach evidence.
  *
- * Media capture is not wired — expo-image-picker is not installed — so the
- * options are listed and inert rather than silently doing nothing.
+ * Permission is requested at the moment of use rather than up front, so the
+ * OS prompt arrives with the reason already on screen. Voice notes and the
+ * failure log are marked "Soon" rather than being silently dead.
  */
 export function AttachSheet({
   visible,
   onClose,
+  onPicked,
 }: {
   visible: boolean;
   onClose: () => void;
+  onPicked?: (uri: string) => void;
 }) {
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function pick(from: "library" | "camera") {
+    setError(null);
+    try {
+      const permission =
+        from === "camera"
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        setError("Miyamoto needs that permission to attach the evidence.");
+        return;
+      }
+
+      const result =
+        from === "camera"
+          ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
+          : await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ["images"],
+              quality: 0.7,
+            });
+
+      if (result.canceled || !result.assets[0]) return;
+      onPicked?.(result.assets[0].uri);
+      onClose();
+    } catch {
+      setError("That didn't open. Try the other one.");
+    }
+  }
+
   const options = [
-    "Photo from library",
-    "Take a photo",
-    "Record a voice note",
-    "From your failure log",
+    { label: "Photo from library", run: () => void pick("library"), ready: true },
+    { label: "Take a photo", run: () => void pick("camera"), ready: true },
+    { label: "Record a voice note", run: () => {}, ready: false },
+    { label: "From your failure log", run: () => {}, ready: false },
   ];
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Show him the evidence">
       <Stagger initialDelay={120} step={70} style={{ gap: space.md }}>
         {options.map((o) => (
-          <Enter key={o} preset="slideLeft">
-            <View
+          <Enter key={o.label} preset="slideLeft">
+            <Touchable
+              feel={o.ready ? "row" : "none"}
+              disabled={!o.ready}
+              onPress={o.run}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -153,18 +214,25 @@ export function AttachSheet({
                 backgroundColor: ink.surface,
                 borderWidth: 1,
                 borderColor: ink.border,
-                opacity: 0.55,
               }}
             >
-              <Blade state="empty" length={12} />
+              <Blade state={o.ready ? "complete" : "empty"} length={12} />
               <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
-                {o}
+                {o.label}
               </Text>
-            </View>
+              {!o.ready ? <Text variant="eyebrow">Soon</Text> : null}
+            </Touchable>
           </Enter>
         ))}
       </Stagger>
-      <Text variant="caption">Attachments arrive once media capture is wired.</Text>
+
+      {error ? (
+        <Enter preset="slideLeft">
+          <Text variant="caption" color={red.base}>
+            {error}
+          </Text>
+        </Enter>
+      ) : null}
     </Sheet>
   );
 }
@@ -172,8 +240,11 @@ export function AttachSheet({
 /**
  * 23 · Out of answers.
  *
- * The counter has run out. Three ways forward, in the order the design
- * ranks them: Pro, an ad for one more, or tomorrow.
+ * Three ways forward, in the order the design ranks them: Pro, an ad for
+ * one more, or tomorrow.
+ *
+ * The extra question is granted by the server and only after the reward was
+ * actually earned — closing the ad early counts for nothing, and says so.
  */
 export function OutOfAnswersSheet({
   visible,
@@ -182,8 +253,11 @@ export function OutOfAnswersSheet({
   visible: boolean;
   onClose: () => void;
 }) {
-  const router = useRouter();
   const qc = useQueryClient();
+  const { buy } = usePurchases();
+  const [watching, setWatching] = React.useState(false);
+  const [adFailed, setAdFailed] = React.useState(false);
+
   const grant = useMutation(
     trpc.chat.grantBonus.mutationOptions({
       onSuccess: () => {
@@ -192,6 +266,15 @@ export function OutOfAnswersSheet({
       },
     }),
   );
+
+  async function watchAd() {
+    setWatching(true);
+    setAdFailed(false);
+    const earned = await showRewardedAd();
+    setWatching(false);
+    if (earned) grant.mutate();
+    else setAdFailed(true);
+  }
 
   return (
     <Sheet
@@ -202,21 +285,35 @@ export function OutOfAnswersSheet({
     >
       <Enter preset="pop" delay={140}>
         <Button
-          label="See Pro · $9.99/mo or $149 once"
-          onPress={() => {
-            onClose();
-            router.push("/paywall");
+          label="See Pro"
+          onPress={async () => {
+            if (await buy()) {
+              void qc.invalidateQueries();
+              onClose();
+            }
           }}
         />
       </Enter>
+
       <Enter preset="fade" delay={280}>
         <Button
-          label={grant.isPending ? "Granting…" : "Watch an ad for +1"}
+          label={
+            watching ? "Loading the ad…" : grant.isPending ? "Granting…" : "Watch an ad for +1"
+          }
           variant="secondary"
-          disabled={grant.isPending}
-          onPress={() => grant.mutate()}
+          disabled={watching || grant.isPending}
+          onPress={() => void watchAd()}
         />
       </Enter>
+
+      {adFailed ? (
+        <Enter preset="slideLeft">
+          <Text variant="caption" color={red.base}>
+            No ad was available, or you closed it early. Nothing was counted.
+          </Text>
+        </Enter>
+      ) : null}
+
       <Enter preset="fade" delay={400}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
           <BladeTick />

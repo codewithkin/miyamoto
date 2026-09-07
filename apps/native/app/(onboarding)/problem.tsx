@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { ink, indigo, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -57,16 +58,16 @@ export default function ProblemScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
-          <Pressable onPress={() => router.push("/(onboarding)/carrying")} hitSlop={12}>
+          </Touchable>
+          <Touchable feel="row" onPress={() => router.push("/(onboarding)/carrying")} hitSlop={12}>
             <Text variant="label" color={textColor.muted}>
               Skip
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 
@@ -86,9 +87,10 @@ export default function ProblemScreen() {
             const isSelected = draft.seedProblemSlug === sample.slug;
             return (
               <Enter key={sample.slug} preset="roll">
-                <Pressable
+                <Touchable
+                  feel="row"
                   onPress={() => choose(sample.slug, sample.label)}
-                  style={({ pressed }) => ({
+                  style={{
                     flexDirection: "row",
                     alignItems: "center",
                     gap: space.base,
@@ -97,8 +99,7 @@ export default function ProblemScreen() {
                     backgroundColor: isSelected ? indigo.tint : ink.surface,
                     borderWidth: 1,
                     borderColor: isSelected ? indigo.base : ink.border,
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  }}
                 >
                   <Text variant="label" style={{ flex: 1, fontSize: size.bodyLg }}>
                     {sample.label}
@@ -110,7 +111,7 @@ export default function ProblemScreen() {
                       ›
                     </Text>
                   )}
-                </Pressable>
+                </Touchable>
               </Enter>
             );
           })}

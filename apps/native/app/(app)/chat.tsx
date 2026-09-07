@@ -6,7 +6,6 @@ import React from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   TextInput,
   View,
@@ -15,6 +14,7 @@ import {
 import { Blade } from "@/components/blade";
 import { Animated, Enter, usePulse } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import {
@@ -106,11 +106,11 @@ export default function ChatScreen() {
               {activeThread?.master.title ?? "The Strategist"}
             </Text>
           </View>
-          <Pressable hitSlop={10} onPress={() => setShowSwitch(true)}>
+          <Touchable feel="chip" hitSlop={10} onPress={() => setShowSwitch(true)}>
             <Text variant="eyebrow" color={indigo.light}>
               Switch ▾
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 
@@ -210,7 +210,8 @@ export default function ChatScreen() {
             </Enter>
           ) : (
             <View style={{ flexDirection: "row", alignItems: "flex-end", gap: space.md }}>
-              <Pressable
+              <Touchable
+                feel="chip"
                 onPress={() => setShowAttach(true)}
                 style={{
                   width: 48,
@@ -224,7 +225,7 @@ export default function ChatScreen() {
                 <Text variant="title" color={textColor.muted}>
                   +
                 </Text>
-              </Pressable>
+              </Touchable>
               <TextInput
                 value={input}
                 onChangeText={setInput}
@@ -246,7 +247,8 @@ export default function ChatScreen() {
                   fontSize: size.body,
                 }}
               />
-              <Pressable
+              <Touchable
+                feel="button"
                 onPress={send}
                 disabled={!canSend}
                 style={{
@@ -256,13 +258,12 @@ export default function ChatScreen() {
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: canSend ? indigo.base : ink.high,
-                  opacity: canSend ? 1 : 0.6,
                 }}
               >
                 <Text variant="title" color={textColor.primary}>
                   ↑
                 </Text>
-              </Pressable>
+              </Touchable>
             </View>
           )}
 
@@ -271,11 +272,11 @@ export default function ChatScreen() {
               <Text variant="caption" style={{ flex: 1 }}>
                 {usage.data.remaining} of {usage.data.limit} free answers left
               </Text>
-              <Pressable hitSlop={8} onPress={() => setShowOutOf(true)}>
+              <Touchable feel="chip" hitSlop={8} onPress={() => setShowOutOf(true)}>
                 <Text variant="caption" color={indigo.light}>
                   Get unlimited
                 </Text>
-              </Pressable>
+              </Touchable>
             </View>
           ) : null}
         </View>

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Pressable,
   type PressableProps,
   ScrollView,
   Text as RNText,
@@ -10,6 +9,8 @@ import {
   type ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { Touchable, type PressFeel } from "@/components/touchable";
 
 import { ink, indigo, radius, size, space, text as textColor, font, tracking, leading, weight } from "@/theme/tokens";
 
@@ -197,7 +198,8 @@ const BUTTON: Record<ButtonVariant, { container: ViewStyle; color: string }> = {
   },
 };
 
-export type ButtonProps = Omit<PressableProps, "children"> & {
+export type ButtonProps = Omit<PressableProps, "children" | "style"> & {
+  style?: ViewStyle;
   label: string;
   variant?: ButtonVariant;
   /** Rendered to the left of the label. */
@@ -215,11 +217,23 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const spec = BUTTON[variant];
+  // The press feel is derived from the variant, so confirming a trial feels
+  // heavier than opening a row and backing out gives the warning pattern.
+  const feel: PressFeel =
+    variant === "confirm"
+      ? "confirm"
+      : variant === "danger"
+        ? "danger"
+        : variant === "ghost"
+          ? "row"
+          : "button";
+
   return (
-    <Pressable
+    <Touchable
       accessibilityRole="button"
+      feel={feel}
       disabled={disabled}
-      style={(state) => [
+      style={[
         {
           flexDirection: "row",
           alignItems: "center",
@@ -228,10 +242,9 @@ export function Button({
           borderRadius: radius.pill,
           paddingHorizontal: space.section,
           alignSelf: full ? "stretch" : "flex-start",
-          opacity: disabled ? 0.45 : state.pressed ? 0.82 : 1,
         },
         spec.container,
-        typeof style === "function" ? style(state) : style,
+        style as ViewStyle,
       ]}
       {...rest}
     >
@@ -245,7 +258,7 @@ export function Button({
       >
         {label}
       </Text>
-    </Pressable>
+    </Touchable>
   );
 }
 

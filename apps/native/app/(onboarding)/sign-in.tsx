@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { authClient } from "@/lib/auth-client";
@@ -56,11 +57,11 @@ export default function SignInScreen() {
     <Screen>
       <Enter preset="drop">
         <View style={{ paddingVertical: space.lg }}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 

@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
 import { Animated, Enter, Stagger, usePulse } from "@/components/motion";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { PRESSURES } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
@@ -70,11 +71,11 @@ export default function OfferScreen() {
               {expired ? "Offer ended" : `Offer ends in ${label}`}
             </Text>
           </View>
-          <Pressable onPress={() => router.push("/(onboarding)/sign-in")} hitSlop={12}>
+          <Touchable feel="chip" onPress={() => router.push("/(onboarding)/sign-in")} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ✕
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 
@@ -129,7 +130,7 @@ export default function OfferScreen() {
         {/* Plans. */}
         <Stagger initialDelay={1100} step={160} style={{ gap: space.base }}>
           <Enter preset="flip">
-            <Pressable onPress={() => setPlan("LIFETIME")}>
+            <Touchable feel="chip" onPress={() => setPlan("LIFETIME")}>
               <View
                 style={{
                   padding: space.xl,
@@ -160,11 +161,11 @@ export default function OfferScreen() {
                   ) : null}
                 </View>
               </View>
-            </Pressable>
+            </Touchable>
           </Enter>
 
           <Enter preset="flip">
-            <Pressable onPress={() => setPlan("MONTHLY")}>
+            <Touchable feel="chip" onPress={() => setPlan("MONTHLY")}>
               <View
                 style={{
                   padding: space.xl,
@@ -186,7 +187,7 @@ export default function OfferScreen() {
                 </View>
                 <Text variant="numeral">$9.99</Text>
               </View>
-            </Pressable>
+            </Touchable>
           </Enter>
         </Stagger>
 

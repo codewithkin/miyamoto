@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
@@ -119,9 +120,9 @@ function StoryRow({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <Touchable feel="row"
       onPress={onPress}
-      style={({ pressed }) => ({
+      style={{
         flexDirection: "row",
         alignItems: "center",
         gap: space.base,
@@ -130,8 +131,7 @@ function StoryRow({
         backgroundColor: ink.surface,
         borderWidth: 1,
         borderColor: locked ? gold.tintAlt : ink.border,
-        opacity: pressed ? 0.85 : 1,
-      })}
+      }}
     >
       <Blade state={locked ? "locked" : "complete"} length={14} />
       <View style={{ flex: 1, gap: 2 }}>
@@ -143,6 +143,6 @@ function StoryRow({
       <Text variant="eyebrow" color={locked ? gold.base : indigo.light}>
         {locked ? "Pro" : "›"}
       </Text>
-    </Pressable>
+    </Touchable>
   );
 }

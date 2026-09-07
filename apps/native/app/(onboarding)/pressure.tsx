@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { BladeRail, BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { PRESSURES, REMINDER_TIMES } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
@@ -31,11 +32,11 @@ export default function PressureScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
           <Text variant="eyebrow">4/4</Text>
           <View style={{ flex: 1 }}>
             <BladeRail count={4} progress={4} activeIndex={3} delay={200} step={70} />
@@ -58,9 +59,10 @@ export default function PressureScreen() {
             const picked = draft.pressure === option.value;
             return (
               <Enter key={option.value} preset="flip">
-                <Pressable
+                <Touchable
+                  feel="row"
                   onPress={() => set({ pressure: option.value })}
-                  style={({ pressed }) => ({
+                  style={{
                     flexDirection: "row",
                     alignItems: "center",
                     gap: space.base,
@@ -69,8 +71,7 @@ export default function PressureScreen() {
                     backgroundColor: picked ? indigo.tint : ink.surface,
                     borderWidth: 1,
                     borderColor: picked ? indigo.base : ink.border,
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  }}
                 >
                   <View style={{ flex: 1, gap: 3 }}>
                     <Text variant="title" style={{ fontSize: size.lead }}>
@@ -79,7 +80,7 @@ export default function PressureScreen() {
                     <Text variant="caption">{option.detail}</Text>
                   </View>
                   {picked ? <BladeTick done /> : null}
-                </Pressable>
+                </Touchable>
               </Enter>
             );
           })}
@@ -92,10 +93,11 @@ export default function PressureScreen() {
             {REMINDER_TIMES.map((time) => {
               const picked = draft.morningReminder === time;
               return (
-                <Pressable
+                <Touchable
                   key={time}
+                  feel="chip"
                   onPress={() => set({ morningReminder: time })}
-                  style={({ pressed }) => ({
+                  style={{
                     flex: 1,
                     alignItems: "center",
                     paddingVertical: space.base,
@@ -103,8 +105,7 @@ export default function PressureScreen() {
                     backgroundColor: picked ? indigo.base : ink.surface,
                     borderWidth: 1,
                     borderColor: picked ? indigo.bright : ink.border,
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  }}
                 >
                   <Text
                     variant="label"
@@ -113,7 +114,7 @@ export default function PressureScreen() {
                   >
                     {time}
                   </Text>
-                </Pressable>
+                </Touchable>
               );
             })}
           </View>

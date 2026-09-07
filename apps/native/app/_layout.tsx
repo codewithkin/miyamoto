@@ -7,7 +7,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AppThemeProvider } from "@/contexts/app-theme-context";
+import { ink } from "@/theme/tokens";
 import { OnboardingProvider } from "@/lib/onboarding-store";
+import { PurchasesProvider } from "@/lib/purchases";
 import { queryClient } from "@/utils/trpc";
 
 export const unstable_settings = {
@@ -16,10 +18,21 @@ export const unstable_settings = {
 
 function StackLayout() {
   return (
-    <Stack screenOptions={{}}>
-      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ title: "Modal", presentation: "modal" }} />
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: ink.base },
+        animation: "slide_from_right",
+        animationDuration: 320,
+      }}
+    >
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="(app)" />
+      <Stack.Screen name="story/[slug]" />
+      <Stack.Screen name="masters" />
+      {/* The paywall rises from the bottom — it interrupts, it does not
+          continue the journey sideways. */}
+      <Stack.Screen name="paywall" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
     </Stack>
   );
 }
@@ -31,9 +44,11 @@ export default function Layout() {
         <KeyboardProvider>
           <AppThemeProvider>
             <HeroUINativeProvider>
-              <OnboardingProvider>
-                <StackLayout />
-              </OnboardingProvider>
+              <PurchasesProvider>
+                <OnboardingProvider>
+                  <StackLayout />
+                </OnboardingProvider>
+              </PurchasesProvider>
             </HeroUINativeProvider>
           </AppThemeProvider>
         </KeyboardProvider>

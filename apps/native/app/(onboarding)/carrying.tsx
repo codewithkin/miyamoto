@@ -1,9 +1,10 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { BladeRail } from "@/components/blade";
 import { Enter } from "@/components/motion";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, WOUNDS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
@@ -44,11 +45,11 @@ export default function CarryingScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
           <Text variant="eyebrow">2/4</Text>
           <View style={{ flex: 1 }}>
             <BladeRail count={4} progress={2} activeIndex={1} delay={200} step={70} />
@@ -74,17 +75,17 @@ export default function CarryingScreen() {
             const picked = draft.wounds.includes(wound.slug);
             return (
               <Enter key={wound.slug} preset="pop" delay={440 + i * 70}>
-                <Pressable
+                <Touchable
+                  feel="chip"
                   onPress={() => toggleWound(wound.slug)}
-                  style={({ pressed }) => ({
+                  style={{
                     paddingVertical: space.base,
                     paddingHorizontal: space.xl,
                     borderRadius: radius.pill,
                     backgroundColor: picked ? indigo.base : ink.surface,
                     borderWidth: 1,
                     borderColor: picked ? indigo.bright : ink.border,
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  }}
                 >
                   <Text
                     variant="label"
@@ -93,7 +94,7 @@ export default function CarryingScreen() {
                   >
                     {wound.label}
                   </Text>
-                </Pressable>
+                </Touchable>
               </Enter>
             );
           })}

@@ -1,18 +1,22 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
+import { usePurchases } from "@/lib/purchases";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
 /**
  * 20 · Pro paywall.
  *
- * Purchases go through RevenueCat, which is not wired until its API keys
- * exist. The buttons are deliberately inert rather than faking a flow —
- * a paywall that pretends to charge is worse than one that says it cannot.
+ * The plan cards here are our own, in our own type — but the purchase runs
+ * through RevenueCat's native paywall, which owns the store sheet, price
+ * localisation and the receipt. Pressing a plan selects it; pressing the
+ * button hands off.
  */
 
 const INCLUDED = [
@@ -23,7 +27,20 @@ const INCLUDED = [
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const qc = useQueryClient();
+  const { buy, restore, isPro } = usePurchases();
   const [plan, setPlan] = React.useState<"LIFETIME" | "MONTHLY">("LIFETIME");
+  const [busy, setBusy] = React.useState<"buy" | "restore" | null>(null);
+
+  async function run(kind: "buy" | "restore") {
+    setBusy(kind);
+    const ok = kind === "buy" ? await buy() : await restore();
+    setBusy(null);
+    if (ok) {
+      void qc.invalidateQueries();
+      router.back();
+    }
+  }
 
   return (
     <Screen scroll>
@@ -39,11 +56,11 @@ export default function PaywallScreen() {
           <Text variant="eyebrow" color={gold.base}>
             Miyamoto Pro
           </Text>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="chip" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ✕
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 
@@ -109,17 +126,24 @@ export default function PaywallScreen() {
       <View style={{ paddingVertical: space.xxl, gap: space.md }}>
         <Enter preset="pop" delay={1420}>
           <Button
-            label="Start 3 days free"
-            disabled
-            onPress={() => {
-              /* RevenueCat purchase — awaiting API keys. */
-            }}
+            label={
+              isPro
+                ? "You already have Pro"
+                : busy === "buy"
+                  ? "Opening…"
+                  : "Start 3 days free"
+            }
+            disabled={isPro || busy !== null}
+            onPress={() => void run("buy")}
           />
         </Enter>
         <Enter preset="fade" delay={1560}>
-          <Text variant="caption" style={{ textAlign: "center" }}>
-            Purchases unavailable until RevenueCat is configured · Restore purchase
-          </Text>
+          <Button
+            label={busy === "restore" ? "Checking…" : "Restore purchase"}
+            variant="ghost"
+            disabled={busy !== null}
+            onPress={() => void run("restore")}
+          />
         </Enter>
       </View>
     </Screen>
@@ -144,7 +168,7 @@ function PlanCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress}>
+    <Touchable feel="chip" onPress={onPress}>
       <View
         style={{
           padding: space.xl,
@@ -176,6 +200,6 @@ function PlanCard({
           ) : null}
         </View>
       </View>
-    </Pressable>
+    </Touchable>
   );
 }

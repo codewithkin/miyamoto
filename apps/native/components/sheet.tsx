@@ -1,6 +1,7 @@
 import React from "react";
-import { Modal, Pressable, View } from "react-native";
+import { Modal, View } from "react-native";
 
+import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Text } from "@/components/ui";
 import { alpha, ink, radius, space, text as textColor } from "@/theme/tokens";
@@ -27,12 +28,12 @@ export function Sheet({
 }) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
+      <Touchable feel="row"
         onPress={onClose}
         style={{ flex: 1, backgroundColor: alpha.scrim, justifyContent: "flex-end" }}
       >
         {/* Stop taps inside the sheet from dismissing it. */}
-        <Pressable onPress={() => {}}>
+        <Touchable feel="row" onPress={() => {}}>
           <Enter preset="slideUp">
             <View
               style={{
@@ -64,15 +65,15 @@ export function Sheet({
 
               {children}
 
-              <Pressable onPress={onClose} hitSlop={8} style={{ alignItems: "center" }}>
+              <Touchable feel="row" onPress={onClose} hitSlop={8} style={{ alignItems: "center" }}>
                 <Text variant="label" color={textColor.muted}>
                   Cancel
                 </Text>
-              </Pressable>
+              </Touchable>
             </View>
           </Enter>
-        </Pressable>
-      </Pressable>
+        </Touchable>
+      </Touchable>
     </Modal>
   );
 }

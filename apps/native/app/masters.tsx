@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
+import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -40,18 +41,21 @@ export default function MastersScreen() {
         <Stagger initialDelay={220} step={110} style={{ gap: space.base }}>
           {(masters.data ?? []).map((m) => (
             <Enter key={m.id} preset="swing">
-              <Pressable
-                disabled={!m.available || createThread.isPending}
-                onPress={() => createThread.mutate({ masterSlug: m.slug })}
-                style={({ pressed }) => ({
+              <Touchable
+                feel={m.available ? "row" : "danger"}
+                disabled={createThread.isPending}
+                onPress={() => {
+                  if (m.available) createThread.mutate({ masterSlug: m.slug });
+                }}
+                style={{
                   padding: space.xl,
                   borderRadius: radius.card,
                   backgroundColor: m.available ? ink.surface : ink.surfaceDim,
                   borderWidth: 1,
                   borderColor: m.available ? ink.border : ink.borderDim,
-                  opacity: m.available ? (pressed ? 0.85 : 1) : 0.55,
+                  opacity: m.available ? 1 : 0.55,
                   gap: space.sm,
-                })}
+                }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
                   <Blade
@@ -80,7 +84,7 @@ export default function MastersScreen() {
                   </Text>
                 </View>
                 <Text variant="caption">{m.domains.join(" · ")}</Text>
-              </Pressable>
+              </Touchable>
             </Enter>
           ))}
         </Stagger>

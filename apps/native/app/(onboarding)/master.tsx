@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade, BladeRail, BladeTick } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
@@ -47,11 +48,11 @@ export default function MasterScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
           <Text variant="eyebrow">3/4</Text>
           <View style={{ flex: 1 }}>
             <BladeRail count={4} progress={3} activeIndex={2} delay={200} step={70} />

@@ -1,9 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
@@ -34,11 +35,11 @@ export default function StoryScreen() {
     <Screen scroll>
       <Enter preset="drop">
         <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: space.lg }}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
             <Text variant="title" color={textColor.muted}>
               ←
             </Text>
-          </Pressable>
+          </Touchable>
         </View>
       </Enter>
 

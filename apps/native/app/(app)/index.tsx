@@ -2,11 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { View } from "react-native";
 
 import { Blade, BladeRail, BladeTick } from "@/components/blade";
 import { Animated, Enter, Stagger, useFlicker } from "@/components/motion";
 import { CoachMarks } from "@/components/coach-marks";
+import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import {
@@ -168,7 +169,8 @@ export default function PathHomeScreen() {
         {/* Adversity of the day. */}
         {featured.data?.[0] ? (
           <Enter preset="zoomUp" delay={1240}>
-            <Pressable
+            <Touchable
+              feel="row"
               onPress={() => router.push(`/story/${featured.data![0]!.slug}`)}
               style={{
                 padding: space.xl,
@@ -186,7 +188,7 @@ export default function PathHomeScreen() {
               <Text variant="caption">
                 {featured.data[0].master.name} · {featured.data[0].readSeconds}s
               </Text>
-            </Pressable>
+            </Touchable>
           </Enter>
         ) : null}
       </View>

@@ -1,8 +1,9 @@
 import * as SecureStore from "expo-secure-store";
 import React from "react";
-import { Modal, Pressable, View } from "react-native";
+import { Modal, View } from "react-native";
 
 import { BladeRail } from "@/components/blade";
+import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Text } from "@/components/ui";
 import { alpha, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -87,11 +88,11 @@ export function CoachMarks() {
               <Text variant="eyebrow" style={{ flex: 1 }}>
                 {mark.from} · {step + 1} of {MARKS.length}
               </Text>
-              <Pressable onPress={finish} hitSlop={10}>
+              <Touchable feel="row" onPress={finish} hitSlop={10}>
                 <Text variant="caption" color={textColor.muted}>
                   Skip tour
                 </Text>
-              </Pressable>
+              </Touchable>
             </View>
 
             <Text variant="voice" style={{ fontSize: size.subtitle }}>
