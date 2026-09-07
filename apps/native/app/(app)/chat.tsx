@@ -14,6 +14,7 @@ import {
 
 import { Blade } from "@/components/blade";
 import { Animated, Enter, usePulse } from "@/components/motion";
+import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Button, Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import {
@@ -39,7 +40,10 @@ import {
  */
 export default function ChatScreen() {
   const [input, setInput] = React.useState("");
-  const [threadId, setThreadId] = React.useState<string | null>(null);
+  const [threadId] = React.useState<string | null>(null);
+  const [showSwitch, setShowSwitch] = React.useState(false);
+  const [showAttach, setShowAttach] = React.useState(false);
+  const [showOutOf, setShowOutOf] = React.useState(false);
   const scrollRef = React.useRef<ScrollView>(null);
 
   const usage = useQuery(trpc.chat.usage.queryOptions());
@@ -65,6 +69,12 @@ export default function ChatScreen() {
   React.useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, busy]);
+
+  // Raise the sheet the moment the counter empties, rather than leaving the
+  // composer silently disabled.
+  React.useEffect(() => {
+    if (outOfAnswers) setShowOutOf(true);
+  }, [outOfAnswers]);
 
   function send() {
     const value = input.trim();
@@ -96,7 +106,7 @@ export default function ChatScreen() {
               {activeThread?.master.title ?? "The Strategist"}
             </Text>
           </View>
-          <Pressable hitSlop={10}>
+          <Pressable hitSlop={10} onPress={() => setShowSwitch(true)}>
             <Text variant="eyebrow" color={indigo.light}>
               Switch ▾
             </Text>
@@ -195,11 +205,26 @@ export default function ChatScreen() {
                 <Text variant="caption" style={{ textAlign: "center" }}>
                   Three questions is all a stranger gets.
                 </Text>
-                <Button label="See Pro" />
+                <Button label="See Pro" onPress={() => setShowOutOf(true)} />
               </View>
             </Enter>
           ) : (
             <View style={{ flexDirection: "row", alignItems: "flex-end", gap: space.md }}>
+              <Pressable
+                onPress={() => setShowAttach(true)}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: radius.pill,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: ink.high,
+                }}
+              >
+                <Text variant="title" color={textColor.muted}>
+                  +
+                </Text>
+              </Pressable>
               <TextInput
                 value={input}
                 onChangeText={setInput}
@@ -246,7 +271,7 @@ export default function ChatScreen() {
               <Text variant="caption" style={{ flex: 1 }}>
                 {usage.data.remaining} of {usage.data.limit} free answers left
               </Text>
-              <Pressable hitSlop={8}>
+              <Pressable hitSlop={8} onPress={() => setShowOutOf(true)}>
                 <Text variant="caption" color={indigo.light}>
                   Get unlimited
                 </Text>
@@ -255,6 +280,15 @@ export default function ChatScreen() {
           ) : null}
         </View>
       </KeyboardAvoidingView>
+
+      <SwitchMasterSheet
+        visible={showSwitch}
+        onClose={() => setShowSwitch(false)}
+        threadId={activeThread?.id}
+        currentSlug={activeThread?.master.slug}
+      />
+      <AttachSheet visible={showAttach} onClose={() => setShowAttach(false)} />
+      <OutOfAnswersSheet visible={showOutOf} onClose={() => setShowOutOf(false)} />
     </Screen>
   );
 }
