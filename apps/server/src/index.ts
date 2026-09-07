@@ -1,20 +1,13 @@
-import { devToolsMiddleware } from "@ai-sdk/devtools";
-import { google } from "@ai-sdk/google";
 import { trpcServer } from "@hono/trpc-server";
 import { createContext } from "@miyamoto/api/context";
 import { appRouter } from "@miyamoto/api/routers/index";
 import { auth } from "@miyamoto/auth";
 import { env } from "@miyamoto/env/server";
-import {
-  createUIMessageStreamResponse,
-  streamText,
-  toUIMessageStream,
-  convertToModelMessages,
-  wrapLanguageModel,
-} from "ai";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+
+import { registerAiRoute } from "./routes/ai";
 
 const app = new Hono();
 
@@ -41,22 +34,7 @@ app.use(
   }),
 );
 
-app.post("/ai", async (c) => {
-  const body = await c.req.json();
-  const uiMessages = body.messages || [];
-  const model = wrapLanguageModel({
-    model: google("gemini-2.5-flash"),
-    middleware: devToolsMiddleware(),
-  });
-  const result = streamText({
-    model,
-    messages: await convertToModelMessages(uiMessages),
-  });
-
-  return createUIMessageStreamResponse({
-    stream: toUIMessageStream({ stream: result.stream }),
-  });
-});
+registerAiRoute(app);
 
 app.get("/", (c) => {
   return c.text("OK");
