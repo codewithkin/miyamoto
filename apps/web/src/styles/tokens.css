@@ -61,9 +61,11 @@
   --parchment: #dfd3b0;
 
   /* ── Type ───────────────────────────────────────────────────────── */
-  --font-mincho: "Zen Old Mincho", Georgia, serif;
-  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
-  --font-condensed: "Barlow Condensed", "Arial Narrow", sans-serif;
+  /* next/font injects the --*-loaded variables in the root layout; the
+     stacks after them are what renders if a face fails to load. */
+  --font-mincho: var(--font-mincho-loaded), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-sans-loaded), system-ui, -apple-system, sans-serif;
+  --font-condensed: var(--font-condensed-loaded), "Arial Narrow", sans-serif;
 
   --size-caption: 13px;
   --size-body: 16px;

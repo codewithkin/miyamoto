@@ -1,23 +1,50 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow_Condensed, DM_Sans, Zen_Old_Mincho } from "next/font/google";
 
 import "../index.css";
-import Header from "@/components/header";
 import Providers from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * The same three faces as the app: Zen Old Mincho for a Master's voice and
+ * display type, DM Sans for everything else, Barlow Condensed for eyebrow
+ * labels. Caveat is deliberately absent — the handwritten Bushido Code
+ * belongs to the person who wrote it, not to marketing.
+ */
+const mincho = Zen_Old_Mincho({
+  variable: "--font-mincho-loaded",
   subsets: ["latin"],
+  weight: ["400", "600"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
+  variable: "--font-sans-loaded",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const barlow = Barlow_Condensed({
+  variable: "--font-condensed-loaded",
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "miyamoto",
-  description: "miyamoto",
+  metadataBase: new URL("https://miyamoto.app"),
+  title: {
+    default: "Miyamoto — Meet the Masters",
+    template: "%s · Miyamoto",
+  },
+  description:
+    "Bring a real problem. Musashi, Seneca, Mandela, Curie or Sun Tzu writes back with the moment from their own life that matched — and one thing for you to do today.",
+  openGraph: {
+    title: "Miyamoto — Meet the Masters",
+    description: "Ask the people who survived worse.",
+    type: "website",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -27,13 +54,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            <Header />
-            {children}
-          </div>
-        </Providers>
+      <body
+        className={`${mincho.variable} ${dmSans.variable} ${barlow.variable}`}
+        style={{ margin: 0 }}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
