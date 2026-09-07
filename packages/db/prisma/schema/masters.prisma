@@ -1,0 +1,79 @@
+/// The five Masters and the authored corpus they speak from.
+///
+/// A Master never invents biography. Everything they claim about their own
+/// life comes from a Moment row, written by us and checked against a source.
+/// The model's job is to choose the matching Moment and render it in voice —
+/// not to recall history it may have wrong.
+
+model Master {
+  id   String @id @default(cuid())
+  /// Stable key used in prompts, seeds and deep links: "musashi", "seneca".
+  slug String @unique
+
+  name String
+  /// "The Strategist", "The Stoic".
+  title String
+  /// Short voice descriptor shown under the name: "blunt, tactical".
+  tone  String
+  /// One line on how they write, shown when picking a Master.
+  manner String
+  /// "Duelist · 1584–1645".
+  era    String
+
+  /// Topics this Master is offered for: ["Career", "Fear", "Rivals"].
+  domains String[]
+
+  /// Hex accent used for this Master's chrome in chat.
+  accentColor String
+
+  /// Day of the Path on which this Master unlocks. Null means available
+  /// from Day 1. Pro skips every wait.
+  unlockDay Int?
+  /// Locked behind Pro regardless of Path progress (Sun Tzu).
+  proOnly   Boolean @default(false)
+
+  sortOrder Int @default(0)
+
+  moments   Moment[]
+  stories   AdversityStory[]
+  threads   Thread[]
+  charges   Charge[]
+  firstFor  OnboardingProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("master")
+}
+
+/// One moment from a Master's real life, authored by us.
+///
+/// Retrieved by theme overlap with the user's problem, then rendered in the
+/// Master's voice. `sourceNote` exists so every claim stays traceable.
+model Moment {
+  id       String @id @default(cuid())
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  /// Internal label: "The Yoshioka school named a boy as their head".
+  title String
+  /// The moment as the Master would tell it, first person.
+  body  String
+  /// What it teaches, stated plainly.
+  lesson String
+
+  /// Themes used for matching: ["rigged-contest", "humiliation", "rivals"].
+  themes String[]
+
+  /// Where this comes from, so the claim can be checked.
+  sourceNote String?
+
+  /// Higher wins when several moments match equally well.
+  weight Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([masterId])
+  @@map("moment")
+}

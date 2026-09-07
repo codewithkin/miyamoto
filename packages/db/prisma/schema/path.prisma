@@ -1,0 +1,112 @@
+/// The Bushido Path — 30 days in four acts.
+///
+/// A *Trial* is an authored Path day. It is not the same object as a
+/// *Charge*, which is what a Master hands you at the end of a chat — see
+/// chat.prisma. Streaks count Trials only; the Bushido score counts both.
+
+enum Act {
+  /// Days 1–7.
+  FACE_IT
+  /// Days 8–14.
+  CONTROL_IT
+  /// Days 15–21.
+  ENDURE_IT
+  /// Days 22–30.
+  BECOME_IT
+}
+
+model PathDay {
+  id        String @id @default(cuid())
+  /// 1–30.
+  dayNumber Int    @unique
+  act       Act
+
+  /// "Trial of the Still Hand".
+  title String
+  /// One or two lines of framing shown above the trial.
+  brief String
+
+  trials          PathTrial[]
+  completions     TrialCompletion[]
+
+  @@index([act])
+  @@map("path_day")
+}
+
+/// The same day at three intensities. The user's Pressure picks one.
+model PathTrial {
+  id        String  @id @default(cuid())
+  pathDayId String
+  pathDay   PathDay @relation(fields: [pathDayId], references: [id], onDelete: Cascade)
+
+  pressure Pressure
+
+  /// "Name the person you're avoiding. Out loud, before breakfast."
+  body String
+
+  /// Points added to the Bushido score on completion.
+  points Int @default(10)
+
+  @@unique([pathDayId, pressure])
+  @@map("path_trial")
+}
+
+model PathProgress {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// 1–30.
+  currentDay Int      @default(1)
+  startedAt  DateTime @default(now())
+
+  streakCount   Int @default(0)
+  longestStreak Int @default(0)
+  bushidoScore  Int @default(0)
+
+  /// The user's local date on which they last completed a Trial, stored as
+  /// YYYY-MM-DD. Compared against today's local date to decide whether the
+  /// streak survives — never against a UTC timestamp.
+  lastCompletedOn String?
+
+  finishedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@map("path_progress")
+}
+
+model TrialCompletion {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pathDayId String
+  pathDay   PathDay @relation(fields: [pathDayId], references: [id])
+
+  /// The user's local date, YYYY-MM-DD.
+  completedOn String
+
+  /// Optional reflection captured when marking complete.
+  note String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, pathDayId])
+  @@index([userId, completedOn])
+  @@map("trial_completion")
+}
+
+/// Written on Day 29 — the rules the user now lives by.
+model PersonalCode {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One rule per entry, in order.
+  lines String[]
+
+  writtenOn DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("personal_code")
+}

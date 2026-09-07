@@ -1,0 +1,59 @@
+/// The Adversity Library — the browse path.
+///
+/// Named wounds sorted by category. Each story is a 30-second read shaped
+/// story → lesson → action, with a button that carries it into chat.
+/// All authored and seeded; nothing here is generated.
+
+model AdversityCategory {
+  id   String @id @default(cuid())
+  slug String @unique
+  /// "Career", "Mind", "Relationships", "Discipline".
+  name String
+
+  sortOrder Int @default(0)
+
+  stories AdversityStory[]
+
+  @@map("adversity_category")
+}
+
+model AdversityStory {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  categoryId String
+  category   AdversityCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  /// The Master who answers this wound.
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id])
+
+  /// The wound as the user would name it, first person:
+  /// "I was passed over for the promotion".
+  title String
+
+  /// The Master's matching moment, told in their voice.
+  story String
+  /// "A rigged contest is information, not a verdict."
+  lesson String
+  /// The one concrete thing to do today.
+  action String
+
+  /// Read time shown on the card. The design promises 30s.
+  readSeconds Int @default(30)
+
+  /// Free users see a subset; Pro unlocks the library immediately.
+  proOnly Boolean @default(false)
+
+  /// Drives the "Most searched" rail.
+  searchCount Int @default(0)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([masterId])
+  @@map("adversity_story")
+}

@@ -9,6 +9,16 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  profile           Profile?
+  subscription      Subscription?
+  onboardingProfile OnboardingProfile?
+  pathProgress      PathProgress?
+  personalCode      PersonalCode?
+  dailyUsage        DailyUsage[]
+  trialCompletions  TrialCompletion[]
+  threads           Thread[]
+  charges           Charge[]
+
   @@unique([email])
   @@map("user")
 }

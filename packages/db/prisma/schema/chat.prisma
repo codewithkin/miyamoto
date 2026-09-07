@@ -1,0 +1,81 @@
+/// Chat metadata and Charges.
+///
+/// Message bodies are NOT here. Mastra owns the conversation store in its
+/// own `mastra` Postgres schema (mastra_threads / mastra_messages); this
+/// model holds only what the app needs to list, gate and attribute a
+/// thread without reading message content.
+
+model Thread {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The id of the matching thread in Mastra's store.
+  mastraThreadId String @unique
+
+  /// Whoever is currently writing. Switching Master changes this and
+  /// nothing else — the thread and its history stay put.
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id])
+
+  /// Derived from the opening message, for the thread list.
+  title String?
+
+  /// Set when the thread was opened from a library story, so we can show
+  /// where it came from and count conversions out of the library.
+  originStoryId String?
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  charges Charge[]
+
+  @@index([userId, lastMessageAt])
+  @@index([masterId])
+  @@map("thread")
+}
+
+enum ChargeStatus {
+  /// Handed over, not yet answered.
+  PENDING
+  /// "I'll do it".
+  ACCEPTED
+  /// "Too big" — the Master offers a smaller one.
+  DECLINED
+  COMPLETED
+}
+
+/// What a Master hands you at the end of a chat.
+///
+/// Distinct from a Trial (path.prisma): a Charge is generated from your own
+/// problem, is not numbered, and does not feed the streak. It does add to
+/// the Bushido score.
+model Charge {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   Thread? @relation(fields: [threadId], references: [id], onDelete: SetNull)
+
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id])
+
+  /// "Send the email before 18:00. Four lines. No apology in the first one."
+  body String
+
+  status ChargeStatus @default(PENDING)
+
+  /// The user's local date this is due, YYYY-MM-DD. A Charge is for today.
+  dueOn String
+
+  points Int @default(5)
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, dueOn])
+  @@index([threadId])
+  @@index([masterId])
+  @@map("charge")
+}

@@ -1,0 +1,76 @@
+/// Onboarding answers.
+///
+/// The quiz runs before sign-in, so answers are held on the device as a
+/// draft and submitted once at sign-up. Nothing here is written for an
+/// anonymous visitor — there are no throwaway user rows to reap.
+
+enum Pressure {
+  /// One small trial a day.
+  GENTLE
+  /// A real trial daily. The default, and what most people pick.
+  FIRM
+  /// Two trials, no-complaint days, public stakes.
+  UNBREAKABLE
+}
+
+/// A named wound the user can claim during onboarding: "Betrayal",
+/// "Procrastination", "Career stall". Drives which Act I trials and which
+/// Master are chosen for them.
+model Wound {
+  id    String @id @default(cuid())
+  slug  String @unique
+  label String
+
+  /// Themes this wound maps to, matched against Moment.themes.
+  themes String[]
+
+  sortOrder Int @default(0)
+
+  profiles OnboardingProfileWound[]
+
+  @@map("wound")
+}
+
+model OnboardingProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// What they picked or typed on the opening screen, kept verbatim — it
+  /// becomes the first thing their Master answers.
+  seedProblem String?
+
+  pressure Pressure @default(FIRM)
+
+  /// Who takes their first question.
+  firstMasterId String?
+  firstMaster   Master? @relation(fields: [firstMasterId], references: [id])
+
+  /// "06:00" / "21:00", stored as local wall-clock strings and resolved
+  /// against Profile.timezone when notifications are scheduled.
+  morningReminder String? @default("06:00")
+  eveningReminder String? @default("21:00")
+
+  /// Whether the user granted notification permission at the priming screen.
+  remindersEnabled Boolean @default(false)
+
+  wounds OnboardingProfileWound[]
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([firstMasterId])
+  @@map("onboarding_profile")
+}
+
+model OnboardingProfileWound {
+  profileId String
+  profile   OnboardingProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  woundId   String
+  wound     Wound             @relation(fields: [woundId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, woundId])
+  @@index([woundId])
+  @@map("onboarding_profile_wound")
+}

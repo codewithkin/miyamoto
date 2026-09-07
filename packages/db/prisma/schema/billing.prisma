@@ -1,0 +1,82 @@
+/// Entitlement and the free counter.
+///
+/// RevenueCat is the source of truth for purchases; its webhooks write
+/// Subscription. The 3/day gate reads DailyUsage from our own database,
+/// never from the client — a counter the app could edit is not a counter.
+
+model Profile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// IANA zone, e.g. "Africa/Nairobi". Every "day" in the app — the free
+  /// counter, the streak, Day 29 — is resolved against this and nothing
+  /// else. Captured at sign-up from the device.
+  timezone String @default("UTC")
+
+  /// Shown in the header: "Morning, Kin".
+  displayName String?
+  avatarUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profile")
+}
+
+enum Plan {
+  FREE
+  MONTHLY
+  LIFETIME
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan Plan @default(FREE)
+
+  /// RevenueCat's app_user_id. We set this to the Better-Auth user id at
+  /// login, so there is no mapping table to keep in sync.
+  revenueCatUserId String? @unique
+
+  /// Whether the "pro" entitlement is currently active. The single flag
+  /// every gate reads.
+  entitlementActive Boolean @default(false)
+
+  /// Null for lifetime.
+  expiresAt DateTime?
+  willRenew Boolean   @default(false)
+
+  /// Raw store identifier, for support and debugging.
+  productId String?
+  /// "app_store" | "play_store".
+  store String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("subscription")
+}
+
+/// One row per user per local day. Free users get three questions.
+model DailyUsage {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The user's local date, YYYY-MM-DD, from Profile.timezone.
+  localDate String
+
+  questionCount Int @default(0)
+
+  /// Extra questions earned by watching an ad ("Watch an ad for +1").
+  bonusQuestions Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, localDate])
+  @@index([userId])
+  @@map("daily_usage")
+}
