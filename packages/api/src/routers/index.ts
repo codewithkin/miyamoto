@@ -2,6 +2,7 @@ import { protectedProcedure, publicProcedure, router } from "../index";
 import { chatRouter } from "./chat";
 import { libraryRouter } from "./library";
 import { pathRouter } from "./path";
+import { supportRouter } from "./support";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -16,5 +17,6 @@ export const appRouter = router({
   chat: chatRouter,
   path: pathRouter,
   library: libraryRouter,
+  support: supportRouter,
 });
 export type AppRouter = typeof appRouter;
