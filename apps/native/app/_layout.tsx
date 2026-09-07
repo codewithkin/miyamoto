@@ -7,15 +7,17 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AppThemeProvider } from "@/contexts/app-theme-context";
+import { OnboardingProvider } from "@/lib/onboarding-store";
 import { queryClient } from "@/utils/trpc";
 
 export const unstable_settings = {
-  initialRouteName: "(drawer)",
+  initialRouteName: "(onboarding)",
 };
 
 function StackLayout() {
   return (
     <Stack screenOptions={{}}>
+      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ title: "Modal", presentation: "modal" }} />
     </Stack>
@@ -29,7 +31,9 @@ export default function Layout() {
         <KeyboardProvider>
           <AppThemeProvider>
             <HeroUINativeProvider>
-              <StackLayout />
+              <OnboardingProvider>
+                <StackLayout />
+              </OnboardingProvider>
             </HeroUINativeProvider>
           </AppThemeProvider>
         </KeyboardProvider>
