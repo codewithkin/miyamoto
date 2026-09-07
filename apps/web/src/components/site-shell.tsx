@@ -13,7 +13,7 @@ const NAV = [
   { href: "/#how", label: "How it works" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/support", label: "Support" },
-];
+] as const;
 
 export function SiteHeader() {
   return (
@@ -100,10 +100,15 @@ const FOOTER = [
     links: [
       { href: "/support", label: "Support" },
       { href: "/delete-account", label: "Delete your account" },
-      { href: "mailto:support@miyamoto.app", label: "support@miyamoto.app" },
     ],
   },
-];
+] as const;
+
+const footerLinkStyle: React.CSSProperties = {
+  color: "var(--text-muted)",
+  textDecoration: "none",
+  fontSize: 14,
+};
 
 export function SiteFooter() {
   return (
@@ -155,14 +160,15 @@ export function SiteFooter() {
               {col.title}
             </span>
             {col.links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: 14 }}
-              >
+              <Link key={l.href} href={l.href} style={footerLinkStyle}>
                 {l.label}
               </Link>
             ))}
+            {col.title === "Help" ? (
+              <a href="mailto:support@miyamoto.app" style={footerLinkStyle}>
+                support@miyamoto.app
+              </a>
+            ) : null}
           </div>
         ))}
       </div>
