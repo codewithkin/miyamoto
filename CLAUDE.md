@@ -14,6 +14,14 @@ A good split is usually: schema → server logic → API surface → client data
 
 Write the todo list out before starting, and confirm it if the feature is large enough that the split is debatable.
 
+## Rule: decide, don't ask
+
+Don't stop work to ask which approach to take. Pick the one you'd recommend, implement it, and collect the calls you made into a short **Decisions** list at the end of the response so they can be reversed cheaply.
+
+Never hand over a bare problem. Every issue you raise comes with the fix you propose — and where you can, the fix that makes the problem worth having found.
+
+Reserve real questions for choices that are genuinely the user's: money, legal exposure, product scope, or anything a wrong guess makes expensive to undo.
+
 ## Stack
 
 Turborepo + pnpm workspaces, Bun runtime.
