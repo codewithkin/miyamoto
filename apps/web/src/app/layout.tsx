@@ -53,11 +53,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${mincho.variable} ${dmSans.variable} ${barlow.variable}`}
-        style={{ margin: 0 }}
-      >
+    // The font variables go on <html>, not <body>: tokens.css reads them
+    // from :root, and a custom property defined on body is invisible there.
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${mincho.variable} ${dmSans.variable} ${barlow.variable}`}
+    >
+      <body style={{ margin: 0 }}>
         <Providers>{children}</Providers>
       </body>
     </html>
