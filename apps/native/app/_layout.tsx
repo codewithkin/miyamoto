@@ -30,6 +30,9 @@ function StackLayout() {
       <Stack.Screen name="(app)" />
       <Stack.Screen name="story/[slug]" />
       <Stack.Screen name="masters" />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="export-data" />
+      <Stack.Screen name="delete-account" />
       {/* The paywall rises from the bottom — it interrupts, it does not
           continue the journey sideways. */}
       <Stack.Screen name="paywall" options={{ presentation: "modal", animation: "slide_from_bottom" }} />

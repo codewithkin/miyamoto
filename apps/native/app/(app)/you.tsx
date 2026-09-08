@@ -102,6 +102,9 @@ export default function YouScreen() {
             />
           </Enter>
           <Enter preset="slideLeft">
+            <Row label="Settings" onPress={() => router.push("/settings")} />
+          </Enter>
+          <Enter preset="slideLeft">
             <Row
               label="Sign out"
               onPress={async () => {
