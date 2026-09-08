@@ -26,10 +26,13 @@ export const env = createEnv({
     // changing its id alone.
     OPENROUTER_API_KEY: z.string().min(1).optional(),
 
-    // Transactional mail. Optional so the server boots without it; the
-    // deletion route reports honestly when it is absent rather than
-    // claiming to have sent something.
-    RESEND_API_KEY: z.string().min(1).optional(),
+    // Transactional mail over SMTP. Optional so the server boots without
+    // it; sendMail logs and swallows when it is absent.
+    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_PORT: z.coerce.number().int().positive().optional(),
+    SMTP_USER: z.string().min(1).optional(),
+    SMTP_PASS: z.string().min(1).optional(),
+    SMTP_FROM: z.string().min(1).optional(),
     /** Public site origin, used to build links in emails. */
     WEB_URL: z.url().optional(),
   },

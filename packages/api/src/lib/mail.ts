@@ -1,54 +1,91 @@
 import { env } from "@miyamoto/env/server";
+import nodemailer, { type Transporter } from "nodemailer";
 
 /**
- * Transactional mail.
+ * Transactional mail, over SMTP.
  *
- * Sent through Resend's REST API directly rather than through its SDK — one
- * fetch, no dependency, and nothing to keep in step with a client library
- * for the two messages this app sends.
+ * `sendMail` never throws and never reports failure to the caller. A bad
+ * credential, an unreachable host or a rejected recipient is logged with
+ * enough detail to diagnose from deployment logs, and the caller carries on
+ * as though the message went out.
  *
- * Without RESEND_API_KEY nothing is sent and `sendMail` says so in its
- * return value. Callers must not report success on the strength of having
- * called this: a deletion page that claims an email is on its way when no
- * provider is configured is worse than one that admits it.
+ * That is deliberate. The one route that sends mail is account deletion,
+ * where the response must look identical whether or not the address has an
+ * account — otherwise the page becomes a way to test which emails are
+ * registered. Branching the reply on delivery success would leak exactly
+ * that, because delivery is only ever attempted for addresses that exist.
+ *
+ * The cost is that a user whose email silently failed is left waiting, so
+ * the copy on both surfaces names privacy@miyamoto.app as the fallback for
+ * anyone whose link never arrives.
  */
 
-export type MailResult =
-  | { sent: true }
-  | { sent: false; reason: "NOT_CONFIGURED" | "FAILED"; detail?: string };
+let transporter: Transporter | null = null;
 
-const FROM = "Miyamoto <no-reply@miyamoto.app>";
+function getTransporter(): Transporter | null {
+  if (transporter) return transporter;
+  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) return null;
 
+  transporter = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT ?? 587,
+    // 465 is implicit TLS; everything else upgrades with STARTTLS.
+    secure: (env.SMTP_PORT ?? 587) === 465,
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+  });
+
+  return transporter;
+}
+
+const FROM = () => env.SMTP_FROM ?? "Miyamoto <no-reply@miyamoto.app>";
+
+/**
+ * Sends a message. Always resolves.
+ *
+ * Failures are logged under [mail] and swallowed — see the note above for
+ * why the caller is not told.
+ */
 export async function sendMail(opts: {
   to: string;
   subject: string;
   text: string;
-}): Promise<MailResult> {
-  if (!env.RESEND_API_KEY) {
-    return { sent: false, reason: "NOT_CONFIGURED" };
+}): Promise<void> {
+  const tx = getTransporter();
+
+  if (!tx) {
+    console.error(
+      "[mail] not sent: SMTP is not configured (need SMTP_HOST, SMTP_USER, SMTP_PASS)",
+      { to: opts.to, subject: opts.subject },
+    );
+    return;
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: FROM,
-        to: [opts.to],
-        subject: opts.subject,
-        text: opts.text,
-      }),
+    const info = await tx.sendMail({
+      from: FROM(),
+      to: opts.to,
+      subject: opts.subject,
+      text: opts.text,
     });
 
-    if (!res.ok) {
-      return { sent: false, reason: "FAILED", detail: `HTTP ${res.status}` };
+    // A 2xx from the server is not the same as a delivered message: a
+    // recipient can be accepted at the envelope and rejected afterwards.
+    if (info.rejected?.length) {
+      console.error("[mail] recipient rejected", {
+        to: opts.to,
+        rejected: info.rejected,
+        response: info.response,
+      });
+      return;
     }
-    return { sent: true };
+
+    console.info("[mail] sent", { to: opts.to, subject: opts.subject, id: info.messageId });
   } catch (e) {
-    return { sent: false, reason: "FAILED", detail: e instanceof Error ? e.message : undefined };
+    console.error("[mail] send failed", {
+      to: opts.to,
+      subject: opts.subject,
+      error: e instanceof Error ? `${e.name}: ${e.message}` : String(e),
+    });
   }
 }
 
@@ -56,10 +93,12 @@ export async function sendMail(opts: {
  * The deletion confirmation.
  *
  * Plain text on purpose. It is a destructive, time-limited link, and the
- * fewer places it can be mangled or re-rendered by a client, the better.
+ * fewer places it can be mangled or re-rendered by a mail client, the
+ * better.
  */
 export function deletionEmail(token: string) {
-  const url = `${env.WEB_URL ?? "https://miyamoto.app"}/delete-account/confirm?token=${token}`;
+  const base = env.WEB_URL ?? "https://miyamoto.app";
+  const url = `${base}/delete-account/confirm?token=${token}`;
 
   return {
     subject: "Confirm you want your Miyamoto account deleted",
