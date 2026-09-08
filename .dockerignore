@@ -30,3 +30,12 @@ docker-compose.yml
 local.db
 local.db-*
 .data
+
+# Design source files: 26MB of standalone HTML that no image needs. The tokens
+# extracted from them are already in source.
+designs/
+
+# expo prebuild output. Native build artefacts, regenerated on demand, and
+# large enough to dominate the build context if they leak in.
+apps/native/android/
+apps/native/ios/
