@@ -5,7 +5,9 @@ import { consumeQuestion, getUsage } from "@miyamoto/api/lib/usage";
 import { auth } from "@miyamoto/auth";
 import type { Hono } from "hono";
 
-import { getMasterAgent } from "../mastra";
+import { getMasterAgent, INSTRUCTIONS_KEY } from "../mastra";
+import { retrieveContext } from "../mastra/retrieval";
+import { compileInstructions } from "../mastra/template";
 
 /**
  * The chat endpoint.
@@ -18,34 +20,6 @@ import { getMasterAgent } from "../mastra";
  * Checking the counter after generating would let anyone with a rewritten
  * client take unlimited answers and only fail on the bookkeeping.
  */
-
-/** Cheap lexical retrieval over the authored corpus. */
-async function retrieveMoments(masterId: string, text: string, limit = 4) {
-  const moments = await db.moment.findMany({
-    where: { masterId },
-    select: { title: true, body: true, lesson: true, themes: true, weight: true },
-  });
-
-  const words = new Set(
-    text
-      .toLowerCase()
-      .split(/[^a-z]+/)
-      .filter((w) => w.length > 3),
-  );
-
-  return moments
-    .map((m) => {
-      const hits = m.themes.reduce(
-        (n, theme) =>
-          n + (theme.split("-").some((part) => words.has(part.toLowerCase())) ? 1 : 0),
-        0,
-      );
-      return { m, score: hits * 10 + m.weight };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(({ m }) => ({ title: m.title, body: m.body, lesson: m.lesson }));
-}
 
 export function registerAiRoute(app: Hono) {
   app.post("/ai", async (c) => {
@@ -87,17 +61,25 @@ export function registerAiRoute(app: Hono) {
             .map((p: { text: string }) => p.text)
             .join(" ");
 
-    const moments = await retrieveMoments(thread.masterId, latestText ?? "");
+    // Identity, corpus and quotations all come from the database; the
+    // prompt is compiled here rather than baked into the agent.
+    const context = await retrieveContext(thread.master.slug, latestText ?? "");
+    if (!context) {
+      // Unknown or withdrawn Master. Refusing beats falling back to a
+      // generic voice with no corpus behind it.
+      return c.json({ error: "MASTER_UNAVAILABLE" }, 409);
+    }
 
     const agent = getMasterAgent(thread.master.slug);
 
     // Mastra owns the history: passing the thread id means a Master who has
     // just been switched in reads everything that came before, which is the
     // whole promise of switching without losing the thread.
-    // Moments reach the agent's dynamic instructions through the request
-    // context, so one agent per Master can answer any problem.
     const requestContext = new RequestContext();
-    requestContext.setRaw("moments", moments);
+    requestContext.setRaw(
+      INSTRUCTIONS_KEY,
+      compileInstructions(context.master, context.corpus, context.quotations),
+    );
 
     const result = await agent.stream(latestText ?? "", {
       memory: {
