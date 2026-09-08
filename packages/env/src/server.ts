@@ -25,6 +25,13 @@ export const env = createEnv({
     // covers every model and lets a Master be moved to another provider by
     // changing its id alone.
     OPENROUTER_API_KEY: z.string().min(1).optional(),
+
+    // Transactional mail. Optional so the server boots without it; the
+    // deletion route reports honestly when it is absent rather than
+    // claiming to have sent something.
+    RESEND_API_KEY: z.string().min(1).optional(),
+    /** Public site origin, used to build links in emails. */
+    WEB_URL: z.url().optional(),
   },
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
