@@ -22,6 +22,22 @@ Never hand over a bare problem. Every issue you raise comes with the fix you pro
 
 Reserve real questions for choices that are genuinely the user's: money, legal exposure, product scope, or anything a wrong guess makes expensive to undo.
 
+## Rule: destructive actions before launch
+
+Until the user says we have launched, destructive actions in dev **and**
+prod are authorised without asking — resetting the database, dropping
+tables, force-pushing seed data. A live site with no marketing has no
+users, and treating a pre-launch database as precious slows the build for
+nothing.
+
+The one obligation is to **say so, loudly and at the time**. Anything that
+destroys data gets called out in the response that does it — not buried in
+a commit message. The failure this prevents is the user hitting an empty
+app days later and reporting a bug that was actually a reset they were
+never told about.
+
+This reverses the day the user says marketing has started.
+
 ## Stack
 
 Turborepo + pnpm workspaces, Bun runtime.
