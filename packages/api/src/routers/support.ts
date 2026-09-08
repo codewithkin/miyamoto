@@ -2,6 +2,7 @@ import db from "@miyamoto/db";
 import { z } from "zod";
 
 import { publicProcedure, router } from "../index";
+import { deletionEmail, sendMail } from "../lib/mail";
 
 /**
  * Support and account deletion.
@@ -58,6 +59,8 @@ export const supportRouter = router({
         select: { id: true },
       });
 
+      let mailConfigured = true;
+
       if (user) {
         const token = crypto.randomUUID().replace(/-/g, "");
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -66,16 +69,26 @@ export const supportRouter = router({
           data: { email: input.email, userId: user.id, token, expiresAt },
         });
 
-        // TODO: send the confirmation email. Until a mail provider is
-        // configured the row exists and can be actioned by hand, which is
-        // honest — the alternative is a page that claims to have sent
-        // something it did not.
+        const mail = deletionEmail(token);
+        const result = await sendMail({ to: input.email, ...mail });
+
+        // A delivery failure must not be reported as success — the row
+        // still exists and can be actioned by hand, but the page has to
+        // say so rather than send the user off to wait for nothing.
+        if (!result.sent) {
+          mailConfigured = false;
+          console.error("[deletion] mail not sent:", result.reason, result.detail ?? "");
+        }
       }
 
+      // When mail is unavailable the wording changes, but it still reveals
+      // nothing about whether the address has an account.
       return {
         sent: true as const,
-        message:
-          "If that address has an account, a confirmation link is on its way. It expires in 24 hours.",
+        mailConfigured,
+        message: mailConfigured
+          ? "If that address has an account, a confirmation link is on its way. It expires in 24 hours."
+          : "We've logged the request. Our mail isn't sending right now, so email privacy@miyamoto.app from this address and we'll finish it by hand within two business days.",
       };
     }),
 
