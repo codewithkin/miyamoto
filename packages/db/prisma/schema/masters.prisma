@@ -1,9 +1,40 @@
-/// The five Masters and the authored corpus they speak from.
+/// The five Masters, the corpus they speak from, and the constraints that
+/// keep them honest.
 ///
-/// A Master never invents biography. Everything they claim about their own
-/// life comes from a Moment row, written by us and checked against a source.
-/// The model's job is to choose the matching Moment and render it in voice —
-/// not to recall history it may have wrong.
+/// The governing idea: a Master is data. The law that binds all of them is
+/// shared code, and the model's only job is rendering. If a Master's whole
+/// identity cannot be expressed as a row plus a corpus, the template has
+/// failed and adding a sixth will mean writing another essay.
+
+/// Whether a corpus entry makes a claim about the Master's life.
+enum MomentKind {
+  /// Something that happened to them. Carries a biographical claim and
+  /// therefore needs a source and a confidence tier.
+  MOMENT
+  /// A position they held, with no claim about events. Always available,
+  /// which is what stops an unmatched question leaving a Master with
+  /// nothing to stand on — the state where models invent.
+  PRINCIPLE
+}
+
+/// How well attested a biographical claim is.
+///
+/// The five Masters are not equally documented and the schema must not
+/// pretend otherwise: Seneca's letters are extant text, Musashi's duels come
+/// largely from an account written some 130 years after his death, and Sun
+/// Tzu may not have been one person. This tier drives both retrieval weight
+/// and how the Master is permitted to phrase the claim.
+enum Confidence {
+  /// Primary source, usually the Master's own writing. State plainly.
+  DOCUMENTED
+  /// Contemporary or near-contemporary record. State plainly.
+  ATTESTED
+  /// Later or hagiographic account. Tell it as inherited, never as a
+  /// first-hand certainty.
+  TRADITIONAL
+  /// Contested by historians. Retrieved last and hedged, or not at all.
+  DISPUTED
+}
 
 model Master {
   id   String @id @default(cuid())
@@ -13,15 +44,43 @@ model Master {
   name String
   /// "The Strategist", "The Stoic".
   title String
-  /// Short voice descriptor shown under the name: "blunt, tactical".
-  tone  String
-  /// One line on how they write, shown when picking a Master.
-  manner String
   /// "Duelist · 1584–1645".
-  era    String
+  era   String
 
   /// Topics this Master is offered for: ["Career", "Fear", "Rivals"].
   domains String[]
+
+  // ── Voice, as fields rather than prose ──────────────────────────────
+  //
+  // Authoring this as a paragraph reads well and cannot be tested. Broken
+  // out, a drifting Master is a diff rather than a feeling, and a sixth
+  // Master is a row rather than an essay.
+
+  /// One line for the picker: "blunt, tactical".
+  tone String
+  /// One line on how they write, shown when choosing: "Writes in short
+  /// cold lines. Never asks how you feel."
+  manner String
+
+  /// The register in a sentence: "cold, declarative, contemptuous of
+  /// excuses but never of the person".
+  register String
+  /// Concrete sentence mechanics: "Subject, verb, object. Rarely over
+  /// twelve words. No subordinate clauses."
+  syntax String
+  /// Grammatical stance: "first person, addresses the reader as 'you'".
+  person String
+  /// The one thing this Master always does to a problem — the move that
+  /// makes them distinguishable from a generic wise man.
+  characteristicMove String
+  /// A short sample of real cadence, for the model to match rather than
+  /// approximate from the description.
+  cadenceSample String
+
+  /// What this Master must never do. The strongest guardrail in the file:
+  /// the failure mode in practice is not invented history, it is all five
+  /// collapsing into the same sage.
+  neverDo String[]
 
   /// Hex accent used for this Master's chrome in chat.
   accentColor String
@@ -29,31 +88,50 @@ model Master {
   /// Day of the Path on which this Master unlocks. Null means available
   /// from Day 1. Pro skips every wait.
   unlockDay Int?
-  /// Locked behind Pro regardless of Path progress (Sun Tzu).
+  /// Locked behind Pro regardless of Path progress.
   proOnly   Boolean @default(false)
+
+  /// Hides a Master everywhere without deleting them or their corpus.
+  /// Used where personality or image rights make a figure not worth the
+  /// exposure — see rightsNote.
+  active Boolean @default(true)
+
+  /// Why this figure is or isn't safe to voice: how long dead, whether an
+  /// estate actively enforces. Recorded per Master so a sixth gets
+  /// assessed before being written rather than after being shipped.
+  rightsNote String?
 
   sortOrder Int @default(0)
 
-  moments   Moment[]
-  stories   AdversityStory[]
-  threads   Thread[]
-  charges   Charge[]
-  firstFor  OnboardingProfile[]
+  moments    Moment[]
+  quotations Quotation[]
+  stories    AdversityStory[]
+  threads    Thread[]
+  charges    Charge[]
+  firstFor   OnboardingProfile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([active, sortOrder])
   @@map("master")
 }
 
-/// One moment from a Master's real life, authored by us.
+/// One entry in a Master's corpus — either something that happened to them
+/// or a position they held.
 ///
-/// Retrieved by theme overlap with the user's problem, then rendered in the
-/// Master's voice. `sourceNote` exists so every claim stays traceable.
+/// This is the only place a Master may draw biography from. Anything a
+/// Master claims about their own life that is not here is a fabrication,
+/// and the generation path is built to make that visible rather than to
+/// hope it does not happen.
 model Moment {
   id       String @id @default(cuid())
   masterId String
   master   Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  kind       MomentKind @default(MOMENT)
+  /// Meaningless for PRINCIPLE entries, which claim nothing to attest.
+  confidence Confidence @default(ATTESTED)
 
   /// Internal label: "The Yoshioka school named a boy as their head".
   title String
@@ -65,15 +143,53 @@ model Moment {
   /// Themes used for matching: ["rigged-contest", "humiliation", "rivals"].
   themes String[]
 
-  /// Where this comes from, so the claim can be checked.
-  sourceNote String?
+  /// The work and locus this comes from: "Go Rin No Sho, Book of Earth".
+  /// Required in practice for anything above TRADITIONAL.
+  sourceCitation String?
+  /// Prose gloss on the source, including what is contested about it.
+  sourceNote     String?
 
-  /// Higher wins when several moments match equally well.
+  /// Higher wins when several entries match equally well.
   weight Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([masterId])
+  @@index([masterId, kind])
   @@map("moment")
+}
+
+/// A verified line a Master may quote verbatim.
+///
+/// Forbidding quotation entirely makes the product weaker — "We suffer more
+/// often in imagination than in reality" is *the* Seneca line. Letting the
+/// model quote from memory guarantees eventual misattribution, which is the
+/// most embarrassing failure available to an app whose whole promise is that
+/// these are real people.
+///
+/// So: quotation is allowed, and only from here.
+model Quotation {
+  id       String @id @default(cuid())
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  /// The line, in the translation we ship. Exact.
+  text String
+  /// "Epistulae Morales ad Lucilium".
+  sourceWork String
+  /// "Letter 13" / "Book of Water" / "Chapter III".
+  sourceLocus String?
+  /// Named where the wording is contested or the rendering is ours.
+  translationNote String?
+
+  confidence Confidence @default(DOCUMENTED)
+
+  /// Matched the same way Moments are.
+  themes String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([masterId])
+  @@map("quotation")
 }
