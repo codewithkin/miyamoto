@@ -1,4 +1,5 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+import { accountRouter } from "./account";
 import { chatRouter } from "./chat";
 import { libraryRouter } from "./library";
 import { pathRouter } from "./path";
@@ -18,5 +19,6 @@ export const appRouter = router({
   path: pathRouter,
   library: libraryRouter,
   support: supportRouter,
+  account: accountRouter,
 });
 export type AppRouter = typeof appRouter;
