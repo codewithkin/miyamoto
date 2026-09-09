@@ -1,0 +1,45 @@
+# Line endings.
+#
+# This project is written on Windows and built in Linux containers, and
+# without this every commit warns that LF will be replaced by CRLF. Left
+# alone long enough it produces a diff of thousands of lines that changes
+# nothing, usually at the worst moment.
+#
+# Normalise to LF in the repository; git checks out whatever the platform
+# wants.
+* text=auto eol=lf
+
+# Shell scripts must stay LF even on Windows checkouts, or they fail in the
+# container with a bad interpreter error that names the wrong cause.
+*.sh text eol=lf
+*.bash text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+
+# Explicitly binary. Marking these stops git trying to normalise them, which
+# corrupts the file silently.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.icns binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.zip binary
+*.gz binary
+*.jar binary
+*.keystore binary
+*.pdf binary
+
+# Generated. Collapsed in diffs and excluded from language statistics, so a
+# lockfile change does not bury the review.
+pnpm-lock.yaml linguist-generated=true -diff
+packages/db/prisma/generated/** linguist-generated=true -diff
