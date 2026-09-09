@@ -168,10 +168,10 @@ notes do not survive a clone.
 1. **Re-seed the corpus** — `plans/01-master-corpus.md` T04–T08. Chat is down.
 2. **Withdraw Mandela** — T08–T10.
 3. **Citation enforcement** — T11. Interacts with streaming; read the note.
-4. **Persist the onboarding draft** — `plans/04`. Users lose their quiz today.
-5. **The app icon** — `plans/05` T01. Currently copyrighted *Vagabond*
+4. **Persist the onboarding draft** — `plans/04-onboarding-claim.md`. Users lose their quiz today.
+5. **The app icon** — `plans/05-launch-readiness.md` T01. Currently copyrighted *Vagabond*
    artwork. Owner's call to commission.
-6. **A device pass** — `plans/05` T04.
+6. **A device pass** — `plans/05-launch-readiness.md` T04.
 
 ## Waiting on the owner
 

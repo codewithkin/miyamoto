@@ -65,7 +65,7 @@ becoming a lecture about his own era.
 **My own view, recorded because it is a bet:** the likelier failure is not
 fabrication but collapse — all Masters drifting into the same patient sage
 (D-013). It degrades quietly and no single reply looks wrong. `neverDo` and
-`characteristicMove` exist for it, and `plans/01` T12 is the only check that
+`characteristicMove` exist for it, and `plans/01-master-corpus.md` T12 is the only check that
 would catch it.
 
 ### The marketing site

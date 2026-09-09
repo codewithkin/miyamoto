@@ -52,7 +52,7 @@ what was written down.
 - **Announce destructive actions in the response that performs them** (D-028),
   not only in a commit message.
 - **Leave a Done-when unticked if you cannot honestly verify it,** and say
-  why. Half the Done-whens in `plans/05` say "on a device" and nothing here
+  why. Half the Done-whens in `plans/05-launch-readiness.md` say "on a device" and nothing here
   has ever run on one.
 - **A stub with a TODO is worse than an absence.** The next agent has to work
   out whether it is real.
