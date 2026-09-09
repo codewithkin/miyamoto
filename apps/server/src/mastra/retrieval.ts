@@ -77,16 +77,31 @@ export async function retrieveContext(
       // Principles sit at a low floor so they are always available without
       // crowding out a moment that actually matches.
       const base = e.kind === "PRINCIPLE" ? 1 : 0;
-      return { e, score: base + hits * 10 + bias + e.weight };
+      return { e, hits, score: base + hits * 10 + bias + e.weight };
     })
     .sort((a, b) => b.score - a.score);
 
-  const picked = scored.slice(0, limit).map(({ e }) => e);
+  // D-008 asks that a DISPUTED entry out-match everything else before it is
+  // offered at all. The -8 bias alone does not deliver that: it only changes
+  // the order, and a Master with no more entries than `limit` has every
+  // entry returned regardless of score. Sun Tzu has four and the limit is
+  // four, so his one contested claim came back for a question made of
+  // nonsense words. Eligibility has to be a filter, not a ranking.
+  const bestOther = Math.max(
+    0,
+    ...scored.filter(({ e }) => e.confidence !== "DISPUTED").map(({ score }) => score),
+  );
+  const eligible = scored.filter(({ e, hits, score }) => {
+    if (e.kind === "PRINCIPLE" || e.confidence !== "DISPUTED") return true;
+    return hits > 0 && score >= bestOther;
+  });
+
+  const picked = eligible.slice(0, limit).map(({ e }) => e);
 
   // Always carry at least one principle, even if nothing matched — the
   // Master must never be handed an empty corpus.
   if (!picked.some((e) => e.kind === "PRINCIPLE")) {
-    const principle = scored.find(({ e }) => e.kind === "PRINCIPLE");
+    const principle = eligible.find(({ e }) => e.kind === "PRINCIPLE");
     if (principle) picked.push(principle.e);
   }
 
