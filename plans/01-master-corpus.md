@@ -91,6 +91,25 @@ D-007 to D-013.
   rendering. An app whose promise is that these were real people cannot be
   caught misquoting them (D-010).
 
+## T07a — A DISPUTED entry must be earned, not merely ranked last
+
+- [ ] `pending-T07a`
+- **Commit:** `fix(server): stop DISPUTED entries riding along on a short corpus`
+- **Depends on:** T05
+- **Touches:** `apps/server/src/mastra/retrieval.ts`
+- **Note (session 2):** not in the original plan. Found while verifying T06
+  against the real retrieval path, and added here before being fixed.
+- **The bug:** `CONFIDENCE_BIAS` gives `DISPUTED` −8, but retrieval then
+  takes `scored.slice(0, limit)`. Where a Master has no more entries than
+  the limit, *everything* is returned and the bias only reorders it. Sun Tzu
+  has four entries and the limit is four, so his `DISPUTED` Boju claim was
+  returned for the nonsense question `"Zqxwv plimth garnok yulbrat"`.
+  Ranking was doing the work D-008 asks eligibility to do.
+- **Done when:** a `DISPUTED` entry is returned only if it matched at least
+  one theme *and* scored at or above the best non-disputed entry — and the
+  nonsense question no longer returns Boju while a question about
+  credit and reputation still does.
+
 ## T08 — Reassign Mandela's stories, deactivate him
 
 - [ ] `pending-T08`
