@@ -44,8 +44,35 @@ function assertDistinctMoves() {
   }
 }
 
+/**
+ * Every biographical claim is tiered and cites a work (D-007, D-008).
+ *
+ * The defaults in the seed writer are the reason this has to exist: an
+ * entry with no confidence silently becomes ATTESTED, which is the tier
+ * that lets a Master state a thing as plain fact. A legend that forgot its
+ * tier would therefore be spoken with more certainty than a letter Seneca
+ * demonstrably wrote — the exact failure D-008 was written against, arriving
+ * by omission rather than by decision.
+ */
+function assertCorpusIsAttested() {
+  const problems: string[] = [];
+
+  for (const m of MASTERS) {
+    for (const mo of m.moments) {
+      if ((mo.kind ?? "MOMENT") !== "MOMENT") continue;
+      if (!mo.confidence) problems.push(`${m.slug} / "${mo.title}" has no confidence tier`);
+      if (!mo.sourceCitation) problems.push(`${m.slug} / "${mo.title}" cites no work`);
+    }
+  }
+
+  if (problems.length) {
+    throw new Error(`Corpus makes unattested claims (D-008):\n  ${problems.join("\n  ")}`);
+  }
+}
+
 async function seedMasters() {
   assertDistinctMoves();
+  assertCorpusIsAttested();
 
   for (const m of MASTERS) {
     // Voice fields and the corpus are the whole Master; there is no
@@ -83,10 +110,15 @@ async function seedMasters() {
     await db.moment.createMany({
       data: m.moments.map((mo) => ({
         masterId: master.id,
+        kind: mo.kind ?? "MOMENT",
+        // Inert on a PRINCIPLE, which claims nothing to attest. Retrieval
+        // and the compiler both branch on kind before reading it.
+        confidence: mo.confidence ?? "ATTESTED",
         title: mo.title,
         body: mo.body,
         lesson: mo.lesson,
         themes: mo.themes,
+        sourceCitation: mo.sourceCitation ?? null,
         sourceNote: mo.sourceNote,
         weight: mo.weight ?? 0,
       })),

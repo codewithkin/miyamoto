@@ -6,11 +6,25 @@
  * history — if it is not here, they do not claim it.
  */
 
+/** Mirrors the Prisma enum; the seed must not import generated types. */
+export type Confidence = "DOCUMENTED" | "ATTESTED" | "TRADITIONAL" | "DISPUTED";
+
 export type MomentSeed = {
+  /** Defaults to MOMENT. A PRINCIPLE makes no claim about the Master's life. */
+  kind?: "MOMENT" | "PRINCIPLE";
+  /**
+   * Required on a MOMENT and inert on a PRINCIPLE, which has nothing to
+   * attest. Enforced at seed time rather than trusted — see
+   * assertCorpusIsAttested in ./index.ts.
+   */
+  confidence?: Confidence;
   title: string;
   body: string;
   lesson: string;
   themes: string[];
+  /** The work and locus. Required on a MOMENT: "Go Rin No Sho, Book of Earth". */
+  sourceCitation?: string;
+  /** Prose gloss on the source, including what is contested about it. */
   sourceNote: string;
   weight?: number;
 };
@@ -93,7 +107,10 @@ Send it before you eat.
         lesson:
           "A rigged contest is information, not a verdict. Stop appealing to the judges and change the ground you fight on.",
         themes: ["rigged", "unfair", "promotion", "passed", "career", "rivals", "humiliation"],
-        sourceNote: "The Yoshioka duels, Kyoto, c. 1604 — Nitenki and Go Rin No Sho.",
+        confidence: "TRADITIONAL",
+        sourceCitation: "Nitenki (1776), the Yoshioka episodes",
+        sourceNote:
+          "Musashi names no opponent anywhere in Go Rin No Sho and gives no account of these duels. Every specific here — the boy set up as head of the school, the early arrival, the escape through the fields — comes from the Nitenki and the related Kokura-lineage accounts, written some 130 years after his death and written to praise him.",
         weight: 3,
       },
       {
@@ -102,7 +119,10 @@ Send it before you eat.
         lesson:
           "You are not fighting the whole thing. You are fighting whichever part of it you have allowed to reach you at once.",
         themes: ["overwhelmed", "scared", "conversation", "afraid", "anxiety", "email", "confrontation"],
-        sourceNote: "The Ichijōji Sagarimatsu engagement, c. 1604.",
+        confidence: "TRADITIONAL",
+        sourceCitation: "Nitenki (1776), the Ichijōji Sagarimatsu engagement",
+        sourceNote:
+          "Same source family as the Yoshioka duels and the same distance from the events. The number of men facing him grows with each retelling, which is why the entry fixes on the narrow path and not on the count.",
         weight: 3,
       },
       {
@@ -111,7 +131,11 @@ Send it before you eat.
         lesson:
           "Most contests are decided by who is calm, not who is strongest. Do not let the other side choose your temperature.",
         themes: ["rival", "negotiation", "provoked", "angry", "boss", "conflict"],
-        sourceNote: "The duel with Sasaki Kojirō, Funajima, 1612.",
+        confidence: "TRADITIONAL",
+        sourceCitation:
+          "Kokura hibun (1654) records a duel with Ganryū; Nitenki (1776) supplies the lateness, the boat and the cut-down oar",
+        sourceNote:
+          "The monument raised by his adopted son nine years after his death records only that he fought and beat a man called Ganryū. Everything the story is actually loved for — arriving hours late, carving the oar in the boat, the deliberate provocation — appears more than a century later.",
         weight: 2,
       },
       {
@@ -120,7 +144,10 @@ Send it before you eat.
         lesson:
           "Repeating what worked is not skill. Skill is being able to say what it was.",
         themes: ["procrastination", "discipline", "habit", "stuck", "repeat", "growth"],
-        sourceNote: "Go Rin No Sho, opening passage, written 1643–45.",
+        confidence: "DOCUMENTED",
+        sourceCitation: "Go Rin No Sho, Book of Earth, opening passage (1643–45)",
+        sourceNote:
+          "His own writing, and the only entry in his corpus that is. He gives the count himself — over sixty duels between thirteen and twenty-nine, none lost — and then says plainly that at thirty he could not account for why he had won. The tier does the work here: on a question that matches this and a duel equally, this one wins by five points of confidence bias.",
         weight: 1,
       },
     ],
@@ -169,16 +196,23 @@ Write the reply tonight, badly, and send it before you have improved it.
         lesson:
           "You have already had this conversation forty times, badly, alone. The real one has one other person in it.",
         themes: ["scared", "conversation", "anxiety", "worry", "fear", "afraid", "dread"],
-        sourceNote: "Epistulae Morales ad Lucilium, Letter 13.",
+        confidence: "DOCUMENTED",
+        sourceCitation: "Epistulae Morales ad Lucilium, Letter 13",
+        sourceNote:
+          "His own extant text. The letter is the source of the line about imagination as well, which is why it also appears in the Quotation table rather than being reconstructed from here.",
         weight: 3,
       },
       {
         title: "Eight years of exile on Corsica",
-        body: "I was accused, condemned, and sent to Corsica for eight years. I had no part in what I was accused of. I learned there that a man who has decided what he will do with an ordinary day cannot be exiled from very much.",
+        body: "I was accused of adultery with the emperor's niece, condemned without much of a hearing, and sent to Corsica for eight years. I did not spend them appealing. I learned there that a man who has decided what he will do with an ordinary day cannot be exiled from very much.",
         lesson:
           "When circumstances are taken from you, the only remaining question is what you will do before dark. Answer that one.",
         themes: ["betrayal", "unfair", "injustice", "lied", "stuck", "trapped", "loss"],
-        sourceNote: "Seneca's exile to Corsica, 41–49 AD, under Claudius.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Cassius Dio, Roman History 60.8 (the charge and the exile); Seneca, Consolatio ad Helviam, written on Corsica",
+        sourceNote:
+          "The exile itself is securely recorded and he wrote from it. The charge — adultery with Julia Livilla — comes from Dio, and Seneca nowhere answers it directly. The body used to have him assert his innocence; it no longer does, because nothing in the record supports putting that sentence in his mouth.",
         weight: 2,
       },
       {
@@ -187,7 +221,10 @@ Write the reply tonight, badly, and send it before you have improved it.
         lesson:
           "Every decision you postpone will eventually be made for you, on someone else's schedule.",
         themes: ["procrastination", "putting", "delay", "avoid", "deadline", "discipline"],
-        sourceNote: "Seneca's forced suicide, 65 AD, recorded by Tacitus, Annals XV.",
+        confidence: "ATTESTED",
+        sourceCitation: "Tacitus, Annals XV.60–64",
+        sourceNote:
+          "Tacitus wrote some fifty years after, working from sources close to the household. The request to amend his will and its refusal are his detail, as is the dictation to friends in the last hour.",
         weight: 2,
       },
       {
@@ -196,7 +233,11 @@ Write the reply tonight, badly, and send it before you have improved it.
         lesson:
           "Decide now what you are without the thing you are afraid of losing. Then losing it is arithmetic, not identity.",
         themes: ["career", "money", "status", "job", "stall", "identity", "fired"],
-        sourceNote: "Tacitus and Dio on Seneca's wealth; De Vita Beata, his own reply.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Cassius Dio, Roman History 61.10 (the figure); Seneca, De Vita Beata 17–18 (his answer to the charge)",
+        sourceNote:
+          "The three hundred million sesterces is Dio's number and hostile. The reply is Seneca's own and unembarrassed — he never claimed to be a sage, only to be further along than the men mocking him. This is the entry that lets him take the hypocrisy charge head-on rather than avoiding it.",
         weight: 1,
       },
     ],
@@ -242,7 +283,10 @@ Decide today what one sentence you will say to him when you are next in the same
         lesson:
           "The first question belongs to them. Only the second belongs to you. Resentment is a thing you carry for someone who set it down long ago.",
         themes: ["betrayal", "lied", "trusted", "friend", "colleague", "conflict"],
-        sourceNote: "The Rivonia Trial, 1963–64.",
+        confidence: "ATTESTED",
+        sourceCitation: "The Rivonia Trial record, 1963–64; Long Walk to Freedom (1994)",
+        sourceNote:
+          "State witnesses drawn from the movement are in the trial record. The reflection on the two questions is from his own memoir, written thirty years later, and is his framing rather than a contemporaneous one.",
         weight: 3,
       },
       {
@@ -251,7 +295,10 @@ Decide today what one sentence you will say to him when you are next in the same
         lesson:
           "Time you did not choose is still time. The question is whether you spend it being owed something or being ready.",
         themes: ["stuck", "stall", "career", "waiting", "patience", "discipline", "endure"],
-        sourceNote: "Robben Island, 1964–1982; Long Walk to Freedom.",
+        confidence: "ATTESTED",
+        sourceCitation: "Long Walk to Freedom (1994), the Robben Island chapters",
+        sourceNote:
+          "The quarry years, the glare and the withheld sunglasses are his own account, corroborated by fellow prisoners. Learning Afrikaans on the island is likewise his.",
         weight: 2,
       },
       {
@@ -260,16 +307,24 @@ Decide today what one sentence you will say to him when you are next in the same
         lesson:
           "Someone has to go first, and it is usually not the person who feels most wronged. It is the person who has decided to stop waiting to be right.",
         themes: ["conflict", "conversation", "scared", "confrontation", "first", "apology"],
-        sourceNote: "Secret talks with the apartheid government from 1985.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Long Walk to Freedom (1994), on the talks opened from Pollsmoor in 1985",
+        sourceNote:
+          "He describes opening the contact himself, without a mandate, and the anger it caused inside his own organisation. Both halves are his account.",
         weight: 2,
       },
       {
         title: "I invited my jailer to the inauguration",
-        body: "When I became president I invited one of my former warders to sit among the guests. This was not sentiment and it was not forgiveness performed for a camera. It was the cheapest way I knew to tell an entire frightened country what the next years would be like.",
+        body: "When I became president I seated men who had guarded me among my personal guests. This was not sentiment and it was not forgiveness performed for a camera. It was the cheapest way I knew to tell an entire frightened country what the next years would be like.",
         lesson:
           "What you do with the person who wronged you is a signal to everyone watching. Choose it as strategy, not as feeling.",
         themes: ["betrayal", "forgiveness", "conflict", "reputation", "team", "lead"],
-        sourceNote: "Mandela's 1994 inauguration; he invited former warder Jack Swart.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Long Walk to Freedom (1994) and contemporary reporting of the inauguration, 10 May 1994",
+        sourceNote:
+          "That former warders were among his personal guests is well attested. Which warders, and in what capacity, is reported inconsistently — the popular retellings name different men — so the entry named one and now names none.",
         weight: 1,
       },
     ],
@@ -318,16 +373,24 @@ Tonight: one interval of twenty minutes, timed, with the telephone in a drawer. 
         lesson:
           "You are not avoiding the task. You are avoiding the twenty minutes in which it is the only thing in the room.",
         themes: ["procrastination", "putting", "focus", "discipline", "grind", "avoid", "stuck"],
-        sourceNote: "Isolation of radium chloride, 1902, at the École de Physique et de Chimie.",
+        confidence: "DOCUMENTED",
+        sourceCitation:
+          "Marie Curie, Pierre Curie (1923), on the shed years; radium chloride isolated 1902",
+        sourceNote:
+          "Her own account, and unusually exact in it: tonnes of pitchblende residue worked in a disused shed, one decigram of radium chloride at the end of it. The leaking roof is hers too, stated as a fact about the building.",
         weight: 3,
       },
       {
-        title: "I studied by candle and fainted from hunger",
-        body: "In Paris I lived in an attic on tea and bread so I could afford lectures. I fainted more than once. I do not offer this as suffering — I offer it as a controlled reduction of variables. I had removed everything from the room that was not the degree.",
+        title: "The attic, and what I removed from it",
+        body: "In Paris I lived in an attic on tea and bread so that I could pay for lectures. In winter I wore everything I owned in bed. I do not offer this as suffering — I offer it as a controlled reduction of variables. I had removed from the room everything that was not the degree.",
         lesson:
           "Discipline is not force of will. It is the removal of options, done in advance, while you are still calm.",
         themes: ["discipline", "no discipline", "focus", "habit", "distraction", "phone"],
-        sourceNote: "Curie's student years at the Sorbonne, 1891–1894.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Marie Curie, Autobiographical Notes (in Pierre Curie, 1923), the Sorbonne years 1891–94",
+        sourceNote:
+          "The garret, the cold and the diet are her own. The fainting from hunger usually told alongside this comes from Ève Curie's 1937 biography, not from Marie, and has been cut from the body — it is the single most quoted detail of her student years and it is not hers.",
         weight: 2,
       },
       {
@@ -336,7 +399,11 @@ Tonight: one interval of twenty minutes, timed, with the telephone in a drawer. 
         lesson:
           "When a body has told you what it values, believe it, and stop submitting to it. Spend the effort where the result is measured.",
         themes: ["rejected", "passed", "promotion", "career", "unfair", "rigged", "stall"],
-        sourceNote: "Rejected by the Académie des Sciences, January 1911; second Nobel, December 1911.",
+        confidence: "ATTESTED",
+        sourceCitation:
+          "Académie des Sciences ballot, 23 January 1911 (Branly 30, Curie 28); Nobel Prize in Chemistry, December 1911",
+        sourceNote:
+          "The margin was two votes and the press campaign about her foreignness ran alongside it. That she never stood again is a matter of the Academy's own record; the Academy did not admit a woman until 1962.",
         weight: 2,
       },
       {
@@ -345,7 +412,10 @@ Tonight: one interval of twenty minutes, timed, with the telephone in a drawer. 
         lesson:
           "If the thing needs doing and no one is doing it, your lack of qualification is the least interesting fact in the room.",
         themes: ["stuck", "waiting", "permission", "start", "begin", "career"],
-        sourceNote: "The 'petites Curies' mobile radiography units, 1914–1918.",
+        confidence: "DOCUMENTED",
+        sourceCitation: "Marie Curie, La Radiologie et la Guerre (1921)",
+        sourceNote:
+          "Her own account of the mobile radiography units. She was forty-seven in 1914 and learned to drive and to handle basic mechanics for them, which is the detail the entry turns on.",
         weight: 1,
       },
     ],
@@ -394,26 +464,53 @@ Name the cost to him, in writing, once.
         lesson:
           "When instructions are not followed, ask first whether they were clear. If they were, the problem is not communication and no further explaining will fix it.",
         themes: ["team", "manage", "boss", "authority", "ignored", "conflict", "negotiation"],
-        sourceNote: "Sima Qian, Records of the Grand Historian, biography of Sun Tzu.",
+        confidence: "TRADITIONAL",
+        sourceCitation: "Sima Qian, Shiji 65, the biography of Sun Wu (c. 94 BC)",
+        sourceNote:
+          "Written some four centuries after the events it describes, and still the earliest source for anything in his life. The Zuo Zhuan, which covers the same wars of Wu in detail, does not mention Sun Wu at all.",
         weight: 2,
       },
       {
+        // Demoted from MOMENT. The old body had him say "I wrote it because"
+        // — an authorship claim, which is the one thing about Sun Tzu that
+        // is genuinely contested. The position stands without it.
+        kind: "PRINCIPLE",
         title: "The best victory has no battle in it",
-        body: "To subdue the enemy without fighting is the height of skill. I did not write that to be admired. I wrote it because battles are expensive, unpredictable, and won by the side that needed them least.",
+        body: "To subdue the enemy without fighting is the height of skill. Not because fighting is dishonourable. Because battles are expensive, unpredictable, and won by whichever side needed one least.",
         lesson:
           "Before preparing for the confrontation, check whether you can make it unnecessary. Usually you can, and cheaper.",
         themes: ["conflict", "confrontation", "negotiation", "conversation", "business", "avoid"],
-        sourceNote: "The Art of War, Chapter III.",
+        sourceNote:
+          "The position of The Art of War, Chapter III. Carries no claim about his life, which is why it is a PRINCIPLE and always available.",
         weight: 3,
       },
       {
+        kind: "PRINCIPLE",
         title: "Know the ground before you know the enemy",
-        body: "Commanders lose by studying the opponent and not the terrain. Height, distance, narrowness, the road out. Most defeats are decided before contact, by where a man agreed to stand.",
+        body: "Commanders lose by studying the opponent and not the terrain. Height, distance, narrowness, the road out. Most defeats are settled before contact, by where a man agreed to stand.",
         lesson:
           "You are not losing because they are better. You are losing on ground you agreed to without noticing.",
         themes: ["career", "stall", "rigged", "unfair", "position", "job", "negotiation"],
-        sourceNote: "The Art of War, Chapters X–XI.",
+        sourceNote: "The position of The Art of War, Chapters X–XI. No biographical claim.",
         weight: 2,
+      },
+      {
+        // The only DISPUTED row in the corpus, and it exists to be one.
+        // A tier nothing occupies is a tier nobody checks (D-008): with the
+        // -8 bias this has to out-match every other entry by a distance
+        // before it is offered at all, and when it is offered the compiler
+        // makes him hedge it openly.
+        confidence: "DISPUTED",
+        title: "The command at Boju",
+        body: "I served King Helü of Wu as his general, and the campaign that broke the state of Chu at Boju is counted mine.",
+        lesson:
+          "What is said about you is terrain as well. Find out whose account you are standing on before you put weight on it.",
+        themes: ["reputation", "credit", "claim", "status", "recognition"],
+        sourceCitation:
+          "Sima Qian, Shiji 65; the Zuo Zhuan's account of the Boju campaign (506 BC) names no Sun Wu",
+        sourceNote:
+          "Sima Qian credits him with the Chu campaign. The Zuo Zhuan, far closer to the war and detailed about it, does not mention him, and a substantial body of scholarship holds that Sun Wu was not a historical commander. Kept because the honest answer to 'who were you' is that it is contested — and because a Master hedging a claim about himself is the behaviour the tiers exist to produce.",
+        weight: 0,
       },
     ],
   },
