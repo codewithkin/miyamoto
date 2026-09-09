@@ -1,5 +1,9 @@
 # Miyamoto — working agreement
 
+> **Starting a session? Read `progress/00-START-HERE.md` first.** It carries
+> the current state, the next task, and the traps. This file is the rules;
+> that one is the situation.
+
 ## Rule: modular todos, one commit each
 
 **This applies to every feature, without exception.**
