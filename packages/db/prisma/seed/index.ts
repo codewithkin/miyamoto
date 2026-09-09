@@ -37,6 +37,16 @@ function assertDistinctMoves() {
     if (m.neverDo.length < 3) {
       problems.push(`${m.slug} has ${m.neverDo.length} neverDo entries; three is the floor`);
     }
+
+    // The principle floor (D-009). Retrieval will carry a principle if one
+    // exists; if none does, an unmatched question hands the Master an empty
+    // corpus, which is the state in which models invent. One is enough for
+    // retrieval and not enough for a corpus — a Master with a single
+    // principle answers every unmatched question identically.
+    const principles = m.moments.filter((mo) => mo.kind === "PRINCIPLE").length;
+    if (principles < 2) {
+      problems.push(`${m.slug} has ${principles} PRINCIPLE entries; two is the floor`);
+    }
   }
 
   if (problems.length) {

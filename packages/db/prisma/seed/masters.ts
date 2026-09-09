@@ -150,6 +150,32 @@ Send it before you eat.
           "His own writing, and the only entry in his corpus that is. He gives the count himself — over sixty duels between thirteen and twenty-nine, none lost — and then says plainly that at thirty he could not account for why he had won. The tier does the work here: on a question that matches this and a duel equally, this one wins by five points of confidence bias.",
         weight: 1,
       },
+
+      // Deliberately about rhythm and waste rather than terrain. Ground is
+      // Sun Tzu's principle, and two Masters standing on the same one is
+      // how the collapse in D-013 starts.
+      {
+        kind: "PRINCIPLE",
+        title: "Everything has a rhythm, and one part of it cannot be recovered from",
+        body: "Every thing has a rhythm — a rising, a holding, a falling. Men strike at the rising because they are impatient, or at the falling because they are tired. Neither costs the other man anything. Learn what the thing in front of you is doing now, and move at the part of it he cannot recover from.",
+        lesson:
+          "You are not too slow and you are not outmatched. You have been moving at the wrong part of the rhythm.",
+        themes: ["timing", "when", "ready", "hesitate", "delay", "moment", "confront", "wait"],
+        sourceNote:
+          "Rhythm (hyōshi) is his own recurring subject in the Book of Water and the Book of Fire. Stated here as a position, with no claim about any particular fight.",
+        weight: 2,
+      },
+      {
+        kind: "PRINCIPLE",
+        title: "Do nothing which is of no use",
+        body: "Do nothing which is of no use. Not as an economy. A man who keeps useless things keeps useless motions with them, and in the moment that decides the matter he will make one.",
+        lesson:
+          "Whatever you are doing that has no bearing on this, stop it today. The cost is not the hour. It is that you are practising it.",
+        themes: ["distraction", "busy", "focus", "habit", "procrastination", "avoid", "phone"],
+        sourceNote:
+          "The last of the Dokkōdō precepts, restated as a position. Makes no biographical claim, so it is always available.",
+        weight: 2,
+      },
     ],
   },
 
@@ -240,6 +266,29 @@ Write the reply tonight, badly, and send it before you have improved it.
           "The three hundred million sesterces is Dio's number and hostile. The reply is Seneca's own and unembarrassed — he never claimed to be a sage, only to be further along than the men mocking him. This is the entry that lets him take the hypocrisy charge head-on rather than avoiding it.",
         weight: 1,
       },
+
+      {
+        kind: "PRINCIPLE",
+        title: "Divide it into the two columns",
+        body: "Take the thing troubling you and divide it in two. On one side, what will happen whether or not you exist. On the other, what depends on you. Nearly everything men are ill with belongs in the first column, and nearly all their effort is spent there.",
+        lesson:
+          "Do the whole of the second column today. Nothing whatever about the first.",
+        themes: ["anxiety", "worry", "control", "fear", "stress", "helpless", "outcome", "waiting"],
+        sourceNote:
+          "The central Stoic division, and his constant subject across the letters. A position, not an event.",
+        weight: 3,
+      },
+      {
+        kind: "PRINCIPLE",
+        title: "Rehearse the worst of it on purpose",
+        body: "Set aside a few days in which you take the worst of it deliberately — the plain food, the hard bed, the smaller life — and then ask whether that was the thing you feared. Fear does not survive being measured. It survives being avoided.",
+        lesson:
+          "Write the worst outcome in one sentence, with the numbers in it, and find what it actually costs. Then it is arithmetic and not dread.",
+        themes: ["fear", "money", "afraid", "lose", "fired", "loss", "risk", "worst", "poverty"],
+        sourceNote:
+          "Premeditatio malorum, the practice he recommends to Lucilius repeatedly. Stated as a practice rather than as something he did on a given date.",
+        weight: 2,
+      },
     ],
   },
 
@@ -326,6 +375,27 @@ Decide today what one sentence you will say to him when you are next in the same
         sourceNote:
           "That former warders were among his personal guests is well attested. Which warders, and in what capacity, is reported inconsistently — the popular retellings name different men — so the entry named one and now names none.",
         weight: 1,
+      },
+
+      {
+        kind: "PRINCIPLE",
+        title: "Speak to a man in the language he thinks in",
+        body: "If you intend to move a man, you must know what he is afraid of losing, and you must be able to say it back to him in the words he uses himself. This is not sympathy. It is the minimum preparation for asking anything of anyone.",
+        lesson:
+          "Before the conversation, write one line saying what the other person stands to lose. Open with that line.",
+        themes: ["negotiation", "conversation", "persuade", "boss", "confront", "conflict", "ask"],
+        sourceNote: "A position on negotiation. Carries no claim about his life.",
+        weight: 2,
+      },
+      {
+        kind: "PRINCIPLE",
+        title: "Patience is a decision about scale",
+        body: "Patience is not a temperament and it is not calm. It is the decision to work on a longer scale than the one your anger is using. A man who has written down what he wants in ten years can refuse what he wants on Tuesday, and refusing it costs him nothing.",
+        lesson:
+          "Write down what you want in ten years. Then decide whether today's move buys it or spends it.",
+        themes: ["patience", "stuck", "waiting", "career", "endure", "stall", "discipline"],
+        sourceNote: "A position on the long view. No biographical claim.",
+        weight: 2,
       },
     ],
   },
@@ -417,6 +487,27 @@ Tonight: one interval of twenty minutes, timed, with the telephone in a drawer. 
         sourceNote:
           "Her own account of the mobile radiography units. She was forty-seven in 1914 and learned to drive and to handle basic mechanics for them, which is the detail the entry turns on.",
         weight: 1,
+      },
+
+      {
+        kind: "PRINCIPLE",
+        title: "When nothing comes, examine the conditions",
+        body: "A result is not produced by wanting it. It is produced by conditions repeated — the same hours, the same room, the same removal of whatever else was in it. When nothing comes, do not examine your character. Examine the conditions and change exactly one.",
+        lesson:
+          "Change one condition, not your attitude, and run it again before you change a second.",
+        themes: ["motivation", "discipline", "focus", "stuck", "habit", "procrastination", "start"],
+        sourceNote: "Her method, stated as a method. No claim about any particular experiment.",
+        weight: 3,
+      },
+      {
+        kind: "PRINCIPLE",
+        title: "Write the number down at the time",
+        body: "Whatever you do not measure, you will remember in your own favour. Write it down at the moment — the hour begun, the quantity, the weight. A notebook is not kept for posterity. It is kept because your memory of yesterday is an interested party.",
+        lesson:
+          "Record it today, in writing, at the moment it happens. Tomorrow you will not be able to argue with it.",
+        themes: ["progress", "track", "measure", "record", "improve", "stall", "growth", "habit"],
+        sourceNote: "A position on record-keeping. Makes no biographical claim.",
+        weight: 2,
       },
     ],
   },
