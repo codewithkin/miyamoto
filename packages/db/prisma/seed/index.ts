@@ -13,35 +13,68 @@ import { PATH_DAYS, WOUNDS } from "./path";
 
 const db = createPrismaClient();
 
-async function seedMasters() {
+/**
+ * The check that catches collapse before a user does (D-013).
+ *
+ * Two Masters sharing a characteristicMove is the seam where they start
+ * reading the same, and it is invisible in a diff of five prose blocks that
+ * each look fine alone. Nothing else in the pipeline would complain: the
+ * schema allows it, the compiler renders it, and the model obeys it.
+ *
+ * neverDo is checked here for the same reason — it is the other field the
+ * Masters doc says to strengthen first, and an empty one compiles.
+ */
+function assertDistinctMoves() {
+  const seen = new Map<string, string>();
+  const problems: string[] = [];
+
   for (const m of MASTERS) {
+    const key = m.characteristicMove.trim().toLowerCase();
+    const owner = seen.get(key);
+    if (owner) problems.push(`${m.slug} shares a characteristicMove with ${owner}`);
+    seen.set(key, m.slug);
+
+    if (m.neverDo.length < 3) {
+      problems.push(`${m.slug} has ${m.neverDo.length} neverDo entries; three is the floor`);
+    }
+  }
+
+  if (problems.length) {
+    throw new Error(`Master voices have collapsed (D-013):\n  ${problems.join("\n  ")}`);
+  }
+}
+
+async function seedMasters() {
+  assertDistinctMoves();
+
+  for (const m of MASTERS) {
+    // Voice fields and the corpus are the whole Master; there is no
+    // per-Master code left to fall back on, so create and update must carry
+    // the identical set or a re-seed would silently leave a stale voice.
+    const fields = {
+      name: m.name,
+      title: m.title,
+      tone: m.tone,
+      manner: m.manner,
+      era: m.era,
+      domains: m.domains,
+      accentColor: m.accentColor,
+      register: m.register,
+      syntax: m.syntax,
+      person: m.person,
+      characteristicMove: m.characteristicMove,
+      cadenceSample: m.cadenceSample,
+      neverDo: m.neverDo,
+      rightsNote: m.rightsNote ?? null,
+      unlockDay: m.unlockDay,
+      proOnly: m.proOnly,
+      sortOrder: m.sortOrder,
+    };
+
     const master = await db.master.upsert({
       where: { slug: m.slug },
-      create: {
-        slug: m.slug,
-        name: m.name,
-        title: m.title,
-        tone: m.tone,
-        manner: m.manner,
-        era: m.era,
-        domains: m.domains,
-        accentColor: m.accentColor,
-        unlockDay: m.unlockDay,
-        proOnly: m.proOnly,
-        sortOrder: m.sortOrder,
-      },
-      update: {
-        name: m.name,
-        title: m.title,
-        tone: m.tone,
-        manner: m.manner,
-        era: m.era,
-        domains: m.domains,
-        accentColor: m.accentColor,
-        unlockDay: m.unlockDay,
-        proOnly: m.proOnly,
-        sortOrder: m.sortOrder,
-      },
+      create: { slug: m.slug, ...fields },
+      update: fields,
     });
 
     // Moments have no natural key of their own, so they are keyed by
