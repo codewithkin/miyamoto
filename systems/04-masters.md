@@ -35,6 +35,15 @@ template has failed and adding the sixth will mean writing another essay.
 4. Write any `quotation` rows, verbatim, with work and locus.
 5. Seed. There is no step 6; no code changes.
 
+The seed refuses before it writes a row if you skip any of that: a
+`characteristicMove` another Master already has, fewer than three `neverDo`,
+fewer than two `PRINCIPLE` entries, fewer than two quotations, or a `MOMENT`
+with no confidence or no citation. Those are `assertDistinctMoves` and
+`assertCorpusIsAttested` in `packages/db/prisma/seed/index.ts`. Fix the
+corpus, never the assertion — the second one exists because the seed writer
+defaults a missing confidence to `ATTESTED`, so an untiered legend would be
+spoken with more certainty than a letter Seneca demonstrably wrote.
+
 ### The fields, and what each is actually for
 
 **`register`** — the emotional temperature. *"cold, declarative,
@@ -113,6 +122,7 @@ era. Forbidden in the same rule.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
+| Reaches for a contested claim unprompted | Eligibility regressed to ranking | `DISPUTED` is filtered, not merely biased — see the note in `retrieval.ts` |
 | Sounds like every other Master | `characteristicMove` too vague, or `neverDo` too short | Sharpen the move; add prohibitions |
 | Too gentle | `SHARED_LAW` manner clause losing to a soft `register` | Cool the register |
 | Claims something not in the corpus | Retrieval returned nothing and the model improvised | Add a `PRINCIPLE`; check the citation rejection is firing |
@@ -131,3 +141,4 @@ era. Forbidden in the same rule.
 | `apps/server/src/mastra/index.ts` | Agents, memory, the refuse-on-no-prompt default |
 | `packages/db/prisma/schema/masters.prisma` | Master, Moment, Quotation |
 | `packages/db/prisma/seed/masters.ts` | The corpus itself |
+| `packages/db/prisma/seed/index.ts` | The seed-time checks that refuse a collapsed or unattested corpus |

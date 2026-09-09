@@ -1,14 +1,18 @@
 # 01 — Master corpus and guardrails
 
-**Status: in flight. This is the current work.**
+**Status: in flight. T08 is next.**
 
-Feature 1 (schema, compiler, generation path) is done and committed. What
-remains is the corpus itself — the seed is empty because the schema change
-required a database reset.
+The schema, compiler and generation path landed in session 1. The corpus
+itself landed in session 2 — voice fields, tiers, principles and quotations
+— along with one retrieval bug it exposed.
 
-> **⚠️ The database is currently empty.** It was reset on 2026-09-09 to apply
-> the new Master/Moment/Quotation schema, with the owner's confirmation. Chat
-> will fail until T05–T08 land. This is expected, not a bug.
+> **The database is seeded again.** The reset of 2026-09-09 is undone:
+> 5 Masters, 28 Moments (20 of them biographical, 8 principles), 14
+> quotations. Chat is no longer blocked on data. It is still blocked on
+> `OPENROUTER_API_KEY`, which is a different problem and the owner's.
+
+What remains here is withdrawing Mandela (T08–T10), enforcing citations
+(T11), and the voice evaluation (T12) that is the only real check on D-013.
 
 **Depends on:** nothing outstanding.
 **Read first:** `systems/04-masters.md`, then `systems/09-decisions.md`
@@ -43,13 +47,9 @@ D-007 to D-013.
 - **Done when:** no per-Master prose remains in code; an agent with no
   compiled prompt refuses rather than improvising.
 
----
-
-## Next
-
 ## T04 — Backfill voice fields and `neverDo` for the four active Masters
 
-- [ ] `pending-T04`
+- [x] `876c09b`
 - **Commit:** `seed: give each Master a voice that can be diffed`
 - **Touches:** `packages/db/prisma/seed/masters.ts`
 - **Done when:** every active Master has all five voice fields and at least
@@ -60,7 +60,7 @@ D-007 to D-013.
 
 ## T05 — Tier every Moment and add `sourceCitation`
 
-- [ ] `pending-T05`
+- [x] `f2a41d5`
 - **Commit:** `seed: tier the corpus by how well attested it is`
 - **Depends on:** T04
 - **Touches:** `packages/db/prisma/seed/masters.ts`
@@ -72,7 +72,7 @@ D-007 to D-013.
 
 ## T06 — `PRINCIPLE` entries per Master
 
-- [ ] `pending-T06`
+- [x] `af7ecc2`
 - **Commit:** `seed: give every Master something to stand on when nothing matches`
 - **Depends on:** T05
 - **Done when:** each active Master has ≥2 `PRINCIPLE` entries making no
@@ -81,7 +81,7 @@ D-007 to D-013.
 
 ## T07 — Seed the `Quotation` table
 
-- [ ] `pending-T07`
+- [x] `770d615`
 - **Commit:** `seed: the lines a Master may quote verbatim`
 - **Depends on:** T04
 - **Done when:** each Master has ≥2 verified quotations with work and locus.
@@ -93,7 +93,7 @@ D-007 to D-013.
 
 ## T07a — A DISPUTED entry must be earned, not merely ranked last
 
-- [ ] `pending-T07a`
+- [x] `d9060bd`
 - **Commit:** `fix(server): stop DISPUTED entries riding along on a short corpus`
 - **Depends on:** T05
 - **Touches:** `apps/server/src/mastra/retrieval.ts`
@@ -109,6 +109,10 @@ D-007 to D-013.
   one theme *and* scored at or above the best non-disputed entry — and the
   nonsense question no longer returns Boju while a question about
   credit and reputation still does.
+
+---
+
+## Next
 
 ## T08 — Reassign Mandela's stories, deactivate him
 

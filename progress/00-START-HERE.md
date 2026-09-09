@@ -7,18 +7,20 @@ their own voice. This file is self-contained.
 > Read `progress/AGENT-PROCESS.md` for *how* work is done here.
 > This file is *what* to build next.
 
-**Last updated:** end of session 1 (2026-09-09).
+**Last updated:** end of session 2 (2026-09-09).
 
 ---
 
 ## ⚠️ Read this first
 
-**The database is empty.** It was reset on 2026-09-09, with the owner's
-confirmation, to apply the new Master/Moment/Quotation schema. All Masters,
-Moments, stories, Path days and trials are gone.
+**The database is seeded.** The reset of 2026-09-09 has been undone: 5
+Masters, 28 Moments (20 biographical, 8 principles), 14 quotations, 20
+stories, 30 Path days, 90 trials, 6 wounds. Re-run it any time with
+`pnpm --filter @miyamoto/db db:seed` — it is idempotent.
 
-**Chat is therefore down.** This is expected, not a bug. Re-seeding is
-`plans/01-master-corpus.md` T04–T08, and it is the next work.
+**Chat is no longer blocked on data.** It is blocked on
+`OPENROUTER_API_KEY`, which is the owner's to supply. No Master reply has
+ever been generated.
 
 ---
 
@@ -58,11 +60,17 @@ and its markup. The markup is the only place the real hex values live.
 
 ## Your task
 
-Open `plans/01-master-corpus.md` and start at **T04**.
+Open `plans/01-master-corpus.md` and start at **T08**.
 
-T01–T03 are done: the schema, the template compiler and the generation path.
-What remains is the corpus itself — voice fields, tiered moments, principle
-entries, quotations — then withdrawing Mandela and enforcing citations.
+T01–T07a are done: the schema, the compiler, the generation path, and now
+the corpus itself — voice fields, tiered moments, principles, quotations,
+plus the retrieval fix that tiering exposed. What remains in that plan is
+withdrawing Mandela (T08–T10), citation enforcement (T11), and the voice
+evaluation (T12).
+
+T08 is four commits of straightforward work and it has a trap in it:
+`trusted-lied` is one of the four onboarding sample problems (D-004), so
+Mandela's stories must be *reassigned*, not deleted.
 
 ```bash
 # get oriented
@@ -103,7 +111,7 @@ Nothing is uncommitted. The tree is clean.
 | Marketing site, 5 pages | **Built and deployed** | Landing, Terms, Privacy, Support, delete-account. On Vercel. |
 | Account deletion | **Built and verified** | Web loop tested end to end against a real account; cascade proven. |
 | Master template | **Built** | Schema, compiler, retrieval, citation-ready. |
-| Master corpus | **EMPTY** | Reset. This is the next work. |
+| Master corpus | **Built and seeded** | 5 Masters, 28 Moments, 14 quotations. Tiered, cited, checked at seed time. |
 | Notifications | Not started | Package installed, plugin registered, nothing scheduled. |
 | RevenueCat | Groundwork, inert | Awaiting keys. |
 | Onboarding persistence | **Missing** | Eleven screens of answers collected and discarded. |
@@ -128,6 +136,13 @@ Nothing is uncommitted. The tree is clean.
 - **PowerShell 5.1 has no `&&`.** Use `;` or separate commands.
 - **Heredocs with apostrophes break in this shell.** Write files with the
   file tool rather than `cat <<EOF` when the content has prose in it.
+- **The seed throws before it writes** if a Master duplicates another's
+  `characteristicMove`, drops below three `neverDo` or two principles, or
+  carries a `MOMENT` with no tier or citation. That is deliberate (D-008,
+  D-013). Fix the corpus rather than the assertion.
+- **`tsc` in minute five.** Session 2 opened with a seed that had not
+  compiled since `53cb261` — the reason chat was down was one type error,
+  and nine seconds of `tsc` would have said so at any point.
 
 ---
 
@@ -165,13 +180,15 @@ notes do not survive a clone.
 
 ## Open items, in priority order
 
-1. **Re-seed the corpus** — `plans/01-master-corpus.md` T04–T08. Chat is down.
-2. **Withdraw Mandela** — T08–T10.
-3. **Citation enforcement** — T11. Interacts with streaming; read the note.
-4. **Persist the onboarding draft** — `plans/04-onboarding-claim.md`. Users lose their quiz today.
-5. **The app icon** — `plans/05-launch-readiness.md` T01. Currently copyrighted *Vagabond*
+1. **Withdraw Mandela** — `plans/01-master-corpus.md` T08–T10.
+2. **Citation enforcement** — T11. Interacts with streaming; read the note.
+3. **Persist the onboarding draft** — `plans/04-onboarding-claim.md`. Users lose their quiz today.
+4. **The app icon** — `plans/05-launch-readiness.md` T01. Currently copyrighted *Vagabond*
    artwork. Owner's call to commission.
-6. **A device pass** — `plans/05-launch-readiness.md` T04.
+5. **A device pass** — `plans/05-launch-readiness.md` T04.
+6. **The voice evaluation** — T12. Blocked on the key, and the only check
+   that catches D-013. Everything built so far makes collapse harder to
+   write; none of it proves collapse has not happened.
 
 ## Waiting on the owner
 

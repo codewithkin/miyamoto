@@ -11,16 +11,18 @@ diverge silently.
 
 | # | Plan | Status | Blocked on |
 |---|---|---|---|
-| 01 | `01-master-corpus.md` | **In flight** — T04 next | — |
-| 02 | `02-notifications.md` | Not started | 01 T04–T08 |
+| 01 | `01-master-corpus.md` | **In flight** — T08 next | — |
+| 02 | `02-notifications.md` | Not started | 01 T08 |
 | 03 | `03-revenuecat.md` | Groundwork done, inert | RevenueCat API keys |
 | 04 | `04-onboarding-claim.md` | Not started | — |
 | 05 | `05-launch-readiness.md` | Not started | 01–04 |
 
 ## Why this order
 
-**01 first** because the database is empty and chat is down until the corpus
-is re-seeded. Nothing else is testable meanwhile.
+**01 first.** The corpus is now seeded (session 2), so this is no longer
+blocking everything else — but T08–T10 withdraw a Master from the data, the
+API and the app, and every day that is deferred is a day D-006 is not
+actually honoured.
 
 **04 before 05** because onboarding currently collects eleven screens of
 answers and never persists them. Every day that ships is a day of real users

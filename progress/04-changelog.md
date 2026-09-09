@@ -5,6 +5,113 @@ Write the entry you would want to find.
 
 ---
 
+## Session 2 — 2026-09-09
+
+**The corpus the reset emptied, rebuilt as something that can be checked
+rather than admired. Six commits.**
+
+The database was seeded again at the end of this session: 5 Masters, 28
+Moments, 14 quotations. Chat is no longer blocked on data — only on
+`OPENROUTER_API_KEY`.
+
+### The seed did not compile
+
+Worth saying first, because it changes how session 1 reads. The schema moved
+to voice fields in `53cb261` and the seed was never moved with it, so
+`packages/db/prisma/seed/index.ts` had not type-checked since. That is why
+chat was down. The reset emptied the database; the seed could not refill it.
+
+The lesson is the one in AGENT-PROCESS and it was skipped: run the toolchain
+in minute five. `tsc` said this in nine seconds.
+
+### Voice, as five fields and a prohibition list
+
+The paragraphs from `53cb261^` were mined rather than rewritten, so it is the
+same Musashi — split into fields that can be inspected one at a time. Each
+`cadenceSample` carries a modern-bridge line, because D-011 is the product
+and a model asked to invent the crossing from an adjective produces a lecture
+about the past instead.
+
+`characteristicMove` is now enforced unique at seed time. Two Masters sharing
+one is where the collapse in D-013 starts, and it is invisible in a diff of
+five prose blocks that each read well alone.
+
+### The corpus is less well attested than it read
+
+Tiering it honestly was the substantive work, and the result is unflattering,
+which is the point:
+
+| | tiers |
+|---|---|
+| musashi | TRADITIONAL 3, DOCUMENTED 1 |
+| seneca | DOCUMENTED 1, ATTESTED 3 |
+| curie | DOCUMENTED 2, ATTESTED 2 |
+| sun-tzu | TRADITIONAL 1, DISPUTED 1, PRINCIPLE 2 |
+
+Three bodies claimed more than their sources support and were cut back.
+Seneca asserted his innocence of the adultery charge — the charge is Dio's
+and Seneca never answers it. Mandela named the warder he seated at his
+inauguration — that former warders were his guests is well attested, which
+men is not. Curie fainted from hunger in her attic — that is Ève Curie's
+1937 biography, not Marie's own notes, and it is the single most repeated
+detail of her student years.
+
+Sun Tzu was restructured rather than tiered. Two of his three entries made no
+claim about his life at all, and one of them said *"I wrote it because"*,
+which is the one thing about him that is genuinely contested. Both became
+principles, which left his biography as what it honestly is: one traditional
+story. The Boju command was added as the corpus's only `DISPUTED` row —
+Sima Qian credits him, the Zuo Zhuan is far closer to that war and does not
+mention him.
+
+### Which immediately found a bug
+
+A tier nothing occupies is a tier nobody checks. Putting the first entry in
+`DISPUTED` made a two-year-old assumption fail out loud: `CONFIDENCE_BIAS`
+gave it −8, but retrieval then took the top `limit` entries, and Sun Tzu has
+four entries against a limit of four. Everything was returned regardless of
+score. `retrieveContext("sun-tzu", "Zqxwv plimth garnok yulbrat")` came back
+with his contested claim to have commanded at Boju.
+
+D-008 asks for eligibility and the code was doing ranking. Now a `DISPUTED`
+entry is carried only if it matched a theme *and* out-scored the best
+non-disputed entry.
+
+### Three checks that throw before a row is written
+
+Each was made to fail once, deliberately, which is the half of that rule that
+usually gets skipped:
+
+- `assertDistinctMoves` — duplicate `characteristicMove`, fewer than three
+  `neverDo`, fewer than two principles.
+- `assertCorpusIsAttested` — a `MOMENT` with no tier or no citation. This one
+  matters because the seed writer defaults a missing confidence to `ATTESTED`:
+  a legend that forgot its tier would be spoken with *more* certainty than a
+  letter Seneca demonstrably wrote, arriving by omission rather than decision.
+- The quotation floor — two per Master, each naming a work.
+
+### What was verified, and how
+
+No model was called; `OPENROUTER_API_KEY` is still missing. Everything below
+was run against the real code paths and a real database.
+
+- The principle floor (D-009): `retrieveContext` for all four active Masters
+  with `"Zqxwv plimth garnok yulbrat, snerfle wompus?"`. All four returned a
+  principle.
+- The `DISPUTED` fix: three questions — nonsense, unrelated-but-real, and
+  one about credit and reputation. Only the third offers Boju.
+- Quotations: a question about regret pulls Musashi's Dokkōdō line, anxiety
+  pulls Seneca's Letter 13.
+- One compiled prompt read end to end (Musashi, 6,864 chars).
+- `pnpm check-types` clean across all nine packages.
+
+**Not verified:** whether the four actually *sound* different. That is T12,
+it needs the key, and it is the only check that catches D-013. Everything
+here makes collapse harder to write; none of it proves collapse has not
+happened.
+
+---
+
 ## Session 1 — 2026-09-09
 
 **Scaffolded from a bare Better-T-Stack template to a deployed marketing
