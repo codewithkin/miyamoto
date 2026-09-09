@@ -57,6 +57,9 @@ coverage
 tmp
 temp
 
-# Design source files are large and are not needed in git.
-# Extracted tokens live in apps/native/theme/tokens.ts.
-designs/
+# Design sources. The raw exports are ~27MB of bundler output and the
+# extracted screens are regenerated from them in one command, so neither is
+# tracked. designs/extract.py IS tracked — it is how a new session gets
+# readable screens back.
+designs/raw/
+designs/extracted/
