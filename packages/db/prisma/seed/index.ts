@@ -75,6 +75,18 @@ function assertCorpusIsAttested() {
     }
   }
 
+  for (const m of MASTERS) {
+    // Quotation is permitted only from this table (D-010). A Master with
+    // fewer than two listed lines is one the model will be tempted to quote
+    // from memory, and quoting from memory is how misattribution ships.
+    if (m.quotations.length < 2) {
+      problems.push(`${m.slug} has ${m.quotations.length} quotations; two is the floor`);
+    }
+    for (const q of m.quotations) {
+      if (!q.sourceWork.trim()) problems.push(`${m.slug} quotes "${q.text}" with no work named`);
+    }
+  }
+
   if (problems.length) {
     throw new Error(`Corpus makes unattested claims (D-008):\n  ${problems.join("\n  ")}`);
   }
@@ -133,9 +145,28 @@ async function seedMasters() {
         weight: mo.weight ?? 0,
       })),
     });
+
+    // Same replace-the-set treatment as moments: no natural key, and an
+    // edited line must not leave the old wording behind to be quoted.
+    await db.quotation.deleteMany({ where: { masterId: master.id } });
+    await db.quotation.createMany({
+      data: m.quotations.map((q) => ({
+        masterId: master.id,
+        text: q.text,
+        sourceWork: q.sourceWork,
+        sourceLocus: q.sourceLocus ?? null,
+        translationNote: q.translationNote ?? null,
+        confidence: q.confidence ?? "DOCUMENTED",
+        themes: q.themes,
+      })),
+    });
   }
-  const [masters, moments] = await Promise.all([db.master.count(), db.moment.count()]);
-  console.log(`  masters: ${masters}, moments: ${moments}`);
+  const [masters, moments, quotations] = await Promise.all([
+    db.master.count(),
+    db.moment.count(),
+    db.quotation.count(),
+  ]);
+  console.log(`  masters: ${masters}, moments: ${moments}, quotations: ${quotations}`);
 }
 
 async function seedAdversity() {

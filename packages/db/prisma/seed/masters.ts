@@ -29,6 +29,34 @@ export type MomentSeed = {
   weight?: number;
 };
 
+/**
+ * A line the Master may reproduce word for word (D-010).
+ *
+ * Deliberately excluded, and this list is the point of the table:
+ *
+ *   - "Resentment is like drinking poison and hoping it kills your enemies"
+ *     and "The greatest glory in living lies not in never falling…" are both
+ *     routinely hung on Mandela. Neither is his.
+ *   - "Every battle is won before it is fought" is not a line of The Art of
+ *     War. It is a loose modern rendering, popularised by film.
+ *   - Musashi's Dokkōdō is quoted here in one rendering only, because the
+ *     precepts are numbered differently between manuscripts and a confident
+ *     citation of the wrong number is its own kind of misquote.
+ *
+ * An app whose whole promise is that these were real people cannot be caught
+ * misquoting them, and a model quoting from memory will eventually be.
+ */
+export type QuotationSeed = {
+  /** Exact, in the translation we ship. */
+  text: string;
+  sourceWork: string;
+  sourceLocus?: string;
+  /** Named wherever the wording is contested or the rendering is a choice. */
+  translationNote?: string;
+  confidence?: Confidence;
+  themes: string[];
+};
+
 export type MasterSeed = {
   slug: string;
   name: string;
@@ -61,6 +89,7 @@ export type MasterSeed = {
   proOnly: boolean;
   sortOrder: number;
   moments: MomentSeed[];
+  quotations: QuotationSeed[];
 };
 
 export const MASTERS: MasterSeed[] = [
@@ -177,6 +206,33 @@ Send it before you eat.
         weight: 2,
       },
     ],
+    quotations: [
+      {
+        text: "Think lightly of yourself and deeply of the world.",
+        sourceWork: "Go Rin No Sho",
+        sourceLocus: "Book of Earth, the nine principles",
+        translationNote: "Victor Harris rendering (1974), the one this app ships.",
+        confidence: "DOCUMENTED",
+        themes: ["self", "pity", "ego", "status", "career", "perspective"],
+      },
+      {
+        text: "Perceive that which cannot be seen with the eye.",
+        sourceWork: "Go Rin No Sho",
+        sourceLocus: "Book of Earth, the nine principles",
+        translationNote: "Victor Harris rendering (1974).",
+        confidence: "DOCUMENTED",
+        themes: ["attention", "notice", "missed", "blind", "rivals", "position"],
+      },
+      {
+        text: "Do not regret what you have done.",
+        sourceWork: "Dokkōdō",
+        sourceLocus: "the precepts, 1645",
+        translationNote:
+          "The precepts are numbered differently between surviving manuscripts, so the locus names the work and not a number.",
+        confidence: "DOCUMENTED",
+        themes: ["regret", "mistake", "past", "guilt", "decision"],
+      },
+    ],
   },
 
   {
@@ -290,6 +346,31 @@ Write the reply tonight, badly, and send it before you have improved it.
         weight: 2,
       },
     ],
+    quotations: [
+      {
+        text: "We suffer more often in imagination than in reality.",
+        sourceWork: "Epistulae Morales ad Lucilium",
+        sourceLocus: "Letter 13",
+        translationNote:
+          "The standard English rendering. The Latin — plura sunt quae nos terrent quam quae premunt — is closer to 'there are more things that frighten us than that harm us'. Shipped in the familiar form because it is the line people come to him for, and flagged here because it is a rendering rather than a translation.",
+        confidence: "DOCUMENTED",
+        themes: ["anxiety", "worry", "fear", "afraid", "dread", "imagination", "stress"],
+      },
+      {
+        text: "It is not that we have a short time to live, but that we waste much of it.",
+        sourceWork: "De Brevitate Vitae",
+        sourceLocus: "1.3",
+        confidence: "DOCUMENTED",
+        themes: ["time", "waste", "procrastination", "delay", "busy", "urgency"],
+      },
+      {
+        text: "You act like mortals in all that you fear, and like immortals in all that you desire.",
+        sourceWork: "De Brevitate Vitae",
+        sourceLocus: "3.4",
+        confidence: "DOCUMENTED",
+        themes: ["fear", "desire", "want", "risk", "money", "ambition"],
+      },
+    ],
   },
 
   {
@@ -396,6 +477,25 @@ Decide today what one sentence you will say to him when you are next in the same
         themes: ["patience", "stuck", "waiting", "career", "endure", "stall", "discipline"],
         sourceNote: "A position on the long view. No biographical claim.",
         weight: 2,
+      },
+    ],
+    quotations: [
+      // Both from published works in his own words. The two lines most often
+      // put in his mouth — "Resentment is like drinking poison" and "The
+      // greatest glory in living" — are not his and are not here.
+      {
+        text: "I learned that courage was not the absence of fear, but the triumph over it.",
+        sourceWork: "Long Walk to Freedom",
+        sourceLocus: "1994",
+        confidence: "DOCUMENTED",
+        themes: ["fear", "courage", "afraid", "scared", "confront", "conflict"],
+      },
+      {
+        text: "I have cherished the ideal of a democratic and free society in which all persons live together in harmony and with equal opportunities.",
+        sourceWork: "Statement from the dock, Rivonia Trial",
+        sourceLocus: "20 April 1964",
+        confidence: "DOCUMENTED",
+        themes: ["purpose", "conviction", "principle", "stand", "injustice"],
       },
     ],
   },
@@ -510,6 +610,30 @@ Tonight: one interval of twenty minutes, timed, with the telephone in a drawer. 
         weight: 2,
       },
     ],
+    quotations: [
+      {
+        text: "One never notices what has been done; one can only see what remains to be done.",
+        sourceWork: "Letter to her brother Józef Skłodowski",
+        sourceLocus: "18 March 1894",
+        confidence: "DOCUMENTED",
+        themes: ["progress", "stall", "credit", "achievement", "stuck", "growth"],
+      },
+      {
+        text: "I was taught that the way of progress was neither swift nor easy.",
+        sourceWork: "Pierre Curie",
+        sourceLocus: "Autobiographical Notes, 1923",
+        confidence: "DOCUMENTED",
+        themes: ["patience", "grind", "slow", "discipline", "progress", "difficult"],
+      },
+      {
+        text: "Nothing in life is to be feared, it is only to be understood.",
+        sourceWork: "Attributed, in her lifetime",
+        translationNote:
+          "Securely associated with her, but no locus in her own published writing. The second clause it is usually given with — 'Now is the time to understand more, so that we may fear less' — is a later addition and is not shipped. Tiered ATTESTED rather than DOCUMENTED for that reason.",
+        confidence: "ATTESTED",
+        themes: ["fear", "afraid", "anxiety", "unknown", "understand", "risk"],
+      },
+    ],
   },
 
   {
@@ -602,6 +726,34 @@ Name the cost to him, in writing, once.
         sourceNote:
           "Sima Qian credits him with the Chu campaign. The Zuo Zhuan, far closer to the war and detailed about it, does not mention him, and a substantial body of scholarship holds that Sun Wu was not a historical commander. Kept because the honest answer to 'who were you' is that it is contested — and because a Master hedging a claim about himself is the behaviour the tiers exist to produce.",
         weight: 0,
+      },
+    ],
+    quotations: [
+      // "Every battle is won before it is fought" is absent on purpose. It is
+      // the line most people expect from him and it is not in the text.
+      {
+        text: "To subdue the enemy without fighting is the acme of skill.",
+        sourceWork: "The Art of War",
+        sourceLocus: "Chapter III",
+        translationNote: "Lionel Giles (1910), the translation this app ships.",
+        confidence: "DOCUMENTED",
+        themes: ["conflict", "confrontation", "negotiation", "avoid", "business", "conversation"],
+      },
+      {
+        text: "If you know the enemy and know yourself, you need not fear the result of a hundred battles.",
+        sourceWork: "The Art of War",
+        sourceLocus: "Chapter III",
+        translationNote: "Lionel Giles (1910).",
+        confidence: "DOCUMENTED",
+        themes: ["rivals", "prepare", "fear", "negotiation", "boss", "position"],
+      },
+      {
+        text: "All warfare is based on deception.",
+        sourceWork: "The Art of War",
+        sourceLocus: "Chapter I",
+        translationNote: "Lionel Giles (1910).",
+        confidence: "DOCUMENTED",
+        themes: ["deception", "lied", "trusted", "rivals", "politics", "business"],
       },
     ],
   },
