@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { View, type ViewProps } from "react-native";
 
@@ -7,10 +8,12 @@ import { alpha, gold, green, indigo, ink, radius, space } from "@/theme/tokens";
 /**
  * Blade marks.
  *
- * The app has no checkboxes, dots, spinners or progress rings — every status
- * is a cut. A mark is a 2px-radius bar, and its state is carried by fill and
+ * The app has no dots, spinners or progress rings — every progress status is
+ * a cut. A mark is a 2px-radius bar, and its state is carried by fill and
  * length rather than by a different shape, so a rail of them reads as one
  * continuous edge.
+ *
+ * Selection is the exception: see BladeTick, which is a real tick (D-032).
  */
 
 export type BladeState =
@@ -147,46 +150,44 @@ export function BladeRail({
 }
 
 export type BladeTickProps = {
-  /** The confirmation mark. Green, because it confirms a trial. */
+  /** Selected / complete. Green, because green only ever means "yes, this". */
   done?: boolean;
   size?: number;
   delay?: number;
 };
 
 /**
- * The single angled cut used where a checkmark would normally go —
- * marking a trial complete, a wound selected, a Master chosen.
+ * The mark for "this is chosen" and "this is done".
+ *
+ * It used to be an angled cut in a green square, in keeping with the blade
+ * vocabulary. The owner's reading of it was a green box with a slash — not
+ * recognisable as selected at a glance, which is the only job it has. So this
+ * is the one place the blade rule gives way (D-032): a filled green circle
+ * with a checkmark when chosen, an empty ring when not. Blade marks still
+ * carry progress everywhere else.
  */
-export function BladeTick({ done = false, size = 18, delay = 0 }: BladeTickProps) {
+export function BladeTick({ done = false, size = 22, delay = 0 }: BladeTickProps) {
   const land = useLandIn(delay);
 
   return (
     <Animated.View
+      accessibilityRole="image"
+      accessibilityLabel={done ? "Selected" : "Not selected"}
       style={[
         {
           width: size,
           height: size,
-          borderRadius: radius.blade,
+          borderRadius: size / 2,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: done ? green.base : "transparent",
-          borderWidth: done ? 0 : 1,
+          borderWidth: done ? 0 : 1.5,
           borderColor: ink.border,
         },
         land,
       ]}
     >
-      {done ? (
-        <View
-          style={{
-            width: size * 0.5,
-            height: 2,
-            borderRadius: radius.blade,
-            backgroundColor: green.fg,
-            transform: [{ rotate: "-45deg" }],
-          }}
-        />
-      ) : null}
+      {done ? <Ionicons name="checkmark" size={Math.round(size * 0.68)} color={green.fg} /> : null}
     </Animated.View>
   );
 }
