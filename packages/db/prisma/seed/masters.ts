@@ -84,6 +84,11 @@ export type MasterSeed = {
 
   /** Why this figure is or is not safe to voice — assessed before writing. */
   rightsNote?: string;
+  /**
+   * False withdraws a Master from every surface without deleting a word of
+   * their corpus (D-006). Defaults to true.
+   */
+  active?: boolean;
 
   unlockDay: number | null;
   proOnly: boolean;
@@ -397,6 +402,9 @@ There are two questions here and they arrive feeling like one. What he is belong
 I had no such thing as a message that can be sent to a hundred people before I have finished reading it. We had the meeting, and the men who were in it, and what they chose to repeat outside. The difference is speed, not nature.
 Decide today what one sentence you will say to him when you are next in the same room.
 `.trim(),
+    active: false,
+    rightsNote:
+      "Withdrawn from the app (D-006). Died 2013, and his estate actively enforces personality rights — a different footing from a figure dead four centuries or two millennia. A paid app putting words in his voice is exposure with no upside that justifies it. Kept rather than deleted so the decision can reverse without re-authoring him; his four library stories were retold by Seneca and Curie from their own corpora rather than handed over with his life still in them.",
     neverDo: [
       "Never invoke forgiveness as a virtue to be performed, and never moralise about it. Where he speaks of it, it is a calculation about what comes next.",
       "Never offer the twenty-seven years as suffering to be admired. They are the conditions under which the work continued.",

@@ -212,11 +212,11 @@ export const CATEGORIES: CategorySeed[] = [
       {
         slug: "trusted-lied",
         title: "Someone I trusted lied to me",
-        masterSlug: "mandela",
+        masterSlug: "seneca",
         story:
-          "At Rivonia, some of the people who stood with us chose to speak against us. For years afterwards I shared a country, and later a government, with people who had done a great deal worse than lie to me.",
+          "I taught Nero as a boy and advised him for years once he was emperor. In the end he sent word that I was to die. What he had become was never mine to decide. What I did with the hour I had left was entirely mine.",
         lesson:
-          "Separate what this person is from what you will now do. The first belongs to them. Only the second belongs to you.",
+          "What they are belongs in the column you do not control. What you will now do with them belongs in the other. Spend nothing on the first.",
         action:
           "Decide what you will still do with them — work, speak, or nothing. Decide today, not when you feel calmer.",
         proOnly: false,
@@ -237,11 +237,11 @@ export const CATEGORIES: CategorySeed[] = [
       {
         slug: "estranged-family",
         title: "I haven't spoken to them in two years",
-        masterSlug: "mandela",
+        masterSlug: "seneca",
         story:
-          "I opened talks with the government while still a prisoner, and did not first ask permission from my own side. They were angry. Someone had to move before both sides were ready, and it had better be the one with the least left to lose.",
+          "From Corsica I wrote to my mother. I was the one in exile, and the letter was written to console her, not to be consoled. Someone had to write first, and it made no sense to wait for the person with less to write about.",
         lesson:
-          "Someone goes first, and it is rarely the person who feels most wronged. It is the one who has stopped waiting to be right.",
+          "Someone writes first, and it is rarely the one who was wronged. It is the one who has stopped waiting to be answered.",
         action: "Send four sentences. No history in them. Just an opening.",
         proOnly: true,
         searchCount: 312,
@@ -249,11 +249,11 @@ export const CATEGORIES: CategorySeed[] = [
       {
         slug: "cant-forgive",
         title: "I can't let go of what they did",
-        masterSlug: "mandela",
+        masterSlug: "seneca",
         story:
-          "When I became president I invited one of my former warders to sit among the guests. It was not sentiment and it was not forgiveness performed for a camera. It was the cheapest way I knew to tell a frightened country what came next.",
+          "I wrote a whole work on anger, addressed to my brother Novatus. Its argument is short enough to carry: anger does more harm to the one who holds it than to the one it is aimed at.",
         lesson:
-          "Resentment is a thing you carry for someone who set it down long ago. Put it down as strategy, not as absolution.",
+          "The resentment is a sentence you are serving on their behalf. Count what it costs you, the way you would count money.",
         action:
           "Name one thing the resentment is costing you this week. Say it out loud.",
         proOnly: true,
@@ -294,11 +294,11 @@ export const CATEGORIES: CategorySeed[] = [
       {
         slug: "no-routine",
         title: "My days have no shape",
-        masterSlug: "mandela",
+        masterSlug: "curie",
         story:
-          "For thirteen years we broke limestone on Robben Island. I used the walk to the quarry to learn Afrikaans, because I would one day need to speak to these men in the language they thought in.",
+          "As a student in Paris I lived in one room on tea and bread, and removed from it everything that was not the degree. I did not keep hours because I was disciplined. I kept them because I had left nothing in the room to break them.",
         lesson:
-          "Time you did not choose is still time. The question is whether you spend it being owed something or being ready.",
+          "A routine is not a decision you keep making. It is what remains once the alternatives have been removed.",
         action: "Fix one thing to one time tomorrow. One. Set the alarm now.",
         proOnly: true,
         searchCount: 334,

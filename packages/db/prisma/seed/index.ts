@@ -115,6 +115,7 @@ async function seedMasters() {
       cadenceSample: m.cadenceSample,
       neverDo: m.neverDo,
       rightsNote: m.rightsNote ?? null,
+      active: m.active ?? true,
       unlockDay: m.unlockDay,
       proOnly: m.proOnly,
       sortOrder: m.sortOrder,
