@@ -8,6 +8,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import { registerAiRoute } from "./routes/ai";
+import { registerRevenueCatWebhook } from "./routes/revenuecat";
 
 const app = new Hono();
 
@@ -35,6 +36,7 @@ app.use(
 );
 
 registerAiRoute(app);
+registerRevenueCatWebhook(app);
 
 app.get("/", (c) => {
   return c.text("OK");

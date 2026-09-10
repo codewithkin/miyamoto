@@ -35,6 +35,11 @@ export const env = createEnv({
     SMTP_FROM: z.string().min(1).optional(),
     /** Public site origin, used to build links in emails. */
     WEB_URL: z.url().optional(),
+
+    // The value RevenueCat sends as the webhook's Authorization header, set
+    // in its dashboard. Optional so the server boots without it; the webhook
+    // answers 503 until it is present rather than accepting unsigned events.
+    REVENUECAT_WEBHOOK_AUTH: z.string().min(16).optional(),
   },
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
