@@ -20,6 +20,7 @@ import { Button, Screen, Text } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { authClient } from "@/lib/auth-client";
 import { describeChatError } from "@/lib/chat-errors";
+import { track } from "@/lib/telemetry";
 import { trpc } from "@/utils/trpc";
 import {
   green,
@@ -169,6 +170,13 @@ export default function ChatScreen() {
     const value = input.trim();
     if (!value || !canSend) return;
     sendMessage({ text: value });
+    // Counted when sent, not when answered: this measures people reaching
+    // for a Master. Never the text — only who it went to and whether it
+    // opened the thread.
+    track("Chat.messageSent", {
+      master: activeThread?.master.slug ?? "unknown",
+      firstInThread: messages.length === 0,
+    });
     setInput("");
   }
 
