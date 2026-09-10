@@ -2,7 +2,33 @@ import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+/**
+ * This schema is server-only, so `clientPrefix`/`client` were omitted —
+ * the usual way to call `createEnv` with no client vars. But
+ * @t3-oss/env-core's `createEnv` has no default for its `TPrefix` type
+ * parameter, and the "server-only" overload branch never mentions
+ * `clientPrefix` at all, so TypeScript has nowhere to *infer* `TPrefix`
+ * from and, in some compilation contexts, widens it to `string |
+ * undefined` instead of `undefined`. When that happens every `server` key
+ * gets flagged with @t3-oss/env-core's "should not be prefixed" branded
+ * error, because the mapped type's `` TKey extends `${TPrefix}${string}` ``
+ * check matches almost any key once `TPrefix` includes `string`.
+ *
+ * `clientPrefix: undefined` below gives TypeScript an actual property to
+ * infer `TPrefix` from, rather than nothing to infer from at all — passing
+ * `<undefined>` as an explicit type argument instead breaks inference of
+ * `TServer` too (it stops being inferred from `server: {...}` and falls
+ * back to its own default, emptying `env`'s type — caught by
+ * `pnpm check-types` before this was committed).
+ *
+ * This one compiled clean locally (`pnpm check-types`) but broke a Vercel
+ * deploy, whose Node.js runtime type-checks `apps/server`'s entry
+ * independently of our own build, under settings that hit the unstable
+ * path — see `systems/12-deploys.md`.
+ */
 export const env = createEnv({
+  clientPrefix: undefined,
+  client: {},
   server: {
     DATABASE_URL: z.string().min(1),
     BETTER_AUTH_SECRET: z.string().min(32),
