@@ -74,7 +74,7 @@ export default function RemindersScreen() {
         <View style={{ gap: space.md }}>
           <Enter preset="rise">
             <Text variant="display">
-              A Master will wake you at {draft.morningReminder}.
+              {master?.name ?? "Your Master"} will write at {draft.morningReminder}.
             </Text>
           </Enter>
           <Enter preset="rise" delay={200}>
@@ -135,7 +135,7 @@ export default function RemindersScreen() {
       <View style={{ paddingVertical: space.xxl, gap: space.base }}>
         <Enter preset="pop" delay={1300}>
           <Button
-            label={asking ? "Asking your phone…" : `Wake me at ${draft.morningReminder}`}
+            label={asking ? "Asking your phone…" : `Remind me at ${draft.morningReminder}`}
             disabled={asking}
             onPress={() => void accept()}
           />
