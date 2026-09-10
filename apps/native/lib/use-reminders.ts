@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
-import { MASTERS } from "@/content/onboarding-options";
 import {
   cancelDailyReminders,
   cancelStreakWarning,
@@ -46,10 +45,12 @@ export function useReminderSchedule(enabled: boolean) {
   const morningBody = trial
     ? `Day ${today.data?.currentDay ?? 1}. ${trial}`
     : "Today's trial is on the Path. Before breakfast.";
-  const firstSlug = today.data?.master?.slug ?? "musashi";
   const morningFrom = today.data?.master?.name ?? "Musashi";
-  const eveningFrom =
-    MASTERS.find((m) => m.slug !== firstSlug && !m.proOnly)?.name ?? morningFrom;
+  // The evening check-in comes from the same Master as the morning. It used to
+  // come from "the next non-Pro Master", which is Seneca — locked until Day 7
+  // since every Master but Musashi became earned (D-005). A Day 1 notification
+  // from someone the user cannot yet speak to undercuts the whole ladder.
+  const eveningFrom = morningFrom;
 
   React.useEffect(() => {
     configureForegroundDisplay();
