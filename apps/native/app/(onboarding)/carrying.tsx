@@ -8,6 +8,7 @@ import { Enter } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon } from "@/components/icon";
+import { MasterAvatar } from "@/components/master-avatar";
 import { MASTERS, WOUNDS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -19,6 +20,12 @@ import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tok
  * (D-037), so it is obvious both that several can be chosen and which ones
  * were. The nudge underneath only shows once there is something true to say
  * about the picks. The screen scrolls: the chip grid is tall on small phones.
+ *
+ * When the picks lean towards one Master, the nudge shows that Master's face
+ * and says plainly whether they're yours yet (D-045) — a leaning towards
+ * Seneca is also the first hint of the ladder the next screen explains. It
+ * used to open with "Most people pick three", a claim about users the app
+ * does not have yet.
  */
 export default function CarryingScreen() {
   const router = useRouter();
@@ -34,7 +41,8 @@ export default function CarryingScreen() {
     let best: { slug: string; n: number } | null = null;
     for (const [slug, n] of counts) if (!best || n > best.n) best = { slug, n };
     if (!best || best.n < 2) return null;
-    return { name: MASTERS.find((m) => m.slug === best.slug)?.name ?? null, n: best.n };
+    const master = MASTERS.find((m) => m.slug === best.slug);
+    return master ? { master, n: best.n } : null;
   }, [draft.wounds]);
 
   return (
@@ -97,15 +105,42 @@ export default function CarryingScreen() {
           })}
         </View>
 
-        {lean?.name ? (
+        {lean ? (
           <Enter preset="fade">
-            <Text variant="caption">
-              Most people pick three. {lean.n} of yours already match {lean.name}.
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.base,
+                paddingVertical: space.md,
+                paddingLeft: space.md,
+                paddingRight: space.xl,
+                borderRadius: radius.card,
+                backgroundColor: ink.surface,
+                borderWidth: 1,
+                borderColor: ink.border,
+              }}
+            >
+              <MasterAvatar
+                slug={lean.master.slug}
+                name={lean.master.name}
+                size={36}
+                locked={lean.master.proOnly || lean.master.unlockDay !== null}
+                pro={lean.master.proOnly}
+              />
+              <Text variant="caption" color={textColor.secondaryDim} style={{ flex: 1 }}>
+                {lean.n} of these are {lean.master.name}&apos;s ground.{" "}
+                {lean.master.proOnly
+                  ? `${lean.master.name} is part of Pro.`
+                  : lean.master.unlockDay !== null
+                    ? `${lean.master.name} arrives on Day ${lean.master.unlockDay}.`
+                    : `${lean.master.name} answers first.`}
+              </Text>
+            </View>
           </Enter>
         ) : (
           <Enter preset="fade" delay={900}>
-            <Text variant="caption">Most people pick three.</Text>
+            <Text variant="caption">Three is plenty to start.</Text>
           </Enter>
         )}
       </View>
