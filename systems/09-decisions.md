@@ -298,3 +298,20 @@ enums, counts and slugs, never message text or anything the user typed.
 Development builds report in test mode. The full list of signals is in
 `systems/10-analytics.md`, and a new signal is added there in the same
 commit.
+
+---
+
+## Deploys (session 6)
+
+**D-042 — Vercel's Node.js runtime type-checks `apps/server` a second
+time, on its own terms.**
+Independently of `tsdown` (our real build, which already succeeds),
+Vercel detects `apps/server/src/index.ts` as a server entrypoint and
+type-checks it and everything it imports under settings we do not
+control — one that does not support the "Path Mappings" or "Project
+References" tsconfig features, by Vercel's own documentation. This is why
+a change can pass `pnpm check-types` cleanly and still fail on Vercel:
+`apps/server/tsconfig.json`'s unused `paths` entry, and a `createEnv` call
+with no site to infer its `clientPrefix` type parameter from, both did.
+See `systems/12-deploys.md` for the full account and what to check first
+the next time this happens.

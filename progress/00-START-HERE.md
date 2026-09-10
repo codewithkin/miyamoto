@@ -274,6 +274,15 @@ notes do not survive a clone.
 12. **Enter the Data safety form in Play Console.** The answers are in
     `systems/11-play-data-safety.md`, and the privacy policy already
     matches them. Only the owner can submit the form.
+13. **Schema changes never reach production by deploying.** Nothing runs
+    `prisma migrate deploy` or `db push` on build — `postinstall` only
+    regenerates the client. `packages/db/prisma/migrations/` holds only
+    `.gitkeep`; this project has never used Prisma Migrate. Someone has to
+    run `pnpm --filter @miyamoto/db db:push` against production by hand
+    after a schema change. **The owner's call, not picked by default**
+    (session 6): start a migration history now (a baseline migration from
+    the current schema, then `migrate deploy` wired into the build), or
+    keep `db push` and automate it deliberately. See `systems/12-deploys.md`.
 
 ## Waiting on the owner
 
