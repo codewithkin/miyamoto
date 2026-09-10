@@ -2,11 +2,11 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade, BladeRail, BladeTick } from "@/components/blade";
+import { BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
+import { OnboardingHeader } from "@/components/onboarding-header";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
-import { BackButton } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
 import { MASTERS, inWords } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
@@ -41,22 +41,7 @@ export default function MasterScreen() {
 
   return (
     <Screen scroll>
-      <Enter preset="drop">
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: space.base,
-            paddingVertical: space.lg,
-          }}
-        >
-          <BackButton onPress={() => router.back()} />
-          <Text variant="eyebrow">3/4</Text>
-          <View style={{ flex: 1 }}>
-            <BladeRail count={4} progress={3} activeIndex={2} delay={200} step={70} />
-          </View>
-        </View>
-      </Enter>
+      <OnboardingHeader step={3} />
 
       <View style={{ flex: 1, gap: space.section }}>
         <View style={{ gap: space.md }}>

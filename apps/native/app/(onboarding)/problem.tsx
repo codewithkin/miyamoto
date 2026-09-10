@@ -3,6 +3,7 @@ import React from "react";
 import { TextInput, View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
+import { OnboardingHeader } from "@/components/onboarding-header";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
@@ -56,26 +57,17 @@ export default function ProblemScreen() {
 
   return (
     <Screen>
-      <Enter preset="drop" delay={0}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingVertical: space.lg,
-          }}
-        >
-          {/* No back arrow: this is the first screen after sign-in, and behind
-              it is only welcome, which would bounce a signed-in user straight
-              back here through the gate. */}
-          <View />
+      <OnboardingHeader
+        step={1}
+        back={false}
+        trailing={
           <Touchable feel="row" onPress={() => router.push("/(onboarding)/carrying")} hitSlop={12}>
             <Text variant="label" color={textColor.muted}>
               Skip
             </Text>
           </Touchable>
-        </View>
-      </Enter>
+        }
+      />
 
       <View style={{ flex: 1, gap: space.section }}>
         <View style={{ gap: space.md }}>

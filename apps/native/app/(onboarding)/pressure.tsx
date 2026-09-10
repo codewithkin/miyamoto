@@ -2,11 +2,12 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { BladeRail, BladeTick } from "@/components/blade";
+import { BladeTick } from "@/components/blade";
+import { OnboardingHeader } from "@/components/onboarding-header";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { BackButton, Icon } from "@/components/icon";
+import { Icon } from "@/components/icon";
 import { PRESSURES, REMINDER_TIMES } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -37,22 +38,7 @@ export default function PressureScreen() {
 
   return (
     <Screen scroll>
-      <Enter preset="drop">
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: space.base,
-            paddingVertical: space.lg,
-          }}
-        >
-          <BackButton onPress={() => router.back()} />
-          <Text variant="eyebrow">4/4</Text>
-          <View style={{ flex: 1 }}>
-            <BladeRail count={4} progress={4} activeIndex={3} delay={200} step={70} />
-          </View>
-        </View>
-      </Enter>
+      <OnboardingHeader step={4} />
 
       <View style={{ flex: 1, gap: space.section }}>
         <View style={{ gap: space.md }}>
