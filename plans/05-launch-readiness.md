@@ -41,6 +41,11 @@ unavailable. Nothing pretends.
   in, and match what the app actually does.
 - **Watch:** the store listing copy does not mention ads and the app ships a
   rewarded ad. That mismatch gets listings rejected.
+- **Note (session 5):** the answers are written out in
+  `systems/11-play-data-safety.md`, checked against the code, and the
+  privacy policy now matches them (analytics, ads and processors added;
+  claims about photo uploads, crash logs and Apple sign-in removed). What
+  remains is entering them in the console, which only the owner can do.
 
 ## T03 — Domain live
 

@@ -253,8 +253,10 @@ notes do not survive a clone.
    with no data behind it. That is legal exposure once the app is live, so
    it is the owner's call: replace with real numbers after launch, or cut.
 5. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
-   128px, so both go soft above about 64pt. Both Musashi images are
-   *Vagabond* artwork, the same open risk as the app icon.
+   128px, so both go soft above about 64pt. The Musashi portraits, the
+   welcome hero and the icon are *Vagabond* artwork. **The owner has chosen
+   to keep it for now (session 5).** Do not replace it unasked, and do not
+   raise it again as new; it stays tracked under 05 T01.
 6. **A finished but unclaimed draft is per device, not per account.** If
    one person finishes onboarding offline, signs out, and someone else
    signs in on that phone before the claim lands, the second account gets
@@ -269,9 +271,9 @@ notes do not survive a clone.
    and secret, then a sandbox pass.
 10. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
 11. **Mandela on the marketing site** — owner said later, separately.
-12. **The privacy policy and Play data safety must mention analytics**
-    before launch. The wording is in `systems/10-analytics.md`, "Before
-    launch".
+12. **Enter the Data safety form in Play Console.** The answers are in
+    `systems/11-play-data-safety.md`, and the privacy policy already
+    matches them. Only the owner can submit the form.
 
 ## Waiting on the owner
 
@@ -279,9 +281,9 @@ A Google OAuth client and an HTTPS server address (blocks sign-in on a
 phone), `SMTP_*`, RevenueCat keys, `REVENUECAT_WEBHOOK_AUTH` and the
 dashboard webhook, an original app icon, larger Curie and Sun Tzu portraits,
 a device with an EAS development build, a decision about Day 14, and a
-decision about the payoff figures and testimonials, and a line about
-TelemetryDeck in the privacy policy. Apple sign-in is off, so Apple
-credentials are no longer needed.
+decision about the payoff figures and testimonials, and the Data safety
+form entered in Play Console (answers ready). Apple sign-in is off, so
+Apple credentials are no longer needed.
 
 ---
 

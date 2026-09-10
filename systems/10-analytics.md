@@ -92,11 +92,10 @@ Useful single insights:
   posts to the default ingest endpoint. The organisation namespace
   (`com.manassehtechnologies`) is not needed for sending.
 
-## Before launch
+## Disclosure
 
-- **The privacy policy** (`apps/web/src/app/privacy`) must say that
-  anonymous usage analytics are collected through TelemetryDeck: what is
-  collected, and that it is not linked to the account.
-- **The Play Console data safety form:** declare *App activity -> App
-  interactions*, collected for analytics, not shared, and not linked to the
-  user's identity.
+- **The privacy policy says it** (session 5): an "Anonymous analytics"
+  entry, and TelemetryDeck named among the processors.
+- **The Play Data safety answers** are in `systems/11-play-data-safety.md`:
+  *App interactions* and *Device or other IDs*, for analytics. They still
+  have to be entered in the console.

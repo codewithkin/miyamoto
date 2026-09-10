@@ -16,6 +16,7 @@ something *looks*, the design file wins. Where they disagree about a
 | `06-auth.md` | Google sign-in end to end, and why it fails on phones |
 | `05-tone.md` | How the *app* speaks — distinct from how a Master speaks |
 | `10-analytics.md` | TelemetryDeck: every signal, what it carries, the funnel |
+| `11-play-data-safety.md` | The Play Data safety form, answer by answer, and when to revisit it |
 | `09-decisions.md` | Numbered decision log. Cite by number in code. |
 
 Start with `09-decisions.md` if you are looking for why something is odd.
