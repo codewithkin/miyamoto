@@ -43,6 +43,14 @@ unblocking, not building.
   (D-018).
 - On-device `getCustomerInfo` stays for instant gating; the server keeps its
   own copy because a gate the client can answer is not a gate.
+- **Note (session 3):** built ahead of T01. The webhook needs a shared
+  authorization secret, not the store API keys, so nothing blocks the code —
+  only the dashboard configuration. Verified with synthetic RevenueCat events
+  against the real route and database. What stays with the owner: setting
+  `REVENUECAT_WEBHOOK_AUTH` on the server, and pointing the dashboard webhook
+  at `/webhooks/revenuecat` with the same value as its Authorization header.
+  Unknown and anonymous `app_user_id`s are acknowledged with 200 and ignored,
+  because RevenueCat retries anything else indefinitely.
 
 ## T03 — Verify the Pro gates end to end
 
