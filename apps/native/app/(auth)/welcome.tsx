@@ -1,3 +1,4 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { ActivityIndicator, Image, Linking, useWindowDimensions, View } from "react-native";
@@ -10,6 +11,7 @@ import { Enter } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
+import { failureFromCallbackCode, SIGN_IN_SENTENCE } from "@/lib/auth-errors";
 import { LINKS } from "@/lib/links";
 import { track } from "@/lib/telemetry";
 import { useGoogleSignIn } from "@/lib/use-google-sign-in";
@@ -35,7 +37,19 @@ const HERO = require("@/assets/images/hero-musashi.jpg");
  * so it meets ink.base without a seam or a gradient library.
  */
 export default function WelcomeScreen() {
-  const { signIn, busy, error } = useGoogleSignIn();
+  const router = useRouter();
+  const { signIn, busy, error: hookError } = useGoogleSignIn();
+  // An error the link back from Google carried (app/+native-intent.tsx
+  // routes here with it) — shown even if this screen was freshly mounted,
+  // as it is after the app was relaunched mid-sign-in.
+  const { authError } = useLocalSearchParams<{ authError?: string }>();
+  const error =
+    hookError ?? (authError ? SIGN_IN_SENTENCE[failureFromCallbackCode(authError)] : null);
+
+  function startSignIn() {
+    if (authError) router.setParams({ authError: undefined });
+    void signIn("google");
+  }
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -135,7 +149,7 @@ export default function WelcomeScreen() {
             accessibilityLabel="Continue with Google"
             accessibilityState={{ busy: busy !== null, disabled: busy !== null }}
             disabled={busy !== null}
-            onPress={() => void signIn("google")}
+            onPress={startSignIn}
             style={{
               height: 58,
               borderRadius: radius.pill,

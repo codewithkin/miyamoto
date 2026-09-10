@@ -39,8 +39,8 @@ Masters*, App ID `5D5EE985-6FCF-4D10-B283-AC4F7F7F5A08`.
 |---|---|---|
 | `Welcome.shown` | `app/(auth)/welcome.tsx`, once per visit | — |
 | `Auth.signInStarted` | `lib/use-google-sign-in.ts`, on tap | `provider` |
-| `Auth.signInCompleted` | `lib/use-google-sign-in.ts` when Better Auth returns no error; `lib/auth-redirect.ts` with `via: "link"` when the link back from Google finishes it (cold start, or Android's browser promise giving up first — D-044) | `provider`, `via` (link path only) |
-| `Auth.signInFailed` | the hook, on a returned or thrown error; `lib/auth-redirect.ts` with `via: "link"`, on an `error=` link back from Google | `provider`, `reason`: `provider-off` \| `network` \| `declined` \| `expired` \| `not-saved` \| `cancelled-or-other`; `via` (link path only) |
+| `Auth.signInCompleted` | once per sign-in, when a session the server recognises exists — from `lib/use-google-sign-in.ts` (`via: "browser"`, the Expo plugin stored it) or `lib/auth-redirect.ts` (`via: "link"`, the link back from Google did: a cold start, or Android's browser promise giving up first — D-044). Whichever confirms first clears the pending marker, so it never fires twice | `provider`, `via` |
+| `Auth.signInFailed` | the hook, on an error before the browser opened (no `via`) or when the browser closed with no session and no link (`cancelled-or-other`, `via: "browser"` — someone backing out of Google); `lib/auth-redirect.ts` on an `error=` link back from Google (`via: "link"`) | `provider`, `reason`: `provider-off` \| `network` \| `declined` \| `expired` \| `not-saved` \| `cancelled-or-other`; `via` |
 | `Onboarding.completed` | `app/(onboarding)/offer.tsx` `finish()`, once | `outcome`: `purchased` \| `declined` \| `started-free` \| `skipped`; `plan`: `LIFETIME` \| `MONTHLY` \| `none`; `pressure`; `wounds` (count); `master` (slug) |
 | `Chat.messageSent` | `app/(app)/chat.tsx` `send()` | `master` (slug), `firstInThread` |
 
