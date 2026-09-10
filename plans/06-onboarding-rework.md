@@ -73,6 +73,15 @@ paywall animations. Everything else is toned down.
   onboarding; onboarded → the app. No screen can be reached out of order, and
   no redirect loops while the onboarding status loads.
 
+**Note (session 4): B1 and B4 merged.** Planned as two todos, they are one
+seam. The claim currently fires as soon as a draft has `reachedAuthAt`,
+which the sign-in screen sets on mount. Moving onboarding after sign-in
+without moving that trigger would claim an empty draft the instant a user
+signs in, mark the account onboarded, and route them past the quiz for good.
+Neither commit can land alone and leave the app working, so they land as
+one: `feat(native): route every launch through one gate, and save onboarding
+at its end`.
+
 ## B2 — Welcome: one button
 
 - [ ] `pending-B2`
@@ -91,7 +100,7 @@ paywall animations. Everything else is toned down.
 
 ## B4 — Onboarding after sign-in
 
-- [ ] `pending-B4`
+- [ ] `pending-B1` (merged into B1 — see the note above)
 - **Commit:** `feat(native): run onboarding after sign-in and save it at the end`
 - **Touches:** `lib/onboarding-store.tsx`, `lib/claim-draft.tsx`, the
   onboarding screens that pointed at sign-in
