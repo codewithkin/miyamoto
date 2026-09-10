@@ -114,6 +114,27 @@ export async function consumeQuestion(
   return getUsage(userId);
 }
 
+/**
+ * Gives back a question that was spent on an answer never delivered.
+ *
+ * The question is spent before generating (D-018), which is right: checking
+ * afterwards would let a rewritten client take unlimited answers. The cost of
+ * that ordering is that a model outage, a withdrawn Master or a reply
+ * rejected for inventing history would each eat one of three daily questions
+ * while giving the user nothing. Refunding closes that without reopening the
+ * hole — a refund only follows a failure on our side, and delivers nothing.
+ *
+ * Takes the local date the question was spent against rather than
+ * recomputing it, so a request that crosses the user's midnight refunds the
+ * day it was charged to.
+ */
+export async function refundQuestion(userId: string, localDate: string): Promise<void> {
+  await db.dailyUsage.updateMany({
+    where: { userId, localDate, questionCount: { gt: 0 } },
+    data: { questionCount: { decrement: 1 } },
+  });
+}
+
 /** Grants one extra question for today, after an ad is watched. */
 export async function grantBonusQuestion(
   userId: string,

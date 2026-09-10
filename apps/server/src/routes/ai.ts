@@ -1,13 +1,13 @@
 import { RequestContext } from "@mastra/core/di";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import db from "@miyamoto/db";
-import { consumeQuestion, getUsage } from "@miyamoto/api/lib/usage";
+import { consumeQuestion, getUsage, refundQuestion } from "@miyamoto/api/lib/usage";
 import { auth } from "@miyamoto/auth";
 import type { Hono } from "hono";
 
-import { getMasterAgent, INSTRUCTIONS_KEY } from "../mastra";
+import { getMasterAgent, INSTRUCTIONS_KEY, memory } from "../mastra";
 import { retrieveContext } from "../mastra/retrieval";
-import { compileInstructions } from "../mastra/template";
+import { checkReply, compileInstructions, correctionFor, type ReplyCheck } from "../mastra/template";
 
 /**
  * The chat endpoint.
@@ -19,7 +19,79 @@ import { compileInstructions } from "../mastra/template";
  * Order matters here: authenticate, then spend the question, then answer.
  * Checking the counter after generating would let anyone with a rewritten
  * client take unlimited answers and only fail on the bookkeeping.
+ *
+ * Every reply is generated in full and checked before a word reaches the
+ * device (D-012). A token stream and a validated reply do not compose: once
+ * a sentence has been streamed it has been read, and an invented duel cannot
+ * be taken back by rejecting it afterwards. So the reply is buffered,
+ * validated, retried once with a correction if it fails, and only then
+ * released. The cost is latency — the whole letter arrives after it is
+ * written rather than as it is — and the "is writing…" state on the device
+ * already covers that wait. Recorded as a decision, not an accident.
  */
+
+type MessagePart = { type: string; text?: string };
+
+function latestUserText(messages: { content?: unknown; parts?: MessagePart[] }[]): string {
+  const latest = messages[messages.length - 1];
+  if (!latest) return "";
+  if (typeof latest.content === "string") return latest.content;
+  return (latest.parts ?? [])
+    .filter((p) => p.type === "text")
+    .map((p) => p.text ?? "")
+    .join(" ");
+}
+
+/**
+ * Writes the accepted exchange into Mastra's history.
+ *
+ * Attempts are generated with memory read-only, so a rejected draft never
+ * becomes something the Master "said" earlier in the thread and draws on
+ * next time. Only the question and the reply that passed are saved.
+ */
+async function persistExchange(args: {
+  mastraThreadId: string;
+  userId: string;
+  title: string | null;
+  question: string;
+  answer: string;
+}) {
+  const existing = await memory.getThreadById({ threadId: args.mastraThreadId });
+  if (!existing) {
+    const now = new Date();
+    await memory.saveThread({
+      thread: {
+        id: args.mastraThreadId,
+        resourceId: args.userId,
+        title: args.title ?? undefined,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+  }
+
+  const at = Date.now();
+  await memory.saveMessages({
+    messages: [
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        createdAt: new Date(at),
+        threadId: args.mastraThreadId,
+        resourceId: args.userId,
+        content: { format: 2, parts: [{ type: "text", text: args.question }] },
+      },
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        createdAt: new Date(at + 1),
+        threadId: args.mastraThreadId,
+        resourceId: args.userId,
+        content: { format: 2, parts: [{ type: "text", text: args.answer }] },
+      },
+    ],
+  });
+}
 
 export function registerAiRoute(app: Hono) {
   app.post("/ai", async (c) => {
@@ -45,65 +117,117 @@ export function registerAiRoute(app: Hono) {
       return c.json({ error: "NOT_FOUND" }, 404);
     }
 
+    const question = latestUserText(messages).trim();
+    if (!question) {
+      return c.json({ error: "EMPTY_QUESTION" }, 400);
+    }
+
     // Spend the question before answering, not after.
     const usage = await getUsage(userId);
     if (!usage.canAsk) {
       return c.json({ error: "OUT_OF_QUESTIONS", usage }, 402);
     }
-    await consumeQuestion(userId);
-
-    const latest = messages[messages.length - 1];
-    const latestText: string =
-      typeof latest?.content === "string"
-        ? latest.content
-        : (latest?.parts ?? [])
-            .filter((p: { type: string }) => p.type === "text")
-            .map((p: { text: string }) => p.text)
-            .join(" ");
+    const spent = await consumeQuestion(userId);
 
     // Identity, corpus and quotations all come from the database; the
     // prompt is compiled here rather than baked into the agent.
-    const context = await retrieveContext(thread.master.slug, latestText ?? "");
+    const context = await retrieveContext(thread.master.slug, question);
     if (!context) {
       // Unknown or withdrawn Master. Refusing beats falling back to a
-      // generic voice with no corpus behind it.
+      // generic voice with no corpus behind it — and the question was never
+      // answered, so it is not charged.
+      await refundQuestion(userId, spent.localDate);
       return c.json({ error: "MASTER_UNAVAILABLE" }, 409);
     }
 
     const agent = getMasterAgent(thread.master.slug);
+    const instructions = compileInstructions(context.master, context.corpus, context.quotations);
 
-    // Mastra owns the history: passing the thread id means a Master who has
-    // just been switched in reads everything that came before, which is the
-    // whole promise of switching without losing the thread.
-    const requestContext = new RequestContext();
-    requestContext.setRaw(
-      INSTRUCTIONS_KEY,
-      compileInstructions(context.master, context.corpus, context.quotations),
-    );
+    const attempt = async (correction?: string, lenientTrailer = false): Promise<ReplyCheck> => {
+      const requestContext = new RequestContext();
+      requestContext.setRaw(
+        INSTRUCTIONS_KEY,
+        correction ? `${instructions}\n\n${correction}` : instructions,
+      );
+      const result = await agent.generate(question, {
+        // Read the thread so a switched-in Master sees everything before;
+        // write nothing, so a rejected draft never enters the history.
+        memory: {
+          thread: thread.mastraThreadId,
+          resource: userId,
+          options: { readOnly: true },
+        },
+        requestContext,
+      });
+      return checkReply(result.text, context.corpus, { lenientTrailer });
+    };
 
-    const result = await agent.stream(latestText ?? "", {
-      memory: {
-        thread: thread.mastraThreadId,
-        resource: userId,
-      },
-      requestContext,
-    });
+    let check: ReplyCheck;
+    try {
+      check = await attempt();
+      if (!check.ok) {
+        console.warn(`[ai] ${thread.master.slug} draft rejected (${check.reason}); retrying once`);
+        check = await attempt(correctionFor(check.reason), true);
+      }
+    } catch (e) {
+      console.error("[ai] generation failed", e);
+      await refundQuestion(userId, spent.localDate);
+      return c.json(
+        {
+          error: "MODEL_UNAVAILABLE",
+          message: "No Master could be reached. Ask again — this one did not count.",
+        },
+        503,
+      );
+    }
+
+    if (!check.ok) {
+      // Twice in a row the Master either invented something or could not say
+      // where it came from. Delivering it anyway is the failure D-007 exists
+      // to prevent; the user is told plainly and keeps their question.
+      console.warn(`[ai] ${thread.master.slug} rejected twice (${check.reason}); refunded`);
+      await refundQuestion(userId, spent.localDate);
+      return c.json(
+        {
+          error: "UNSUPPORTED_REPLY",
+          message: "No answer came back that could be stood behind. Ask again — this one did not count.",
+        },
+        502,
+      );
+    }
+
+    const answer = check.text;
+
+    try {
+      await persistExchange({
+        mastraThreadId: thread.mastraThreadId,
+        userId,
+        title: thread.title,
+        question,
+        answer,
+      });
+    } catch (e) {
+      // The answer exists and was paid for; losing it from history is worse
+      // than delivering it with a gap. Logged, not surfaced.
+      console.error("[ai] could not save the exchange to memory", e);
+    }
 
     await db.thread.update({
       where: { id: thread.id },
       data: {
         lastMessageAt: new Date(),
-        title: thread.title ?? latestText?.slice(0, 80),
+        title: thread.title ?? question.slice(0, 80),
       },
     });
 
-    // Mastra emits its own chunk type; bridge it onto the AI SDK UI stream
-    // the app's useChat consumes.
+    // Released sentence by sentence so the letter still arrives as lines on
+    // the device. No artificial delay: the wait already happened.
+    const pieces = answer.match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) ?? [answer];
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
         const id = crypto.randomUUID();
         writer.write({ type: "text-start", id });
-        for await (const delta of result.textStream) {
+        for (const delta of pieces) {
           writer.write({ type: "text-delta", id, delta });
         }
         writer.write({ type: "text-end", id });
