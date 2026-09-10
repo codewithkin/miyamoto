@@ -52,7 +52,11 @@ export const chatRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const master = await db.master.findUnique({ where: { slug: input.masterSlug } });
+      // A withdrawn Master (D-006) is indistinguishable from no Master here,
+      // so a stale client holding the slug cannot open a thread with him.
+      const master = await db.master.findFirst({
+        where: { slug: input.masterSlug, active: true },
+      });
       if (!master) {
         throw new TRPCError({ code: "NOT_FOUND", message: "No such Master" });
       }
@@ -85,7 +89,7 @@ export const chatRouter = router({
         db.thread.findFirst({
           where: { id: input.threadId, userId: ctx.session.user.id },
         }),
-        db.master.findUnique({ where: { slug: input.masterSlug } }),
+        db.master.findFirst({ where: { slug: input.masterSlug, active: true } }),
       ]);
 
       if (!thread) throw new TRPCError({ code: "NOT_FOUND", message: "No such thread" });

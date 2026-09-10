@@ -21,7 +21,13 @@ async function entitlement(userId: string) {
  * Locked content is returned with its copy withheld rather than omitted —
  * the user should see what they have not earned, because that is the whole
  * mechanic. Only `story`, `lesson` and `action` are stripped.
+ *
+ * Withdrawn Masters are the opposite case, and are omitted entirely (D-006).
+ * A locked row says "earn this"; a withdrawn one has nothing to earn.
  */
+
+/** Every query that reaches a Master goes through this. */
+const ACTIVE_MASTER = { master: { active: true } } as const;
 export const libraryRouter = router({
   categories: protectedProcedure.query(async ({ ctx }) => {
     const { isPro } = await entitlement(ctx.session.user.id);
@@ -30,6 +36,7 @@ export const libraryRouter = router({
       orderBy: { sortOrder: "asc" },
       include: {
         stories: {
+          where: ACTIVE_MASTER,
           orderBy: { sortOrder: "asc" },
           include: { master: { select: { slug: true, name: true } } },
         },
@@ -52,6 +59,7 @@ export const libraryRouter = router({
   mostSearched: protectedProcedure.query(async ({ ctx }) => {
     const { isPro } = await entitlement(ctx.session.user.id);
     const stories = await db.adversityStory.findMany({
+      where: ACTIVE_MASTER,
       orderBy: { searchCount: "desc" },
       take: 5,
       include: { master: { select: { slug: true, name: true } } },
@@ -77,7 +85,9 @@ export const libraryRouter = router({
           category: { select: { name: true, slug: true } },
         },
       });
-      if (!story) throw new TRPCError({ code: "NOT_FOUND" });
+      // A withdrawn Master's story is not found, not locked: a deep link
+      // saved before the withdrawal must not resurface them.
+      if (!story || !story.master.active) throw new TRPCError({ code: "NOT_FOUND" });
 
       if (story.proOnly && !isPro) {
         // Withhold the body, not the existence of it.
@@ -92,10 +102,13 @@ export const libraryRouter = router({
       return { ...story, locked: false as const };
     }),
 
-  /** The five Masters, with what the user has earned. */
+  /** The active Masters, with what the user has earned. */
   masters: protectedProcedure.query(async ({ ctx }) => {
     const { isPro, currentDay } = await entitlement(ctx.session.user.id);
-    const masters = await db.master.findMany({ orderBy: { sortOrder: "asc" } });
+    const masters = await db.master.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+    });
 
     return masters.map((m) => {
       const unlockedByDay = m.unlockDay === null || currentDay >= m.unlockDay;
