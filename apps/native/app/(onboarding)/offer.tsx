@@ -10,6 +10,7 @@ import { CloseButton, Icon } from "@/components/icon";
 import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { usePurchases } from "@/lib/purchases";
+import { track } from "@/lib/telemetry";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
 /**
@@ -56,8 +57,22 @@ function OfferScreenBody() {
    * the draft finished is what lets the app shell's claim send it (D-038),
    * and the gate treats a finished draft as onboarded even before the claim
    * lands, so there is no way back into the quiz from here.
+   *
+   * It is also where Onboarding.completed is counted, once, with how the
+   * offer ended. The ref stops a double tap on the close button counting two.
    */
-  function finish() {
+  const finished = React.useRef(false);
+  function finish(outcome: "purchased" | "declined" | "started-free" | "skipped") {
+    if (!finished.current) {
+      finished.current = true;
+      track("Onboarding.completed", {
+        outcome,
+        plan: outcome === "purchased" || outcome === "declined" ? plan : "none",
+        pressure: draft.pressure,
+        wounds: draft.wounds.length,
+        master: draft.firstMaster ?? "unset",
+      });
+    }
     set({ finishedAt: new Date().toISOString() });
     router.replace("/(app)");
   }
@@ -67,9 +82,9 @@ function OfferScreenBody() {
     // Buying is optional at this point in the journey. Whether the store
     // sheet completes, is cancelled or fails, onboarding still ends — the
     // user is never held on a paywall to get into the app they signed up for.
-    await buy().catch(() => false);
+    const bought = await buy().catch(() => false);
     setBuying(false);
-    finish();
+    finish(bought ? "purchased" : "declined");
   }
   const { left, label } = useCountdown(OFFER_SECONDS);
   const livePulse = usePulse(left > 0);
@@ -95,7 +110,7 @@ function OfferScreenBody() {
               One-time offer
             </Text>
           </View>
-          <CloseButton onPress={finish} accessibilityLabel="Skip the offer" />
+          <CloseButton onPress={() => finish("skipped")} accessibilityLabel="Skip the offer" />
         </View>
       </Enter>
 
@@ -337,7 +352,7 @@ function OfferScreenBody() {
             label="Start free with 3 questions a day"
             variant="ghost"
             disabled={buying}
-            onPress={finish}
+            onPress={() => finish("started-free")}
           />
         </Enter>
       </View>
