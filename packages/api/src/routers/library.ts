@@ -3,14 +3,15 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
+import { isPro } from "../lib/usage";
 
 async function entitlement(userId: string) {
-  const [sub, progress] = await Promise.all([
-    db.subscription.findUnique({ where: { userId }, select: { entitlementActive: true } }),
+  const [pro, progress] = await Promise.all([
+    isPro(userId),
     db.pathProgress.findUnique({ where: { userId }, select: { currentDay: true } }),
   ]);
   return {
-    isPro: sub?.entitlementActive ?? false,
+    isPro: pro,
     currentDay: progress?.currentDay ?? 1,
   };
 }

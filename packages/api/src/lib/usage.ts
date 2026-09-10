@@ -31,7 +31,16 @@ async function resolveTimezone(userId: string): Promise<string> {
   return profile?.timezone ?? "UTC";
 }
 
-async function isPro(userId: string): Promise<boolean> {
+/**
+ * The only definition of Pro. Every gate calls this.
+ *
+ * It exists as one function because it was three: this one honoured a lapsed
+ * expiresAt, while the library, the Master switch and the settings screen
+ * each read entitlementActive alone. A subscription whose clearing webhook
+ * never arrived was therefore not Pro at the counter and still Pro everywhere
+ * else — a gate that disagrees with itself is not a gate (D-018).
+ */
+export async function isPro(userId: string): Promise<boolean> {
   const sub = await db.subscription.findUnique({
     where: { userId },
     select: { entitlementActive: true, expiresAt: true },

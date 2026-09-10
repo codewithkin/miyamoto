@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
 import { localDate, msUntilLocalMidnight } from "../lib/day";
-import { getUsage, grantBonusQuestion } from "../lib/usage";
+import { getUsage, grantBonusQuestion, isPro } from "../lib/usage";
 
 /**
  * Chat metadata, gating and Charges.
@@ -101,13 +101,9 @@ export const chatRouter = router({
         where: { userId: ctx.session.user.id },
         select: { currentDay: true },
       });
-      const sub = await db.subscription.findUnique({
-        where: { userId: ctx.session.user.id },
-        select: { entitlementActive: true },
-      });
-      const isPro = sub?.entitlementActive ?? false;
+      const pro = await isPro(ctx.session.user.id);
 
-      if (!isPro) {
+      if (!pro) {
         if (master.proOnly) {
           throw new TRPCError({ code: "FORBIDDEN", message: "PRO_REQUIRED" });
         }

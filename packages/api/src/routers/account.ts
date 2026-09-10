@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
+import { isPro } from "../lib/usage";
 
 /**
  * Account management from inside the app.
@@ -17,9 +18,10 @@ export const accountRouter = router({
   overview: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const [profile, subscription, counts] = await Promise.all([
+    const [profile, subscription, pro, counts] = await Promise.all([
       db.profile.findUnique({ where: { userId } }),
       db.subscription.findUnique({ where: { userId } }),
+      isPro(userId),
       Promise.all([
         db.thread.count({ where: { userId } }),
         db.trialCompletion.count({ where: { userId } }),
@@ -31,7 +33,7 @@ export const accountRouter = router({
       email: ctx.session.user.email,
       name: ctx.session.user.name,
       timezone: profile?.timezone ?? "UTC",
-      isPro: subscription?.entitlementActive ?? false,
+      isPro: pro,
       plan: subscription?.plan ?? "FREE",
       threads: counts[0],
       trialsCompleted: counts[1],
