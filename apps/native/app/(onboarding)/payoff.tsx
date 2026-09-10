@@ -2,65 +2,107 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade } from "@/components/blade";
+import { Icon, IconBadge, type IconName } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
-import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import {
+  gold,
+  green,
+  indigo,
+  ink,
+  radius,
+  size,
+  space,
+  text as textColor,
+} from "@/theme/tokens";
 
 /**
  * 08 · What your answers bought.
  *
- * Shows the plan before asking for anything. The two comparison bars grow
- * from zero on a stagger so the gap between them is watched rather than
- * read, and Day 1 flips face-up underneath.
+ * One thing to look at: Day 1. It is the only card with a coloured ground and
+ * a heavy border, and it sits directly under the title. The two numbers under
+ * it are the second read — big numerals, each with an icon and its own accent
+ * — and the comparison is last and quiet, as supporting evidence rather than
+ * the headline.
+ *
+ * The screen used to open with a pinwheel, grow two bars from zero on a
+ * stagger and flip the Day 1 card over, all before the button arrived at
+ * 1.4s. It now settles in four short beats, the last at half a second.
  */
+
+function StatCard({
+  icon,
+  value,
+  label,
+  accent,
+  ground,
+  edge,
+}: {
+  icon: IconName;
+  value: number;
+  label: string;
+  accent: string;
+  ground: string;
+  edge: string;
+}) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        padding: space.xl,
+        borderRadius: radius.card,
+        backgroundColor: ground,
+        borderWidth: 1,
+        borderColor: edge,
+        gap: space.md,
+      }}
+    >
+      <IconBadge name={icon} color={accent} background={ink.base} size={32} />
+      <View style={{ gap: 2 }}>
+        <Text variant="numeral" color={accent} style={{ fontSize: 40, lineHeight: 44 }}>
+          {value}
+        </Text>
+        <Text variant="label" color={textColor.body} style={{ fontSize: size.body }}>
+          {label}
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 function CompareBar({
   label,
   percent,
   highlight,
-  delay,
 }: {
   label: string;
   percent: number;
   highlight?: boolean;
-  delay: number;
 }) {
   return (
-    <Enter preset="slideLeft" delay={delay}>
-      <View style={{ gap: space.xs }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text variant="caption" color={highlight ? textColor.body : textColor.faintest}>
-            {label}
-          </Text>
-          <Text variant="caption" color={highlight ? indigo.light : textColor.faintest}>
-            {percent}%
-          </Text>
-        </View>
+    <View style={{ gap: space.xs }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text variant="caption" color={highlight ? textColor.body : textColor.faintest}>
+          {label}
+        </Text>
+        <Text variant="caption" color={highlight ? indigo.light : textColor.faintest}>
+          {percent}%
+        </Text>
+      </View>
+      <View style={{ height: 6, borderRadius: 3, backgroundColor: ink.high, overflow: "hidden" }}>
         <View
           style={{
-            height: 8,
-            borderRadius: 2,
-            backgroundColor: ink.high,
-            overflow: "hidden",
+            width: `${percent}%`,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: highlight ? indigo.bright : ink.borderDim,
           }}
-        >
-          <Enter preset="blade" delay={delay + 160}>
-            <View
-              style={{
-                width: `${percent}%`,
-                height: 8,
-                borderRadius: 2,
-                backgroundColor: highlight ? indigo.base : ink.borderDim,
-              }}
-            />
-          </Enter>
-        </View>
+        />
       </View>
-    </Enter>
+    </View>
   );
 }
 
@@ -68,50 +110,61 @@ export default function PayoffScreen() {
   const router = useRouter();
   const { draft } = useOnboarding();
 
-  const master = MASTERS.find((m) => m.slug === draft.firstMaster);
+  const master = MASTERS.find((m) => m.slug === draft.firstMaster) ?? MASTERS[0];
   const pressure = PRESSURES.find((p) => p.value === draft.pressure);
   const trialCount = draft.pressure === "UNBREAKABLE" ? 30 : draft.pressure === "FIRM" ? 16 : 10;
+  // Everyone but the Master they start with. Was a hardcoded 5 from when
+  // Mandela was on the roster (D-006).
+  const toEarn = MASTERS.length - 1;
 
   return (
     <Screen scroll>
       <View style={{ flex: 1, gap: space.section, paddingTop: space.section }}>
-        <Enter preset="pinwheel">
-          <Text variant="hero">Your dojo is ready</Text>
+        <Enter preset="fade">
+          <View style={{ gap: space.md }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+              <IconBadge name="checkmark" color={green.fg} background={green.base} size={22} />
+              <Text variant="eyebrow" color={textColor.secondary}>
+                Plan built
+              </Text>
+            </View>
+            <Text variant="hero">Your dojo is ready</Text>
+          </View>
         </Enter>
 
-        <Enter preset="rise" delay={340}>
-          <Text variant="lead">
-            People who set {pressure?.label ?? "Firm"} pressure finish 2.4× more often.
-          </Text>
-        </Enter>
-
-        <View style={{ gap: space.base }}>
-          <CompareBar label="Generic app" percent={18} delay={520} />
-          <CompareBar label="Your plan" percent={43} highlight delay={700} />
-        </View>
-
-        {/* Day 1, written for them. */}
-        <Enter preset="flip" delay={960}>
+        {/* The focus: the first trial, written for them. */}
+        <Enter preset="rise" delay={120}>
           <View
             style={{
-              padding: space.xl,
+              padding: space.section,
               borderRadius: radius.card,
-              backgroundColor: ink.surface,
-              borderWidth: 1,
-              borderColor: ink.border,
-              gap: space.md,
+              backgroundColor: indigo.tint,
+              borderWidth: 1.5,
+              borderColor: indigo.base,
+              gap: space.base,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-              <Blade state="active" length={14} delay={1100} />
-              <Text variant="eyebrow">Day 1 · written for you</Text>
+              <Icon name="flag" size={16} color={indigo.light} />
+              <Text variant="eyebrow" color={indigo.light}>
+                Day 1 · written for you
+              </Text>
             </View>
-            <Text variant="voice">
+            <Text variant="voice" style={{ fontSize: size.title, lineHeight: size.title * 1.4 }}>
               Name the person you&apos;re avoiding. Out loud, to yourself, before breakfast.
             </Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
-              {master ? <MasterAvatar slug={master.slug} name={master.name} size={28} /> : null}
-              <Text variant="caption" style={{ flex: 1 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.md,
+                paddingTop: space.base,
+                borderTopWidth: 1,
+                borderTopColor: indigo.surface,
+              }}
+            >
+              {master ? <MasterAvatar slug={master.slug} name={master.name} size={32} /> : null}
+              <Text variant="caption" color={textColor.secondaryDim} style={{ flex: 1 }}>
                 Chosen by {master?.name ?? "your Master"} from your{" "}
                 {draft.wounds.length === 1 ? "wound" : `${draft.wounds.length} wounds`}
               </Text>
@@ -119,38 +172,42 @@ export default function PayoffScreen() {
           </View>
         </Enter>
 
-        <Enter preset="fade" delay={1240}>
+        {/* What is waiting. */}
+        <Enter preset="rise" delay={240}>
           <View style={{ flexDirection: "row", gap: space.base }}>
-            <View
-              style={{
-                flex: 1,
-                padding: space.xl,
-                borderRadius: radius.card,
-                backgroundColor: indigo.tint,
-                gap: space.xxs,
-              }}
-            >
-              <Text variant="numeral">{trialCount}</Text>
-              <Text variant="caption">trials waiting</Text>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                padding: space.xl,
-                borderRadius: radius.card,
-                backgroundColor: ink.surface,
-                gap: space.xxs,
-              }}
-            >
-              <Text variant="numeral">5</Text>
-              <Text variant="caption">masters to earn</Text>
-            </View>
+            <StatCard
+              icon="flame"
+              value={trialCount}
+              label="trials waiting"
+              accent={indigo.light}
+              ground={ink.surface}
+              edge={ink.border}
+            />
+            <StatCard
+              icon="people"
+              value={toEarn}
+              label={toEarn === 1 ? "Master to earn" : "Masters to earn"}
+              accent={gold.base}
+              ground={gold.tint}
+              edge={gold.tintAlt}
+            />
+          </View>
+        </Enter>
+
+        {/* Supporting evidence, deliberately quiet. */}
+        <Enter preset="fade" delay={360}>
+          <View style={{ gap: space.base }}>
+            <Text variant="caption">
+              People who set {pressure?.label ?? "Firm"} pressure finish 2.4× more often.
+            </Text>
+            <CompareBar label="Generic app" percent={18} />
+            <CompareBar label="Your plan" percent={43} highlight />
           </View>
         </Enter>
       </View>
 
       <View style={{ paddingVertical: space.xxl }}>
-        <Enter preset="pop" delay={1420}>
+        <Enter preset="fade" delay={480}>
           <Button
             label="See who's already inside"
             onPress={() => router.push("/(onboarding)/proof")}
