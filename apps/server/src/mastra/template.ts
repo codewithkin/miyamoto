@@ -230,8 +230,19 @@ export type ReplyRejection =
   | "UNCITED_CLAIM"
   | "NO_CHARGE";
 
+/**
+ * `reason` is on both branches — `null` when accepted — rather than only
+ * on `ok: false`, so reading it never depends on `check.ok` having been
+ * narrowed first. A production TypeScript pass Vercel runs against
+ * `apps/server` (D-042, `systems/12-deploys.md`) reported `check.reason`
+ * inside `if (!check.ok)` as absent, with `check` shown as the *accepted*
+ * variant — narrowing that plain `tsc -b` here has never reproduced, on
+ * this same file, unchanged. Whatever that checker's actual mechanism is,
+ * giving `reason` a value on every branch removes the narrowing dependency
+ * entirely rather than chasing it further.
+ */
 export type ReplyCheck =
-  | { ok: true; text: string; cited: string[]; charge: string | null }
+  | { ok: true; reason: null; text: string; cited: string[]; charge: string | null }
   | { ok: false; reason: ReplyRejection; text: string; cited: string[]; charge: string | null };
 
 /** Splits the letter the user reads from the two lines they must not see in it. */
@@ -314,11 +325,11 @@ export function checkReply(
   // otherwise truthful letter over.
   if (!charge && !options.isRetry) return reject("NO_CHARGE");
 
-  return { ok: true, text, cited: ids, charge };
+  return { ok: true, reason: null, text, cited: ids, charge };
 }
 
 /** What the retry is told about the draft it is replacing. */
-export function correctionFor(reason: ReplyRejection): string {
+export function correctionFor(reason: ReplyRejection | null): string {
   const head = "CORRECTION — your previous draft was discarded.";
   switch (reason) {
     case "EMPTY":
@@ -331,5 +342,11 @@ export function correctionFor(reason: ReplyRejection): string {
       return `${head} It described something from your life without citing the CORPUS entry it came from. Either tell a MOMENT that is in the CORPUS and cite its id, or speak from a PRINCIPLE and make no claim at all about your past.`;
     case "NO_CHARGE":
       return `${head} It gave no charge. Write the reply again, keep the letter free of it, and put exactly one thing to do today on its own line as <<<charge: ...>>>, before the citation line.`;
+    case null:
+      // Never reached in practice — the one caller only ever passes a
+      // rejected check's own reason. `null` is only in the parameter type
+      // because ReplyCheck now carries `reason` on its accepted branch too
+      // (see the comment on ReplyCheck below).
+      return `${head} Write it again, following the reply format exactly.`;
   }
 }
