@@ -2,119 +2,97 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade } from "@/components/blade";
-import { Animated, Enter, usePulse } from "@/components/motion";
+import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
-import { alpha, ink, radius, red, size, space, text as textColor, tracking } from "@/theme/tokens";
 import { MASTER_COUNT_TITLE } from "@/content/onboarding-options";
+import { SAMPLE_ANSWERS } from "@/content/sample-answers";
+import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
 /**
  * 01 · Welcome.
  *
- * Nothing arrives together. The panel establishes first, the live chip
- * streaks in over it, the hero lands, the promise follows, and only then do
- * the two choices appear — so the eye is walked down the screen instead of
- * being handed a finished page.
+ * One promise and one way forward. Everything in this app needs an account,
+ * so there is a single "Get started" and it goes to sign-in; the old "Try it —
+ * no account" was untrue, and "I already have one" led to the same screen.
+ *
+ * The panel above the promise used to be a design placeholder that shipped: a
+ * "Playing" chip with a live red dot over the words "looping 8s video", with
+ * nothing playing. It now shows the thing it stood in for — a real problem and
+ * the opening of a real reply, taken from the sourced sample answers, so the
+ * first screen someone sees makes no claim the app cannot back.
  */
+const EXCHANGE = SAMPLE_ANSWERS["procrastinating"];
+
 export default function WelcomeScreen() {
   const router = useRouter();
-  const livePulse = usePulse(true);
+  const opening = EXCHANGE?.body.split("\n\n")[0] ?? "";
 
   return (
     <Screen>
-      <View style={{ flex: 1, gap: space.xxl, paddingTop: space.lg }}>
-        {/* The looping proof panel. */}
-        <Enter preset="zoom" style={{ flex: 1 }}>
-          <View
-            style={{
-              flex: 1,
-              borderRadius: radius.panel,
-              backgroundColor: "#221E2C",
-              padding: space.xxl,
-              justifyContent: "space-between",
-            }}
-          >
-            <Enter preset="streak" delay={340} style={{ alignSelf: "flex-start" }}>
+      <View style={{ flex: 1, justifyContent: "center", gap: space.screen }}>
+        {/* A real exchange, the way it looks in the app. */}
+        {EXCHANGE ? (
+          <Enter preset="fade">
+            <View
+              style={{
+                borderRadius: radius.panel,
+                backgroundColor: ink.surface,
+                borderWidth: 1,
+                borderColor: ink.border,
+                padding: space.section,
+                gap: space.xl,
+              }}
+            >
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: space.sm,
-                  paddingVertical: space.sm,
-                  paddingHorizontal: space.base,
-                  borderRadius: radius.pill,
-                  backgroundColor: alpha.chip,
+                  alignSelf: "flex-end",
+                  maxWidth: "86%",
+                  backgroundColor: indigo.tint,
+                  borderRadius: radius.sheet,
+                  borderBottomRightRadius: space.sm,
+                  paddingVertical: space.base,
+                  paddingHorizontal: space.xl,
                 }}
               >
-                <Animated.View
-                  style={[
-                    { width: 7, height: 7, borderRadius: 4, backgroundColor: red.base },
-                    livePulse,
-                  ]}
-                />
-                <Text variant="label" color={textColor.body}>
-                  Playing
+                <Text variant="label" style={{ fontSize: size.body }}>
+                  {EXCHANGE.echo}
                 </Text>
               </View>
-            </Enter>
 
-            <Enter preset="fade" delay={560}>
-              <Text
-                style={{
-                  fontSize: size.eyebrow,
-                  letterSpacing: size.eyebrow * tracking.mono,
-                  color: "#A9A6C8",
-                  textAlign: "center",
-                  lineHeight: size.eyebrow * 1.6,
-                }}
-              >
-                looping 8s video — a user typing a real problem{"\n"}and a Master answering
-              </Text>
-            </Enter>
-
-            {/* Three marks, dealt one at a time. */}
-            <View style={{ flexDirection: "row", gap: space.xxs }}>
-              {[0, 1, 2].map((i) => (
-                <View key={i} style={{ flex: 1 }}>
-                  <Blade
-                    state={i === 0 ? "complete" : "empty"}
-                    delay={700 + i * 90}
-                    style={{ width: "100%" }}
-                  />
-                </View>
-              ))}
+              <View style={{ gap: space.sm }}>
+                <Text variant="eyebrow" color={indigo.light}>
+                  {EXCHANGE.masterName} replies
+                </Text>
+                <Text variant="voice" numberOfLines={5}>
+                  {opening}
+                </Text>
+              </View>
             </View>
-          </View>
-        </Enter>
+          </Enter>
+        ) : null}
 
         <View style={{ gap: space.md }}>
-          <Enter preset="rise" delay={220}>
+          <Enter preset="rise" delay={200}>
             <Text variant="hero">Bring the worst part of your week.</Text>
           </Enter>
 
-          <Enter preset="rise" delay={400}>
+          <Enter preset="rise" delay={380}>
             <Text variant="lead">
-              {MASTER_COUNT_TITLE} people who survived worse will tell you what they&apos;d do — and give you one
-              thing to do today.
+              {MASTER_COUNT_TITLE} people who survived worse will tell you what they&apos;d do — and
+              give you one thing to do today.
             </Text>
           </Enter>
         </View>
       </View>
 
       <View style={{ paddingVertical: space.xxl, gap: space.base }}>
-        <Enter preset="pop" delay={660}>
-          <Button
-            label="Try it — no account"
-            onPress={() => router.push("/(onboarding)/problem")}
-          />
+        <Enter preset="fade" delay={560}>
+          <Button label="Get started" onPress={() => router.push("/sign-in")} />
         </Enter>
-
-        <Enter preset="fade" delay={820}>
-          <Button
-            label="I already have one"
-            variant="ghost"
-            onPress={() => router.push("/sign-in")}
-          />
+        <Enter preset="fade" delay={640}>
+          <Text variant="caption" color={textColor.faintest} style={{ textAlign: "center" }}>
+            Sign in with Google to begin. It takes a few seconds.
+          </Text>
         </Enter>
       </View>
     </Screen>
