@@ -34,14 +34,24 @@ export default function SignInScreen() {
     setBusy(provider);
     setError(null);
     try {
-      await authClient.signIn.social({
+      // This used to route to "/(drawer)", a group that does not exist — the
+      // shell is "(app)" — so every successful sign-in landed on not-found.
+      const { error: authError } = await authClient.signIn.social({
         provider,
-        callbackURL: "/(drawer)",
+        callbackURL: "/(app)",
       });
-      // The draft is claimed server-side once a session exists — see the
-      // onboarding router. Until that lands the answers stay on device,
-      // which is why reset() is deliberately not called here.
-      router.replace("/(drawer)");
+      // Better Auth reports most failures as a returned error rather than a
+      // throw, so a cancelled sheet or a rejected provider must be read here
+      // or it falls through to the Path with no session behind it.
+      if (authError) {
+        setError(authError.message ?? "That didn't go through. Try again, or use the other provider.");
+        return;
+      }
+      // The draft is not submitted here. useClaimDraft in the (app) shell
+      // does it once a session exists, and clears it only after the server
+      // confirms — so a failed round trip is retried on the next launch
+      // rather than losing eleven screens of answers.
+      router.replace("/(app)");
     } catch (e) {
       setError(
         e instanceof Error

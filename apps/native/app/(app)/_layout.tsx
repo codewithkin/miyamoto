@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 
+import { useClaimDraft } from "@/lib/claim-draft";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
 import { font, size, tracking } from "@/theme/tokens";
 
@@ -14,6 +15,10 @@ import { font, size, tracking } from "@/theme/tokens";
  * is the thing the app is for.
  */
 export default function AppLayout() {
+  // Submits the onboarding draft whenever a session exists and it has not
+  // landed yet — retried on every launch until the server confirms.
+  useClaimDraft();
+
   return (
     <Tabs
       screenOptions={{
