@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 
 import { authClient } from "@/lib/auth-client";
+import { track } from "@/lib/telemetry";
 
 /**
  * Google sign-in, as one hook: run it, whether it is running, and what went
@@ -61,6 +62,7 @@ export function useGoogleSignIn() {
     async (provider: Provider = "google") => {
       setBusy(provider);
       setError(null);
+      track("Auth.signInStarted", { provider });
       try {
         // callbackURL is a real path, turned into a deep link (miyamoto:///)
         // by the Expo plugin. "/" is the gate.
@@ -73,12 +75,17 @@ export function useGoogleSignIn() {
         // has to be read here or the user falls through to a gate with no
         // session.
         if (authError) {
-          setError(SENTENCE[classify(authError)]);
+          const reason = classify(authError);
+          track("Auth.signInFailed", { provider, reason });
+          setError(SENTENCE[reason]);
           return;
         }
+        track("Auth.signInCompleted", { provider });
         router.replace("/");
       } catch (e) {
-        setError(SENTENCE[classify(e instanceof Error ? { message: e.message } : null)]);
+        const reason = classify(e instanceof Error ? { message: e.message } : null);
+        track("Auth.signInFailed", { provider, reason });
+        setError(SENTENCE[reason]);
       } finally {
         setBusy(null);
       }

@@ -11,6 +11,7 @@ import { Touchable } from "@/components/touchable";
 import { Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
 import { LINKS } from "@/lib/links";
+import { track } from "@/lib/telemetry";
 import { useGoogleSignIn } from "@/lib/use-google-sign-in";
 import { font, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
@@ -41,6 +42,11 @@ export default function WelcomeScreen() {
   // Tall enough to feel like a poster, never so tall that the button falls
   // below the fold on a small phone.
   const heroHeight = Math.round(Math.min(height * 0.62, width * 1.25));
+
+  // The top of the funnel. Once per visit to the screen, not per render.
+  React.useEffect(() => {
+    track("Welcome.shown");
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: ink.base }}>
