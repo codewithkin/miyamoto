@@ -5,7 +5,7 @@ import { View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
-import { Enter, Stagger } from "@/components/motion";
+import { Enter, MotionTone, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { usePurchases } from "@/lib/purchases";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -26,7 +26,7 @@ const INCLUDED = [
   { title: "The full adversity library", detail: "20 stories, new ones every month" },
 ];
 
-export default function PaywallScreen() {
+function PaywallScreenBody() {
   const router = useRouter();
   const qc = useQueryClient();
   const { buy, restore, isPro } = usePurchases();
@@ -202,5 +202,18 @@ function PlanCard({
         </View>
       </View>
     </Touchable>
+  );
+}
+
+/**
+ * Kept on the expressive motion tone at the owner's request. One of three
+ * screens — this, the other paywall, and forging — where the original
+ * choreography survives the restraint pass (D-031).
+ */
+export default function PaywallScreen() {
+  return (
+    <MotionTone value="expressive">
+      <PaywallScreenBody />
+    </MotionTone>
   );
 }

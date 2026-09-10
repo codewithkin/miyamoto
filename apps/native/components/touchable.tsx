@@ -115,7 +115,7 @@ export function Touchable({
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        scale.value = withSpring(1, spring.bouncy);
+        scale.value = withSpring(1, spring.snappy);
         opacity.value = withTiming(1, { duration: duration.fast, easing: easing.out });
         onPressOut?.(e);
       }}

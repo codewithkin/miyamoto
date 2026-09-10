@@ -78,7 +78,39 @@ export const ambient = {
   driftGlow: { duration: 6000 },
 } as const;
 
+/**
+ * Restraint — the default tone since session 4.
+ *
+ * The owner's verdict on the original choreography: over the top for an app
+ * that is meant to be serious. Under the restrained tone every entry is a
+ * fade with at most a few pixels of vertical travel, nothing moves in from
+ * the side, and every delay a screen asks for is compressed.
+ *
+ * Measured against what it replaced:
+ *   duration   280–900ms  ->  220ms
+ *   travel     25px, full-width slides  ->  6px, never horizontal
+ *   delays     as written  ->  40% of as written
+ *   overshoot, bounce, spin, flip  ->  none
+ *
+ * The original presets survive behind the expressive tone, which only the
+ * forging screen and the paywalls opt into (D-031).
+ */
+export const restraint = {
+  duration: 220,
+  exit: 140,
+  /** Pixels an element rises into place. */
+  rise: 6,
+  /** Pixels a header settles down into place. */
+  drop: 4,
+  /** Multiplier on every delay a screen passes in. */
+  delayScale: 0.4,
+  /** A calmer streak flame: a breath rather than a flicker. */
+  flameScale: 1.04,
+  flameRotate: 0,
+} as const;
+
 export const motion = {
+  restraint,
   duration,
   stagger,
   easing,

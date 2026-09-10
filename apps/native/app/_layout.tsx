@@ -22,8 +22,8 @@ function StackLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: ink.base },
-        animation: "slide_from_right",
-        animationDuration: 320,
+        animation: "fade",
+        animationDuration: 200,
       }}
     >
       <Stack.Screen name="(onboarding)" />

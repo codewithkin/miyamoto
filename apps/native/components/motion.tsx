@@ -34,7 +34,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ambient, duration, easing, stagger as staggerScale } from "@/theme/motion";
+import { ambient, duration, easing, restraint, stagger as staggerScale } from "@/theme/motion";
 
 /**
  * Named entry/exit choreography.
@@ -91,6 +91,85 @@ export type ExitPreset =
 
 type Builder = { delay: (ms: number) => any };
 
+/**
+ * Motion tone.
+ *
+ * `restrained` is the default and what almost every screen gets: a fade and a
+ * few pixels of rise, nothing from the side, delays compressed (D-031).
+ * `expressive` is the original choreography, kept whole for the three places
+ * the owner asked to keep it — the forging screen and the two paywalls. A new
+ * screen is calm unless it opts out, never the other way round.
+ */
+export type MotionToneName = "restrained" | "expressive";
+
+const MotionToneContext = React.createContext<MotionToneName>("restrained");
+
+export function MotionTone({
+  value,
+  children,
+}: {
+  value: MotionToneName;
+  children: React.ReactNode;
+}) {
+  return <MotionToneContext.Provider value={value}>{children}</MotionToneContext.Provider>;
+}
+
+export function useMotionTone(): MotionToneName {
+  return React.useContext(MotionToneContext);
+}
+
+/** A fade with a small vertical settle. The only restrained shape. */
+function settle(y: number) {
+  return () =>
+    FadeInUp.duration(restraint.duration)
+      .easing(easing.out)
+      .withInitialValues({ opacity: 0, transform: [{ translateY: y }] });
+}
+
+const calmFade = () => FadeIn.duration(restraint.duration).easing(easing.out);
+const calmRise = settle(restraint.rise);
+const calmDrop = settle(-restraint.drop);
+
+/**
+ * Every preset name still exists, so no screen had to change to become calm —
+ * but each now resolves to one of three shapes. Lateral presets deliberately
+ * lose their direction: nothing enters from the left or the right.
+ */
+const ENTER_RESTRAINED: Record<EnterPreset, () => any> = {
+  rise: calmRise,
+  drop: calmDrop,
+  pop: calmFade,
+  bounce: calmFade,
+  fade: calmFade,
+  slideLeft: calmRise,
+  slideRight: calmRise,
+  slideUp: calmRise,
+  slideDown: calmDrop,
+  zoom: calmFade,
+  zoomSpin: calmFade,
+  zoomUp: calmRise,
+  blade: calmFade,
+  flip: calmRise,
+  streak: calmFade,
+  roll: calmRise,
+  swing: calmRise,
+  pinwheel: calmFade,
+};
+
+const calmExit = () => FadeOut.duration(restraint.exit).easing(easing.in);
+
+const EXIT_RESTRAINED: Record<ExitPreset, () => any> = {
+  fade: calmExit,
+  riseOut: calmExit,
+  dropOut: calmExit,
+  shrink: calmExit,
+  slideLeft: calmExit,
+  slideRight: calmExit,
+  slideUp: calmExit,
+  slideDown: calmExit,
+};
+
+/** The original choreography. Expressive tone only. */
 const ENTER: Record<EnterPreset, () => any> = {
   rise: () => FadeInDown.duration(duration.base).easing(easing.out),
   drop: () => FadeInUp.duration(duration.base).easing(easing.out),
@@ -123,13 +202,17 @@ const EXIT: Record<ExitPreset, () => any> = {
   slideDown: () => SlideOutDown.duration(duration.base).easing(easing.in),
 };
 
-export function entering(preset: EnterPreset, delay = 0) {
-  const anim = ENTER[preset]() as Builder;
-  return delay > 0 ? anim.delay(delay) : anim;
+export function entering(preset: EnterPreset, delay = 0, tone: MotionToneName = "restrained") {
+  const calm = tone === "restrained";
+  const anim = (calm ? ENTER_RESTRAINED : ENTER)[preset]() as Builder;
+  // Screens were written with delays tuned for the expressive tone. Scaling
+  // them here, once, compresses every screen without touching any of them.
+  const d = calm ? Math.round(delay * restraint.delayScale) : delay;
+  return d > 0 ? anim.delay(d) : anim;
 }
 
-export function exiting(preset: ExitPreset, delay = 0) {
-  const anim = EXIT[preset]() as Builder;
+export function exiting(preset: ExitPreset, delay = 0, tone: MotionToneName = "restrained") {
+  const anim = (tone === "restrained" ? EXIT_RESTRAINED : EXIT)[preset]() as Builder;
   return delay > 0 ? anim.delay(delay) : anim;
 }
 
@@ -153,10 +236,11 @@ export function Enter({
   children,
   ...rest
 }: EnterProps) {
+  const tone = useMotionTone();
   return (
     <Animated.View
-      entering={entering(preset, delay)}
-      exiting={exiting(exitPreset)}
+      entering={entering(preset, delay, tone)}
+      exiting={exiting(exitPreset, 0, tone)}
       {...rest}
     >
       {children}
@@ -248,12 +332,17 @@ export function usePulse(enabled = true) {
 export function useFlicker(enabled = true) {
   const s = useSharedValue<number>(1);
   const r = useSharedValue<number>(0);
+  const calm = useMotionTone() === "restrained";
+  const peakScale = calm ? restraint.flameScale : ambient.flameFlicker.scale;
+  const peakRotate = calm ? restraint.flameRotate : ambient.flameFlicker.rotate;
   React.useEffect(() => {
     if (!enabled) return;
-    const half = ambient.flameFlicker.duration / 2;
+    // Under restraint the flame breathes over twice the time rather than
+    // flickering — alive, not agitated.
+    const half = (calm ? ambient.flameFlicker.duration * 2 : ambient.flameFlicker.duration) / 2;
     s.value = withRepeat(
       withSequence(
-        withTiming(ambient.flameFlicker.scale, { duration: half, easing: easing.inOut }),
+        withTiming(peakScale, { duration: half, easing: easing.inOut }),
         withTiming(1, { duration: half, easing: easing.inOut }),
       ),
       -1,
@@ -261,13 +350,13 @@ export function useFlicker(enabled = true) {
     );
     r.value = withRepeat(
       withSequence(
-        withTiming(ambient.flameFlicker.rotate, { duration: half, easing: easing.inOut }),
+        withTiming(peakRotate, { duration: half, easing: easing.inOut }),
         withTiming(0, { duration: half, easing: easing.inOut }),
       ),
       -1,
       false,
     );
-  }, [enabled, s, r]);
+  }, [enabled, s, r, calm, peakScale, peakRotate]);
   return useAnimatedStyle(() => ({
     transform: [{ scale: s.value }, { rotate: `${r.value}deg` }],
   }));
@@ -296,12 +385,19 @@ export function useSheen(enabled = true, width = 120) {
 /** Delayed one-shot scale, for elements that should land after a beat. */
 export function useLandIn(delay = 0) {
   const v = useSharedValue<number>(0);
+  const calm = useMotionTone() === "restrained";
   React.useEffect(() => {
-    v.value = withDelay(delay, withTiming(1, { duration: duration.base, easing: easing.overshoot }));
-  }, [delay, v]);
+    v.value = calm
+      ? withDelay(
+          Math.round(delay * restraint.delayScale),
+          withTiming(1, { duration: restraint.duration, easing: easing.out }),
+        )
+      : withDelay(delay, withTiming(1, { duration: duration.base, easing: easing.overshoot }));
+  }, [delay, v, calm]);
   return useAnimatedStyle(() => ({
     opacity: v.value,
-    transform: [{ scale: 0.94 + v.value * 0.06 }],
+    // No scale at all under restraint — the mark fades in where it will stay.
+    transform: [{ scale: calm ? 1 : 0.94 + v.value * 0.06 }],
   }));
 }
 

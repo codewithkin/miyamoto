@@ -3,7 +3,7 @@ import React from "react";
 import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
-import { Animated, Enter, Stagger, usePulse } from "@/components/motion";
+import { Animated, Enter, MotionTone, Stagger, usePulse } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
@@ -38,7 +38,7 @@ function useCountdown(seconds: number) {
   return { left, label: `${mm}:${ss}` };
 }
 
-export default function OfferScreen() {
+function OfferScreenBody() {
   const router = useRouter();
   const { draft } = useOnboarding();
   const { left, label } = useCountdown(OFFER_SECONDS);
@@ -223,5 +223,18 @@ export default function OfferScreen() {
         </Enter>
       </View>
     </Screen>
+  );
+}
+
+/**
+ * Kept on the expressive motion tone at the owner's request. One of three
+ * screens — this, the other paywall, and forging — where the original
+ * choreography survives the restraint pass (D-031).
+ */
+export default function OfferScreen() {
+  return (
+    <MotionTone value="expressive">
+      <OfferScreenBody />
+    </MotionTone>
   );
 }

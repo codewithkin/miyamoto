@@ -3,7 +3,7 @@ import React from "react";
 import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
-import { Animated, Enter, useFlicker } from "@/components/motion";
+import { Animated, Enter, MotionTone, useFlicker } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
@@ -20,7 +20,7 @@ import { gold, ink, radius, size, space, text as textColor } from "@/theme/token
 
 const STEP_MS = 1100;
 
-export default function ForgingScreen() {
+function ForgingScreenBody() {
   const router = useRouter();
   const { draft } = useOnboarding();
   const flame = useFlicker(true);
@@ -131,5 +131,18 @@ export default function ForgingScreen() {
         </View>
       </Enter>
     </Screen>
+  );
+}
+
+/**
+ * Kept on the expressive motion tone at the owner's request. One of three
+ * screens — this and the two paywalls — where the original choreography
+ * survives the restraint pass (D-031).
+ */
+export default function ForgingScreen() {
+  return (
+    <MotionTone value="expressive">
+      <ForgingScreenBody />
+    </MotionTone>
   );
 }
