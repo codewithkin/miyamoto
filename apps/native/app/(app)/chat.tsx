@@ -232,10 +232,42 @@ export default function ChatScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.length === 0 ? (
-            <Enter preset="rise" delay={200}>
-              <Text variant="lead">
-                Bring the worst part of your week. He won&apos;t comfort you.
+          {/* A fresh thread opens on the Master, not on one line of body text.
+              No pronoun: "He won't comfort you" was wrong for Curie. */}
+          {messages.length === 0 && activeThread ? (
+            <Enter
+              preset="rise"
+              delay={120}
+              style={{
+                alignItems: "center",
+                gap: space.base,
+                paddingTop: space.screen,
+                paddingBottom: space.xl,
+              }}
+            >
+              <MasterAvatar
+                slug={activeThread.master.slug}
+                name={activeThread.master.name}
+                size={88}
+                active
+              />
+              <View style={{ alignItems: "center", gap: space.xxs }}>
+                <Text variant="display" style={{ textAlign: "center" }}>
+                  {activeThread.master.name}
+                </Text>
+                {activeThread.master.title ? (
+                  <Text variant="eyebrow" color={indigo.light}>
+                    {activeThread.master.title}
+                  </Text>
+                ) : null}
+              </View>
+              <Text
+                variant="lead"
+                color={textColor.muted}
+                style={{ textAlign: "center", paddingHorizontal: space.xl }}
+              >
+                Bring the worst part of your week. No comfort — what to do about it, and one
+                thing to do today.
               </Text>
             </Enter>
           ) : null}
