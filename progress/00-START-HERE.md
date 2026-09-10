@@ -276,13 +276,16 @@ notes do not survive a clone.
     matches them. Only the owner can submit the form.
 13. **Schema changes never reach production by deploying.** Nothing runs
     `prisma migrate deploy` or `db push` on build — `postinstall` only
-    regenerates the client. `packages/db/prisma/migrations/` holds only
-    `.gitkeep`; this project has never used Prisma Migrate. Someone has to
-    run `pnpm --filter @miyamoto/db db:push` against production by hand
-    after a schema change. **The owner's call, not picked by default**
-    (session 6): start a migration history now (a baseline migration from
-    the current schema, then `migrate deploy` wired into the build), or
-    keep `db push` and automate it deliberately. See `systems/12-deploys.md`.
+    regenerates the client. Someone has to run `pnpm --filter @miyamoto/db
+    db:push` against production by hand after a schema change, still.
+    **Session 6 started a migration history** (baselined the LOCAL dev
+    database against the current schema — see `systems/12-deploys.md`),
+    but **production has not been baselined**, and needs the identical
+    `prisma migrate resolve --applied` step run against its own
+    `DATABASE_URL` before `migrate deploy` can be trusted there — the
+    owner's action, it needs the production connection string. Only after
+    that is wiring `migrate deploy` into the build worth doing, and that
+    wiring is still a deliberate choice, not a default to pick silently.
 
 ## Waiting on the owner
 

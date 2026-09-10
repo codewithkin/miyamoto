@@ -82,22 +82,56 @@ Vercel's build still fails on a TypeScript error:
 
 Nothing in the build applies pending Prisma migrations. `postinstall` runs
 only `prisma generate` (regenerates the client from the schema; touches no
-data). `packages/db/prisma/migrations/` exists but holds only `.gitkeep` —
-**this project has never used `prisma migrate` (dev or deploy).** Schema
-changes have gone through `prisma db push` by hand, against whichever
-`DATABASE_URL` was current.
+data). Until session 6, `packages/db/prisma/migrations/` held only
+`.gitkeep` — this project had never used `prisma migrate` (dev or deploy);
+every schema change went through `prisma db push` by hand.
 
-This means: **a schema change committed to `main` does not reach the
+This means: **a schema change committed to `main` still does not reach the
 production database by deploying.** Someone has to run `pnpm --filter
 @miyamoto/db db:push` with `DATABASE_URL` pointed at production, separately,
-by hand.
+by hand — that has not changed.
 
-**Not fixed here — this is the owner's call, not a default to pick
-silently.** Wiring `prisma migrate deploy` into the build would require
-first generating a baseline migration from the current schema (there is no
-history to deploy against yet), and wiring `db push` into the build would
-mean every push touches the live schema unattended, including a push that
-happens to contain a destructive change — `db push` without
-`--accept-data-loss` fails safely in a script, but that safety is worth
-keeping deliberate rather than automatic. See `progress/00-START-HERE.md`
-for this as an open item.
+**What session 6 did:** started the migration history for the LOCAL dev
+database, by baselining. `prisma migrate dev` refused to run outright — it
+saw the live schema already matching, with zero recorded migrations
+("drift"), and offered to reset it (drop everything) rather than proceed.
+The fix is Prisma's own documented baseline procedure, not `migrate dev`:
+
+```bash
+# 1. Generate the migration SQL from nothing to the current schema, without applying it
+npx prisma migrate diff --from-empty --to-schema=prisma/schema --script \
+  -o prisma/migrations/<YYYYMMDDHHMMSS>_init/migration.sql
+
+# 2. Record it as already applied — the tables already exist, nothing to run
+npx prisma migrate resolve --applied <YYYYMMDDHHMMSS>_init
+
+# 3. Confirm
+npx prisma migrate status   # "Database schema is up to date!"
+npx prisma migrate dev      # "Already in sync" — a clean no-op
+```
+
+Run these with the CLI actually pinned in `packages/db/package.json`
+(`npx prisma` from inside `packages/db`, or `pnpm --filter @miyamoto/db
+exec prisma`) — **not `pnpm dlx prisma`**, which always fetches the newest
+published version regardless of what the project pins. At the time of
+writing that's a preview major that renamed `migrate` to an unrelated
+`migration` command tree and rejects this repo's `prisma.config.ts`,
+written for Prisma 7, as unreadable. It reads fine under the pinned 7.10.0.
+
+**Production has not been baselined.** The steps above touched only the
+local dev database (`DATABASE_URL` from `apps/server/.env`). Running
+`prisma migrate deploy` against production now would try to `CREATE
+TABLE` everything from scratch and fail, because those tables already
+exist there too (from `db push`, same as dev was). The identical
+`resolve --applied` step needs to run once against production's
+`DATABASE_URL` before `migrate deploy` can be trusted there — **the
+owner's action**, since it needs the production connection string.
+
+**Still not wired into the build — still the owner's call.** Once
+production is baselined, adding `prisma migrate deploy` to
+`packages/db`'s `postinstall` (after `prisma generate`, guarded so a
+missing `DATABASE_URL` — e.g. a fresh CI checkout with none configured —
+skips rather than fails) makes every deploy apply pending migrations
+automatically. That's a deliberate step to take once, not a default this
+session picked silently: it changes production data on every push from
+then on. See `progress/00-START-HERE.md` for this as an open item.
