@@ -6,6 +6,7 @@ import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
+import { requestReminderPermission } from "@/lib/notifications";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -16,9 +17,11 @@ import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tok
  * it will arrive in. The two preview notifications slide down from the top
  * edge like real ones, which is the whole argument this screen makes.
  *
- * The actual permission request is not wired yet — expo-notifications is
- * not installed. The choice is recorded on the draft so the real prompt can
- * be raised at the same point once it is.
+ * "Wake me" raises the real OS prompt, here and only here, after the
+ * previews have made the case. The draft records whether permission was
+ * actually granted — not whether the button was tapped — because the server
+ * schedules nothing for a user whose phone will not deliver it. A refusal is
+ * remembered and never re-asked; see lib/notifications.
  */
 export default function RemindersScreen() {
   const router = useRouter();
@@ -40,9 +43,20 @@ export default function RemindersScreen() {
     },
   ];
 
-  function accept() {
-    set({ remindersEnabled: true });
-    router.push("/(onboarding)/offer");
+  const [asking, setAsking] = React.useState(false);
+
+  async function accept() {
+    if (asking) return;
+    setAsking(true);
+    try {
+      const outcome = await requestReminderPermission();
+      set({ remindersEnabled: outcome === "granted" });
+    } finally {
+      setAsking(false);
+      // Onward either way. Refusing notifications is not a reason to stop
+      // someone reaching their thirty days.
+      router.push("/(onboarding)/offer");
+    }
   }
 
   function decline() {
@@ -114,7 +128,11 @@ export default function RemindersScreen() {
 
       <View style={{ paddingVertical: space.xxl, gap: space.base }}>
         <Enter preset="pop" delay={1300}>
-          <Button label={`Wake me at ${draft.morningReminder}`} onPress={accept} />
+          <Button
+            label={asking ? "Asking your phone…" : `Wake me at ${draft.morningReminder}`}
+            disabled={asking}
+            onPress={() => void accept()}
+          />
         </Enter>
         <Enter preset="fade" delay={1440}>
           <Button label="I'll remember myself" variant="ghost" onPress={decline} />
