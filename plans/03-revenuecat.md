@@ -9,6 +9,21 @@ that purchases are unavailable rather than faking a flow.
 **Blocked on:** RevenueCat API keys and dashboard products. This plan is
 unblocking, not building.
 
+## T00 — One definition of Pro
+
+- [ ] `pending-T00`
+- **Commit:** `fix(api): one definition of Pro for every gate`
+- **Touches:** `packages/api/src/lib/usage.ts`, `routers/library.ts`,
+  `routers/chat.ts`, `routers/account.ts`
+- **Note (session 3):** not in the original plan, and not blocked on keys.
+  `usage.ts` treats a lapsed `expiresAt` as not-Pro. `library.ts`,
+  `chat.switchMaster` and `account.overview` each read `entitlementActive`
+  alone — so a subscription whose clearing webhook never arrived stays Pro
+  for Masters, the library and the settings screen while the counter
+  correctly says otherwise. T03's "verify the reverse" would have failed.
+- **Done when:** every gate calls one exported `isPro`, and a row with
+  `entitlementActive: true` and a past `expiresAt` is refused everywhere.
+
 ## T01 — Real API keys and products
 
 - [ ] `pending-T01`

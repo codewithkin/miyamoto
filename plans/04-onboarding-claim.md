@@ -34,6 +34,23 @@ sitting there. Nothing consumes it.
   **only** after the server confirms. A failed round trip must not lose
   eleven screens of answers.
 
+- **Note (session 3):** `sign-in.tsx` also routes to `/(drawer)`, a group
+  that does not exist — the app's shell is `(app)`. Every successful sign-in
+  lands on the not-found screen today. Fixed in the same commit, because the
+  submission and the destination are one handler.
+
+## T02a — A signed-in user does not see onboarding again
+
+- [ ] `pending-T02a`
+- **Commit:** `feat(native): send a signed-in user straight to the Path`
+- **Depends on:** T02
+- **Touches:** `apps/native/app/(onboarding)/_layout.tsx`, `app/(app)/_layout.tsx`
+- **Note (session 3):** not in the original plan. Nothing reads the session
+  at launch, so a returning user reopens the app on the welcome screen and
+  the `(app)` group renders for a user with no session.
+- **Done when:** a session redirects onboarding to `(app)`, and no session
+  redirects `(app)` to onboarding.
+
 ## T03 — Day 1 reflects the quiz
 
 - [ ] `pending-T03`
@@ -42,3 +59,18 @@ sitting there. Nothing consumes it.
 - **Done when:** the home screen's trial is at the chosen pressure with the
   chosen Master speaking — the thing onboarding screen 08 promised when it
   said the plan was written for them.
+
+## T04 — The first question has somewhere to go
+
+- [ ] `pending-T04`
+- **Commit:** `feat(native): open the first thread with the problem they brought`
+- **Depends on:** T01
+- **Touches:** `packages/api/src/routers/onboarding.ts`, `app/(app)/chat.tsx`
+- **Note (session 3):** not in the original plan. The chat tab picks
+  `threads[0]` and disables the composer when there is none, so a new user
+  opens Chat to a screen that cannot send. `OnboardingProfile.seedProblem`
+  is documented as "the first thing their Master answers" and nothing
+  reads it.
+- **Done when:** claiming creates the first thread with the first Master,
+  titled with the seed problem, and the chat composer opens pre-filled with
+  it — unsent, because spending a question is the user's decision (D-018).

@@ -124,6 +124,10 @@ D-007 to D-013.
   four stories are reassigned — `trusted-lied`, `estranged-family`,
   `cant-forgive` to Seneca; `no-routine` to Curie. `trusted-lied` is one of
   the four onboarding samples, so it cannot simply vanish.
+- **Note (session 3):** reassigning a story means rewriting its body. Seneca
+  cannot tell the Rivonia trial as his own life — that is D-007 broken in
+  the seed itself. Each reassigned story is retold from the new Master's
+  corpus, and its lesson and action kept where they still fit.
 
 ## T09 — Filter inactive Masters from every query
 
@@ -159,6 +163,21 @@ D-007 to D-013.
 - **Watch:** this interacts with streaming. Structured output and a token
   stream do not compose for free — decide whether to validate post-stream
   and regenerate, or to buffer the first sentence. Record the choice.
+
+## T11a — Write the Charge a Master hands over
+
+- [ ] `pending-T11a`
+- **Commit:** `feat(server): record the charge at the end of every answer`
+- **Depends on:** T11
+- **Touches:** `apps/server/src/routes/ai.ts`, `mastra/template.ts`
+- **Note (session 3):** not in the original plan. `chat.charges` and
+  `respondToCharge` exist and nothing ever creates a `Charge` row, so the
+  Bushido score cannot move from chat at all and D-003 is half-built. T11
+  already makes the model emit a machine-readable trailer; the charge rides
+  in the same trailer.
+- **Done when:** an accepted reply writes one `Charge` due on the user's
+  local today (D-017), attributed to the thread and Master, and the trailer
+  never reaches the device.
 
 ## T12 — Voice evaluation
 
