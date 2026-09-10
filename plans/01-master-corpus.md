@@ -150,6 +150,13 @@ D-007 to D-013.
   than a Mandela one.
 - **Out of scope:** the marketing site. The owner wants him removed there
   later, separately.
+- **Note (session 3):** the `betrayed` sample uses Seneca's Nero moment, not
+  his exile. "Condemned by men he knew" is not in the corpus — the exile
+  entry records a charge from Dio and nothing about who brought it — while
+  Nero, whom he tutored, ordering his death is `ATTESTED` (Tacitus, Annals
+  XV) and is exactly a trusted person turning. It also matches the
+  reassigned `trusted-lied` library story, so the sample and the library
+  tell one story rather than two.
 
 ## T11 — Citation enforcement
 
