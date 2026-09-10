@@ -9,6 +9,7 @@ import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
 import { REMINDER_TIMES } from "@/content/onboarding-options";
+import { requestReminderPermission } from "@/lib/notifications";
 import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
@@ -33,6 +34,21 @@ export default function SettingsScreen() {
   );
 
   const [restoring, setRestoring] = React.useState(false);
+  const [reminderNote, setReminderNote] = React.useState<string | null>(null);
+
+  // Choosing a time is the user asking for reminders, so this is a fair
+  // place to raise the prompt — but only this, and only once (see
+  // lib/notifications). Without permission nothing is switched on, because a
+  // reminder the phone will not deliver is a setting that lies.
+  async function remindAt(time: string) {
+    const outcome = await requestReminderPermission();
+    if (outcome !== "granted") {
+      setReminderNote("Notifications are off for Miyamoto in your phone's settings. Turn them on there first.");
+      return;
+    }
+    setReminderNote(null);
+    setReminders.mutate({ enabled: true, morning: time });
+  }
   const a = account.data;
 
   return (
@@ -82,7 +98,7 @@ export default function SettingsScreen() {
                 <Touchable
                   key={t}
                   feel="chip"
-                  onPress={() => setReminders.mutate({ enabled: true, morning: t })}
+                  onPress={() => void remindAt(t)}
                   style={{
                     flex: 1,
                     alignItems: "center",
@@ -99,6 +115,11 @@ export default function SettingsScreen() {
                 </Touchable>
               ))}
             </View>
+            {reminderNote ? (
+              <Text variant="caption" color={textColor.muted} style={{ paddingTop: space.sm }}>
+                {reminderNote}
+              </Text>
+            ) : null}
             <Touchable
               feel="row"
               onPress={() => setReminders.mutate({ enabled: false })}

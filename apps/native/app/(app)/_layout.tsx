@@ -4,6 +4,7 @@ import React from "react";
 
 import { authClient } from "@/lib/auth-client";
 import { useClaimDraft } from "@/lib/claim-draft";
+import { useReminderSchedule } from "@/lib/use-reminders";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
 import { font, size, tracking } from "@/theme/tokens";
 
@@ -22,6 +23,8 @@ export default function AppLayout() {
   // landed yet — retried on every launch until the server confirms. Called
   // before the early returns below so hook order never changes.
   useClaimDraft();
+  // Keeps the two daily reminders in step with the account's settings.
+  useReminderSchedule(Boolean(session));
 
   // The shell is for an identity (D-004). Rendering nothing while the
   // cached session is read avoids flashing the Path at someone who is about

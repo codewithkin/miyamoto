@@ -70,3 +70,105 @@ export async function hasReminderPermission(): Promise<boolean> {
     return false;
   }
 }
+
+// ── The two daily reminders ──────────────────────────────────────────────
+
+/**
+ * Fixed identifiers. Screen 10 promises two notifications a day, so there
+ * are exactly two slots, and scheduling fills a slot rather than adding one.
+ */
+const MORNING_ID = "trial-morning";
+const EVENING_ID = "trial-evening";
+
+export type ReminderPlan = {
+  /** "06:00", on the device's wall clock. */
+  morning: string;
+  evening: string;
+  morningTitle: string;
+  morningBody: string;
+  eveningTitle: string;
+  eveningBody: string;
+};
+
+function parseHHMM(value: string): { hour: number; minute: number } | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return { hour, minute };
+}
+
+/** Removes both daily reminders. Safe to call when none are scheduled. */
+export async function cancelDailyReminders(): Promise<void> {
+  if (Platform.OS === "web") return;
+  await Promise.all(
+    [MORNING_ID, EVENING_ID].map((id) =>
+      Notifications.cancelScheduledNotificationAsync(id).catch(() => {}),
+    ),
+  );
+}
+
+/**
+ * Schedules the morning and evening reminders, replacing any existing pair.
+ *
+ * Both slots are cancelled before either is scheduled. Reusing an identifier
+ * replaces on iOS, but the promise on screen 10 is "two a day", and relying
+ * on each platform's replace semantics to keep that promise is how a user
+ * who changed their time twice ends up woken three times.
+ *
+ * DAILY triggers fire on the device's wall clock. The day boundary that
+ * governs streaks and the counter is the timezone on the server (D-017),
+ * which the claim captured from this same device, so the two agree. If the
+ * user travels, the reminder follows the clock they are living by — which is
+ * what a person woken at 06:00 wants.
+ *
+ * Resolves false, scheduling nothing, without permission or with a
+ * malformed time.
+ */
+export async function scheduleDailyReminders(plan: ReminderPlan): Promise<boolean> {
+  if (Platform.OS === "web") return false;
+  const morning = parseHHMM(plan.morning);
+  const evening = parseHHMM(plan.evening);
+  if (!morning || !evening) return false;
+  if (!(await hasReminderPermission())) return false;
+
+  await ensureChannel();
+  await cancelDailyReminders();
+  await Promise.all([
+    Notifications.scheduleNotificationAsync({
+      identifier: MORNING_ID,
+      content: { title: plan.morningTitle, body: plan.morningBody },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        channelId: TRIAL_CHANNEL,
+        ...morning,
+      },
+    }),
+    Notifications.scheduleNotificationAsync({
+      identifier: EVENING_ID,
+      content: { title: plan.eveningTitle, body: plan.eveningBody },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        channelId: TRIAL_CHANNEL,
+        ...evening,
+      },
+    }),
+  ]);
+  return true;
+}
+
+/**
+ * A reminder arriving while the app is open is still shown, without sound —
+ * the user is already here, and the trial is on the screen in front of them.
+ */
+export function configureForegroundDisplay() {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+}

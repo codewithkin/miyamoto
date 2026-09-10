@@ -18,10 +18,14 @@ export const accountRouter = router({
   overview: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const [profile, subscription, pro, counts] = await Promise.all([
+    const [profile, subscription, pro, onboarding, counts] = await Promise.all([
       db.profile.findUnique({ where: { userId } }),
       db.subscription.findUnique({ where: { userId } }),
       isPro(userId),
+      db.onboardingProfile.findUnique({
+        where: { userId },
+        select: { remindersEnabled: true, morningReminder: true, eveningReminder: true },
+      }),
       Promise.all([
         db.thread.count({ where: { userId } }),
         db.trialCompletion.count({ where: { userId } }),
@@ -38,6 +42,13 @@ export const accountRouter = router({
       threads: counts[0],
       trialsCompleted: counts[1],
       charges: counts[2],
+      // The device schedules reminders from this, not from its own draft:
+      // the draft is cleared once claimed, and a second phone never had one.
+      reminders: {
+        enabled: onboarding?.remindersEnabled ?? false,
+        morning: onboarding?.morningReminder ?? "06:00",
+        evening: onboarding?.eveningReminder ?? "21:00",
+      },
     };
   }),
 
