@@ -274,18 +274,20 @@ notes do not survive a clone.
 12. **Enter the Data safety form in Play Console.** The answers are in
     `systems/11-play-data-safety.md`, and the privacy policy already
     matches them. Only the owner can submit the form.
-13. **Schema changes never reach production by deploying.** Nothing runs
-    `prisma migrate deploy` or `db push` on build — `postinstall` only
-    regenerates the client. Someone has to run `pnpm --filter @miyamoto/db
-    db:push` against production by hand after a schema change, still.
-    **Session 6 started a migration history** (baselined the LOCAL dev
-    database against the current schema — see `systems/12-deploys.md`),
-    but **production has not been baselined**, and needs the identical
-    `prisma migrate resolve --applied` step run against its own
-    `DATABASE_URL` before `migrate deploy` can be trusted there — the
-    owner's action, it needs the production connection string. Only after
-    that is wiring `migrate deploy` into the build worth doing, and that
-    wiring is still a deliberate choice, not a default to pick silently.
+13. **Schema changes still don't reach production by deploying** — but
+    production is now migrated and seeded (session 7), so this is ready to
+    wire up whenever the owner decides to. Nothing runs `prisma migrate
+    deploy` on build; `postinstall` only regenerates the client. What
+    changed: production's `DATABASE_URL` turned out to point at a leftover,
+    unrelated Prisma Postgres database (`Guardian`, `PaymentOrder`, a
+    `STUDENT_SCHOLAR` plan enum — nothing to do with Miyamoto), not an
+    out-of-sync one — `prisma migrate reset --force` (owner-confirmed) then
+    the seed script gave it the real schema and content, tracked by the
+    same migration dev has. `prisma migrate status` reports clean on both
+    now. See `systems/12-deploys.md`. Wiring `migrate deploy` into the
+    build so future schema changes apply automatically is still a
+    deliberate choice for the owner to make, not a default to pick
+    silently — it means every push touches production data from then on.
 
 ## Waiting on the owner
 

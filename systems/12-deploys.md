@@ -186,20 +186,37 @@ writing that's a preview major that renamed `migrate` to an unrelated
 `migration` command tree and rejects this repo's `prisma.config.ts`,
 written for Prisma 7, as unreadable. It reads fine under the pinned 7.10.0.
 
-**Production has not been baselined.** The steps above touched only the
-local dev database (`DATABASE_URL` from `apps/server/.env`). Running
-`prisma migrate deploy` against production now would try to `CREATE
-TABLE` everything from scratch and fail, because those tables already
-exist there too (from `db push`, same as dev was). The identical
-`resolve --applied` step needs to run once against production's
-`DATABASE_URL` before `migrate deploy` can be trusted there — **the
-owner's action**, since it needs the production connection string.
+**Production is now migrated (session 7) — but it needed a reset, not a
+baseline.** `prisma db push` against production's real `DATABASE_URL`
+refused with a data-loss warning naming tables and an enum with no
+relationship to this schema at all: `Guardian`, `PaymentOrder`,
+`PaymentSession`, `RefreshToken`, a PascalCase `User`, and `Plan` values
+like `STUDENT_SCHOLAR` and `GUARDIAN_FAMILY_STARTER`. The `DATABASE_URL`
+Vercel had was a leftover Prisma Postgres instance from an unrelated
+project, not an out-of-sync Miyamoto database — this was never the
+"production already has these tables, mark the migration applied without
+running it" case the local baseline was. The owner confirmed it was
+disposable; `prisma migrate reset --force` dropped it and applied
+`20260910162522_init` cleanly, then `pnpm --filter @miyamoto/db db:seed`
+populated it (5 Masters, 28 moments, 14 quotations, 20 stories, 30 Path
+days, 90 trials, 6 wounds — the same counts `db:seed` produces locally;
+it is idempotent, safe to re-run). `prisma migrate status` against
+production now reports the same "Database schema is up to date!" as dev.
 
-**Still not wired into the build — still the owner's call.** Once
-production is baselined, adding `prisma migrate deploy` to
-`packages/db`'s `postinstall` (after `prisma generate`, guarded so a
-missing `DATABASE_URL` — e.g. a fresh CI checkout with none configured —
-skips rather than fails) makes every deploy apply pending migrations
-automatically. That's a deliberate step to take once, not a default this
-session picked silently: it changes production data on every push from
-then on. See `progress/00-START-HERE.md` for this as an open item.
+**A reset needs fresh, explicit consent every time, not blanket
+pre-launch authorisation.** `CLAUDE.md`'s "destructive actions are fine
+pre-launch, just announce them" rule covers ordinary schema changes to
+*our own* data — it is not enough on its own to justify dropping tables
+whose ownership hasn't been confirmed. This one only proceeded after the
+owner explicitly named the old data as disposable and confirmed via
+`AskUserQuestion`, with `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION`
+set for that one command.
+
+**Still not wired into the build — still the owner's call.** Production
+being migrated now makes this possible, not automatic: adding `prisma
+migrate deploy` to `packages/db`'s `postinstall` (after `prisma
+generate`, guarded so a missing `DATABASE_URL` — e.g. a fresh CI checkout
+with none configured — skips rather than fails) would make every deploy
+apply pending migrations on its own. That's a deliberate step to take
+once, not a default this session picked silently: it changes production
+data on every push from then on. See `progress/00-START-HERE.md`.

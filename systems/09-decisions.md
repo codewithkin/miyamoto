@@ -315,3 +315,21 @@ a change can pass `pnpm check-types` cleanly and still fail on Vercel:
 with no site to infer its `clientPrefix` type parameter from, both did.
 See `systems/12-deploys.md` for the full account and what to check first
 the next time this happens.
+
+**D-043 — A database reset needs fresh, explicit consent, every time —
+pre-launch destructive-action authorisation does not cover it on its
+own.**
+`CLAUDE.md`'s pre-launch rule authorises destructive changes to *our own*
+data without asking each time, provided they are announced. It was
+written for resetting our own dev/prod database, not for a case where
+ownership of the data is itself in question. Production's real
+`DATABASE_URL` turned out to hold a table set (`Guardian`, `PaymentOrder`,
+a `STUDENT_SCHOLAR` plan enum) with no relationship to this schema — a
+leftover from an unrelated project, not out-of-sync Miyamoto data. That
+distinction is exactly the kind a wrong guess is expensive on, so it
+stopped rather than running `--accept-data-loss` under the general
+authorisation, named what it found, and proceeded only once the owner
+confirmed the data was disposable — via `AskUserQuestion`, with
+`PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set for that one command,
+per the standing rule for dangerous Prisma actions. See
+`systems/12-deploys.md`.
