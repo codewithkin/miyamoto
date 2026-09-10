@@ -17,6 +17,7 @@ import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { authClient } from "@/lib/auth-client";
+import { describeChatError } from "@/lib/chat-errors";
 import { trpc } from "@/utils/trpc";
 import {
   green,
@@ -65,6 +66,7 @@ export default function ChatScreen() {
   const [showOutOf, setShowOutOf] = React.useState(false);
   const scrollRef = React.useRef<ScrollView>(null);
 
+  const qc = useQueryClient();
   const usage = useQuery(trpc.chat.usage.queryOptions());
   const threads = useQuery(trpc.chat.threads.queryOptions());
 
@@ -78,6 +80,11 @@ export default function ChatScreen() {
       api: `${env.EXPO_PUBLIC_SERVER_URL}/ai`,
       body: () => ({ threadId: activeThread?.id }),
     }),
+    // The counter moves on every send — spent, or refunded when the server
+    // could not deliver — and the thread's title and charges may have moved
+    // with it. All of it is re-read from the server rather than guessed.
+    onFinish: () => void qc.invalidateQueries(),
+    onError: () => void qc.invalidateQueries({ queryKey: trpc.chat.usage.queryKey() }),
   });
 
   // Open the thread on what was already said (T11b). Mastra holds every
@@ -115,6 +122,12 @@ export default function ChatScreen() {
       cancelled = true;
     };
   }, [activeThread?.id, setMessages]);
+
+  // What a failed send says, in a sentence rather than the server's JSON.
+  const errorView = error ? describeChatError(error.message) : null;
+  React.useEffect(() => {
+    if (errorView?.outOfQuestions) setShowOutOf(true);
+  }, [errorView?.outOfQuestions]);
 
   const busy = status === "submitted" || status === "streaming";
   const typing = usePulse(busy);
@@ -258,7 +271,7 @@ export default function ChatScreen() {
           {error ? (
             <Enter preset="slideLeft">
               <Text variant="caption" color="#E0483B">
-                {error.message}
+                {errorView?.text}
               </Text>
             </Enter>
           ) : null}
