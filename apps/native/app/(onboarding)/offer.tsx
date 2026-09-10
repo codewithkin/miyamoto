@@ -6,7 +6,7 @@ import { Blade, BladeTick } from "@/components/blade";
 import { Animated, Enter, Stagger, usePulse } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { PRESSURES } from "@/content/onboarding-options";
+import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
@@ -22,7 +22,7 @@ import { gold, indigo, ink, radius, red, size, space, text as textColor } from "
 const OFFER_SECONDS = 10 * 60;
 
 const INCLUDED = [
-  { title: "All 5 Masters from Day 1", detail: "No waiting for Day 7, 14 or 21" },
+  { title: `All ${MASTERS.length} Masters from Day 1`, detail: `No waiting for ${UNLOCK_WAITS}` },
   { title: "Unlimited questions", detail: "The daily counter disappears" },
   { title: "All 20 adversity stories", detail: "Plus every one we add later" },
 ];

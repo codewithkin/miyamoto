@@ -5,6 +5,10 @@
  * must work with no session and no network. These slugs are the contract
  * with the seeded `wound` and `master` tables — the draft stores slugs, and
  * the server resolves them to rows when the account is created.
+ *
+ * Only active Masters appear here. Mandela is withdrawn (D-006); the server
+ * would refuse his slug, and a Master the app cannot deliver has no place
+ * on a screen that promises who you will meet.
  */
 
 export type WoundOption = {
@@ -18,8 +22,8 @@ export const WOUNDS: WoundOption[] = [
   { slug: "fear-of-person", label: "Fear of a person", masters: ["musashi", "seneca"] },
   { slug: "procrastination", label: "Procrastination", masters: ["curie", "musashi"] },
   { slug: "career-stall", label: "Career stall", masters: ["musashi", "sun-tzu"] },
-  { slug: "betrayal", label: "Betrayal", masters: ["mandela", "seneca"] },
-  { slug: "anxiety", label: "Anxiety", masters: ["seneca", "mandela"] },
+  { slug: "betrayal", label: "Betrayal", masters: ["seneca", "sun-tzu"] },
+  { slug: "anxiety", label: "Anxiety", masters: ["seneca", "curie"] },
   { slug: "no-discipline", label: "No discipline", masters: ["curie", "musashi"] },
 ];
 
@@ -63,15 +67,6 @@ export const MASTERS: MasterOption[] = [
     proOnly: false,
   },
   {
-    slug: "mandela",
-    name: "Mandela",
-    title: "The Reconciler",
-    domains: "Betrayal and conflict",
-    manner: "Slow, dignified paragraphs.",
-    unlockDay: 14,
-    proOnly: false,
-  },
-  {
     slug: "sun-tzu",
     name: "Sun Tzu",
     title: "The Tactician",
@@ -81,6 +76,31 @@ export const MASTERS: MasterOption[] = [
     proOnly: true,
   },
 ];
+
+const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"];
+
+/** "four". For copy that names how many Masters there are. */
+export function inWords(n: number): string {
+  return COUNT_WORDS[n] ?? String(n);
+}
+
+/**
+ * Copy derived from MASTERS rather than typed beside it.
+ *
+ * Withdrawing Mandela (D-006) left "five Masters" on four screens and "Day 7,
+ * 14 and 21" on two, where Day 14 had been his unlock. Both were true when
+ * written and false the moment the list changed, which is the whole case for
+ * deriving them.
+ */
+export const MASTER_COUNT = inWords(MASTERS.length);
+export const MASTER_COUNT_TITLE = MASTER_COUNT.charAt(0).toUpperCase() + MASTER_COUNT.slice(1);
+
+/** "Day 7 and 21" — the waits Pro skips. */
+export const UNLOCK_WAITS = (() => {
+  const days = MASTERS.flatMap((m) => (m.unlockDay ? [m.unlockDay] : [])).sort((a, b) => a - b);
+  if (days.length <= 1) return days.length ? `Day ${days[0]}` : "";
+  return `Day ${days.slice(0, -1).join(", ")} and ${days[days.length - 1]}`;
+})();
 
 export type PressureOption = {
   value: "GENTLE" | "FIRM" | "UNBREAKABLE";

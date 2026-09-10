@@ -9,6 +9,7 @@ import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import { MASTERS } from "@/content/onboarding-options";
 
 /**
  * 18 · The Masters.
@@ -32,7 +33,7 @@ export default function MastersScreen() {
         <Enter preset="drop">
           <View style={{ gap: space.xxs }}>
             <Text variant="eyebrow">
-              {earned} of {masters.data?.length ?? 5} earned
+              {earned} of {masters.data?.length ?? MASTERS.length} earned
             </Text>
             <Text variant="display">The Masters</Text>
           </View>

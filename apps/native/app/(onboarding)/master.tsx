@@ -6,7 +6,7 @@ import { Blade, BladeRail, BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
-import { MASTERS } from "@/content/onboarding-options";
+import { MASTERS, inWords } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -14,7 +14,7 @@ import { gold, indigo, ink, radius, size, space, text as textColor } from "@/the
  * 05 · Who speaks first.
  *
  * Only Musashi is unlocked at the start, so this is not a picker — it is
- * the ladder. Showing the four you have not earned, with the day each
+ * the ladder. Showing the ones you have not earned, with the day each
  * arrives, is the point: it is the first place the app tells you that
  * access is something you work towards rather than something you choose.
  *
@@ -67,7 +67,7 @@ export default function MasterScreen() {
           </Enter>
           <Enter preset="rise" delay={300}>
             <Text variant="lead">
-              He writes, he doesn&apos;t talk. The other four are earned — you meet them as you
+              He writes, he doesn&apos;t talk. The other {inWords(locked.length)} are earned — you meet them as you
               go.
             </Text>
           </Enter>
@@ -106,7 +106,7 @@ export default function MasterScreen() {
           <Text variant="eyebrow">Earned as you go</Text>
         </Enter>
 
-        {/* The four you don't. */}
+        {/* The ones you don't. */}
         <Stagger initialDelay={720} step={110} style={{ gap: space.base }}>
           {locked.map((master) => (
             <Enter key={master.slug} preset="roll">

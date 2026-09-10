@@ -57,15 +57,15 @@ export const SAMPLE_ANSWERS: Record<string, SampleAnswer> = {
 
   "betrayed": {
     problemSlug: "betrayed",
-    masterSlug: "mandela",
-    masterName: "Mandela",
-    masterEra: "Statesman · 1918–2013",
+    masterSlug: "seneca",
+    masterName: "Seneca",
+    masterEra: "Stoic · 4 BC–65 AD",
     echo: "Someone I trusted lied.",
-    body: "Men I had worked beside gave evidence against us. For years afterwards I shared a country with people who had done far worse than lie to me.\n\nI learned to separate two questions that feel like one: what this person is, and what I will now do. The first is theirs to answer. Only the second is yours.\n\nResentment is a thing you carry for someone who set it down long ago.",
+    body: "I taught a boy for years, and advised him for years more once he was emperor. In the end he sent word that I was to die.\n\nWhat he had become was never mine to decide, and I did not spend the hour I had left deciding it. You are spending your evenings on exactly that question. It is not yours.\n\nDivide it in two. What he is belongs to him. What you do next belongs to you.",
     action:
       "Name what you will still do with this person — work, speak, or nothing. Decide it today, not when you feel calmer.",
     sourceNote:
-      "Mandela's twenty-seven years of imprisonment from 1962, and the negotiated transition he led after 1990.",
+      "Seneca tutored Nero and served as his adviser; in 65 AD Nero ordered his death. Tacitus, Annals XV.60–64.",
   },
 
   "scared-conversation": {

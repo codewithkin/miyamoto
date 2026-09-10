@@ -6,6 +6,7 @@ import { Blade } from "@/components/blade";
 import { Animated, Enter, usePulse } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { alpha, ink, radius, red, size, space, text as textColor, tracking } from "@/theme/tokens";
+import { MASTER_COUNT_TITLE } from "@/content/onboarding-options";
 
 /**
  * 01 · Welcome.
@@ -93,7 +94,7 @@ export default function WelcomeScreen() {
 
           <Enter preset="rise" delay={400}>
             <Text variant="lead">
-              Five people who survived worse will tell you what they&apos;d do — and give you one
+              {MASTER_COUNT_TITLE} people who survived worse will tell you what they&apos;d do — and give you one
               thing to do today.
             </Text>
           </Enter>

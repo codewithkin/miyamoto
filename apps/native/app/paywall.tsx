@@ -9,6 +9,7 @@ import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { usePurchases } from "@/lib/purchases";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import { MASTER_COUNT, MASTER_COUNT_TITLE, UNLOCK_WAITS } from "@/content/onboarding-options";
 
 /**
  * 20 · Pro paywall.
@@ -21,7 +22,7 @@ import { gold, indigo, ink, radius, size, space, text as textColor } from "@/the
 
 const INCLUDED = [
   { title: "Unlimited answers", detail: "Ask any Master as often as you need" },
-  { title: "All five Masters now", detail: "Skip the Day 7, 14 and 21 waits" },
+  { title: `All ${MASTER_COUNT} Masters now`, detail: `Skip the ${UNLOCK_WAITS} waits` },
   { title: "The full adversity library", detail: "20 stories, new ones every month" },
 ];
 
@@ -70,7 +71,7 @@ export default function PaywallScreen() {
         </Enter>
         <Enter preset="rise" delay={300}>
           <Text variant="lead">
-            Five Masters writing back, every story, every trial — and no counter in the corner.
+            {MASTER_COUNT_TITLE} Masters writing back, every story, every trial — and no counter in the corner.
           </Text>
         </Enter>
 

@@ -21,14 +21,13 @@ import { ink, indigo, radius, size, space, text as textColor } from "@/theme/tok
 
 const SAMPLES = [
   { slug: "passed-over", label: "I got passed over at work", master: "musashi" },
-  { slug: "betrayed", label: "Someone I trusted lied", master: "mandela" },
+  { slug: "betrayed", label: "Someone I trusted lied", master: "seneca" },
   { slug: "procrastinating", label: "I keep putting off one thing", master: "curie" },
   { slug: "scared-conversation", label: "I'm scared of a conversation", master: "seneca" },
 ] as const;
 
 const MASTER_NAMES: Record<string, string> = {
   musashi: "Musashi",
-  mandela: "Mandela",
   curie: "Curie",
   seneca: "Seneca",
 };

@@ -12,6 +12,7 @@ import { showRewardedAd } from "@/lib/ads";
 import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
+import { MASTER_COUNT } from "@/content/onboarding-options";
 
 /**
  * 21 · Switch Master.
@@ -281,7 +282,7 @@ export function OutOfAnswersSheet({
       visible={visible}
       onClose={onClose}
       title="Three questions is all a stranger gets."
-      subtitle="Step inside and the Masters answer without counting — all five, every story, no ads."
+      subtitle={`Step inside and the Masters answer without counting — all ${MASTER_COUNT}, every story, no ads.`}
     >
       <Enter preset="pop" delay={140}>
         <Button
