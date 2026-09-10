@@ -37,6 +37,15 @@ import { checkReply, compileInstructions, correctionFor, type ReplyCheck } from 
 
 type MessagePart = { type: string; text?: string };
 
+/**
+ * How a charge is written into the Master's memory, after the letter.
+ *
+ * One constant, used by the writer and the history reader both, because a
+ * format defined twice is a format that drifts — and when it drifts here the
+ * charge silently stops reappearing under old letters.
+ */
+const HANDED_PREFIX = "Charge handed over: ";
+
 function latestUserText(messages: { content?: unknown; parts?: MessagePart[] }[]): string {
   const latest = messages[messages.length - 1];
   if (!latest) return "";
@@ -55,12 +64,13 @@ function latestUserText(messages: { content?: unknown; parts?: MessagePart[] }[]
  * next time. Only the question and the reply that passed are saved — with
  * its charge, so a Master asked tomorrow knows what he handed over today.
  */
-async function persistExchange(args: {
+export async function persistExchange(args: {
   mastraThreadId: string;
   userId: string;
   title: string | null;
   question: string;
   answer: string;
+  charge: string | null;
 }) {
   const existing = await memory.getThreadById({ threadId: args.mastraThreadId });
   if (!existing) {
@@ -75,6 +85,8 @@ async function persistExchange(args: {
       },
     });
   }
+
+  const remembered = args.charge ? `${args.answer}\n\n${HANDED_PREFIX}${args.charge}` : args.answer;
 
   const at = Date.now();
   await memory.saveMessages({
@@ -93,13 +105,120 @@ async function persistExchange(args: {
         createdAt: new Date(at + 1),
         threadId: args.mastraThreadId,
         resourceId: args.userId,
-        content: { format: 2, parts: [{ type: "text", text: args.answer }] },
+        content: { format: 2, parts: [{ type: "text", text: remembered }] },
       },
     ],
   });
 }
 
+export type HistoryCharge = {
+  id: string;
+  body: string;
+  dueOn: string;
+  points: number;
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED";
+};
+
+export type HistoryMessage =
+  | { id: string; role: "user"; parts: { type: "text"; text: string }[] }
+  | {
+      id: string;
+      role: "assistant";
+      parts: ({ type: "text"; text: string } | { type: "data-charge"; data: HistoryCharge })[];
+    };
+
+function splitHanded(text: string): { letter: string; handed: string | null } {
+  const at = text.lastIndexOf(HANDED_PREFIX);
+  if (at === -1) return { letter: text, handed: null };
+  return {
+    letter: text.slice(0, at).trimEnd(),
+    handed: text.slice(at + HANDED_PREFIX.length).trim(),
+  };
+}
+
+/**
+ * A thread's history, shaped as the messages the chat screen renders.
+ *
+ * Mastra owns the words (D-014); the Charge table owns what became of each
+ * charge. The two are joined here so an old letter comes back with its card
+ * in the state the user left it — accepted, done — rather than offering to
+ * be accepted again.
+ */
+export async function loadThreadHistory(args: {
+  threadId: string;
+  mastraThreadId: string;
+  userId: string;
+}): Promise<HistoryMessage[]> {
+  const existing = await memory.getThreadById({ threadId: args.mastraThreadId });
+  if (!existing) return [];
+
+  const [{ messages }, charges] = await Promise.all([
+    memory.recall({ threadId: args.mastraThreadId, resourceId: args.userId, perPage: false }),
+    db.charge.findMany({
+      where: { threadId: args.threadId, userId: args.userId },
+      select: { id: true, body: true, dueOn: true, points: true, status: true },
+    }),
+  ]);
+
+  return [...messages]
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .map((m): HistoryMessage => {
+      const text = m.content.parts
+        .flatMap((p) => (p.type === "text" && "text" in p ? [String(p.text)] : []))
+        .join("");
+
+      if (m.role === "user") {
+        return { id: m.id, role: "user", parts: [{ type: "text", text }] };
+      }
+
+      const { letter, handed } = splitHanded(text);
+      const charge = handed ? charges.find((c) => c.body === handed) : undefined;
+      return {
+        id: m.id,
+        role: "assistant",
+        parts: [
+          { type: "text", text: letter },
+          ...(charge ? [{ type: "data-charge" as const, data: charge }] : []),
+        ],
+      };
+    });
+}
+
 export function registerAiRoute(app: Hono) {
+  /**
+   * What was already said on a thread (T11b).
+   *
+   * Same ownership rule as asking: a thread that is not the caller's is
+   * NOT_FOUND, never "forbidden", so its existence is not confirmed either.
+   */
+  app.get("/ai/history", async (c) => {
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    if (!session) {
+      return c.json({ error: "UNAUTHORIZED" }, 401);
+    }
+
+    const threadId = c.req.query("threadId");
+    if (!threadId) {
+      return c.json({ error: "THREAD_REQUIRED" }, 400);
+    }
+
+    const thread = await db.thread.findFirst({
+      where: { id: threadId, userId: session.user.id },
+      select: { id: true, mastraThreadId: true },
+    });
+    if (!thread) {
+      return c.json({ error: "NOT_FOUND" }, 404);
+    }
+
+    const messages = await loadThreadHistory({
+      threadId: thread.id,
+      mastraThreadId: thread.mastraThreadId,
+      userId: session.user.id,
+    });
+    return c.json({ messages });
+  });
+
   app.post("/ai", async (c) => {
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
     if (!session) {
@@ -215,7 +334,7 @@ export function registerAiRoute(app: Hono) {
             // for today, and today is the user's, not the server's (D-017).
             dueOn: spent.localDate,
           },
-          select: { id: true, body: true, dueOn: true, points: true },
+          select: { id: true, body: true, dueOn: true, points: true, status: true },
         })
       : null;
 
@@ -225,7 +344,8 @@ export function registerAiRoute(app: Hono) {
         userId,
         title: thread.title,
         question,
-        answer: charge ? `${answer}\n\nCharge handed over: ${charge}` : answer,
+        answer,
+        charge,
       });
     } catch (e) {
       // The answer exists and was paid for; losing it from history is worse
