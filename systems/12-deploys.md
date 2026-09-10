@@ -4,9 +4,10 @@
 
 ```
 1. turbo run build  ->  server:build  ->  tsdown          (this repo's own pipeline)
-2. Vercel's Node.js runtime detects a server entrypoint
-   (apps/server/src/index.ts calls .listen()) and TYPE-CHECKS
-   it and everything it imports, independently, under its own
+2. Vercel's Node.js runtime detects apps/server/src/index.ts
+   as a function (it exports a Hono app — a fetch-compatible
+   default export, not a .listen() server) and TYPE-CHECKS it
+   and everything it imports, independently, under its own
    compiler settings                                        (not ours)
 ```
 
@@ -99,6 +100,51 @@ Vercel's build still fails on a TypeScript error:
    the direct fix is to put that field on every branch of the union
    (`null` where it doesn't otherwise apply) rather than keep narrowing a
    theory about why the checker disagrees.
+
+## A build that succeeds, then a page that crashes: `FUNCTION_INVOCATION_FAILED`
+
+This is a different failure from the two above — the build passes, the
+deployment goes live, and *every* request to it 500s with Vercel's generic
+"This Serverless Function has crashed" page. This is (almost always) not a
+code bug. It is a required environment variable missing, empty, or
+malformed **in the Vercel project's own settings** — not in this repo.
+
+**Why it kills every request identically**, rather than only the routes
+that use the broken thing: `apps/server/src/index.ts` imports
+`@miyamoto/auth` and `@miyamoto/db`, and both construct their singleton
+*eagerly, at module load* — `export const auth = createAuth();` and
+`const prisma = createPrismaClient();` run the instant the module is
+imported, before the `Hono` app or any route exists. Both read
+`@miyamoto/env/server`, whose `createEnv(...)` validates every var **at
+that same import time**. `@t3-oss/env-core`'s own default handler for a
+failed variable is:
+
+```js
+console.error("❌ Invalid environment variables:", issues);
+throw new Error("Invalid environment variables");
+```
+
+That throw happens before `export default app` is ever reached, so the
+module fails to evaluate at all — there is no Hono app for Vercel's
+function wrapper to call, on any route, on any request. That is exactly
+`FUNCTION_INVOCATION_FAILED`.
+
+**Where to look:** the `console.error` line above lands in the deployment's
+function logs (Vercel dashboard -> the deployment -> Logs, or the
+`/_logs?requestId=...` link on the crash page, which needs the owner's own
+login — not fetchable by an agent). Search for `Invalid environment
+variables`; it names the exact key(s) that failed.
+
+**What to check before even opening the logs** — the four env vars
+`packages/env/src/server.ts` requires with no default: `DATABASE_URL`,
+`BETTER_AUTH_SECRET` (must be ≥32 characters), `BETTER_AUTH_URL`,
+`CORS_ORIGIN` (the latter two must each parse as a full URL). Confirm each
+is set on the **Production** environment specifically (Vercel scopes vars
+per environment — a Preview-only value does not exist in Production), with
+no stray quotes or trailing whitespace from a paste. `BETTER_AUTH_URL`
+must equal the domain actually being deployed to, exactly — see
+`systems/06-auth.md`'s production values, and keep that doc's recorded
+domain in sync with whatever real domain gets attached in Vercel.
 
 ## Migrations are not run on deploy
 
