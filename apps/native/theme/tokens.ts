@@ -80,6 +80,8 @@ export const red = {
   /** Google brand red, sign-in button only. */
   google: "#EA4335",
   tint: "#5C2E28",
+  /** A dark red ground for urgency panels — red without shouting over the text. */
+  tintDeep: "#241412",
 } as const;
 
 /** Gold — rare, earned, premium. Used sparingly. */

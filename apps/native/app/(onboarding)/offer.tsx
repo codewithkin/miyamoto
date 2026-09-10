@@ -2,11 +2,11 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade, BladeTick } from "@/components/blade";
+import { BladeTick } from "@/components/blade";
 import { Animated, Enter, MotionTone, Stagger, usePulse } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { CloseButton } from "@/components/icon";
+import { CloseButton, Icon } from "@/components/icon";
 import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { usePurchases } from "@/lib/purchases";
@@ -19,6 +19,11 @@ import { gold, indigo, ink, radius, red, size, space, text as textColor } from "
  * genuinely gone when it reaches zero, rather than resetting on every visit.
  * A timer that lies is the fastest way to lose someone who came here to be
  * told the truth.
+ *
+ * The deal is the first thing on the screen: a gold "60% OFF" block beside a
+ * red-edged countdown in 52pt numerals. Both used to be eyebrow-sized text
+ * — the timer a single line at the top, which read as a joke rather than a
+ * deadline. When the time runs out both panels go grey and say so.
  */
 
 const OFFER_SECONDS = 10 * 60;
@@ -75,8 +80,7 @@ function OfferScreenBody() {
 
   return (
     <Screen scroll>
-      {/* Countdown bar. */}
-      <Enter preset="slideDown">
+      <Enter preset="drop">
         <View
           style={{
             flexDirection: "row",
@@ -86,14 +90,9 @@ function OfferScreenBody() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-            <Animated.View
-              style={[
-                { width: 7, height: 7, borderRadius: 4, backgroundColor: red.base },
-                livePulse,
-              ]}
-            />
-            <Text variant="eyebrow" color={expired ? textColor.faintest : red.base}>
-              {expired ? "Offer ended" : `Offer ends in ${label}`}
+            <Icon name="flash" size={16} color={expired ? textColor.faintest : gold.base} />
+            <Text variant="eyebrow" color={expired ? textColor.faintest : gold.base}>
+              One-time offer
             </Text>
           </View>
           <CloseButton onPress={finish} accessibilityLabel="Skip the offer" />
@@ -101,21 +100,81 @@ function OfferScreenBody() {
       </Enter>
 
       <View style={{ flex: 1, gap: space.section }}>
-        <Enter preset="pinwheel" delay={160}>
-          <View
-            style={{
-              alignSelf: "flex-start",
-              paddingVertical: space.xs,
-              paddingHorizontal: space.base,
-              borderRadius: radius.blade,
-              backgroundColor: gold.tintAlt,
-            }}
-          >
-            <Text variant="eyebrow" color={gold.base}>
-              One time · 60% off lifetime
-            </Text>
-          </View>
-        </Enter>
+        {/* The deal: how much, and for how long. */}
+        <View style={{ flexDirection: "row", gap: space.base }}>
+          <Enter preset="pinwheel" delay={160} style={{ flex: 1 }}>
+            <View
+              accessibilityLabel={expired ? "Discount ended" : "60 percent off lifetime"}
+              style={{
+                flex: 1,
+                minHeight: 132,
+                justifyContent: "center",
+                padding: space.xl,
+                borderRadius: radius.card,
+                backgroundColor: expired ? ink.high : gold.base,
+              }}
+            >
+              <Text
+                variant="numeral"
+                color={expired ? textColor.faintest : ink.base}
+                style={{ fontSize: 52, lineHeight: 56 }}
+              >
+                60%
+              </Text>
+              <Text
+                variant="eyebrow"
+                color={expired ? textColor.faintest : ink.base}
+                style={{ fontSize: 14 }}
+              >
+                Off lifetime
+              </Text>
+            </View>
+          </Enter>
+
+          <Enter preset="slideDown" delay={60} style={{ flex: 1 }}>
+            <View
+              accessibilityRole="timer"
+              accessibilityLabel={expired ? "Offer ended" : `Offer ends in ${label}`}
+              style={{
+                flex: 1,
+                minHeight: 132,
+                justifyContent: "center",
+                padding: space.xl,
+                borderRadius: radius.card,
+                backgroundColor: expired ? ink.surface : red.tintDeep,
+                borderWidth: 1.5,
+                borderColor: expired ? ink.border : red.base,
+                gap: space.xs,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+                {expired ? (
+                  <Icon name="timer-outline" size={14} color={textColor.faintest} />
+                ) : (
+                  <Animated.View
+                    style={[
+                      { width: 8, height: 8, borderRadius: 4, backgroundColor: red.base },
+                      livePulse,
+                    ]}
+                  />
+                )}
+                <Text variant="eyebrow" color={expired ? textColor.faintest : red.base}>
+                  {expired ? "Offer ended" : "Ends in"}
+                </Text>
+              </View>
+              <Text
+                variant="numeral"
+                color={expired ? textColor.faintest : textColor.primary}
+                style={{ fontSize: 52, lineHeight: 56, fontVariant: ["tabular-nums"] }}
+              >
+                {label}
+              </Text>
+              <Text variant="caption" color={expired ? textColor.faintest : textColor.muted}>
+                {expired ? "Lifetime is $149 again" : "Then $149"}
+              </Text>
+            </View>
+          </Enter>
+        </View>
 
         <View style={{ gap: space.md }}>
           <Enter preset="rise" delay={340}>
@@ -172,9 +231,20 @@ function OfferScreenBody() {
                   <Text variant="title" style={{ flex: 1, fontSize: size.lead }}>
                     Lifetime
                   </Text>
-                  <Text variant="numeral" color={indigo.light}>
-                    {expired ? "$149" : "$59"}
-                  </Text>
+                  <View style={{ alignItems: "flex-end" }}>
+                    {!expired ? (
+                      <Text
+                        variant="caption"
+                        color={textColor.faintest}
+                        style={{ textDecorationLine: "line-through" }}
+                      >
+                        $149
+                      </Text>
+                    ) : null}
+                    <Text variant="numeral" color={indigo.light}>
+                      {expired ? "$149" : "$59"}
+                    </Text>
+                  </View>
                 </View>
                 <View
                   style={{
@@ -188,9 +258,18 @@ function OfferScreenBody() {
                     One payment, yours forever
                   </Text>
                   {!expired ? (
-                    <Text variant="eyebrow" color={gold.base}>
-                      Save $90
-                    </Text>
+                    <View
+                      style={{
+                        paddingVertical: 3,
+                        paddingHorizontal: space.md,
+                        borderRadius: radius.pill,
+                        backgroundColor: gold.base,
+                      }}
+                    >
+                      <Text variant="eyebrow" color={ink.base}>
+                        Save $90
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
               </View>
@@ -231,7 +310,7 @@ function OfferScreenBody() {
 
         <Enter preset="fade" delay={1440}>
           <View style={{ flexDirection: "row", gap: space.base, alignItems: "center" }}>
-            <Blade state="locked" length={16} />
+            <Icon name="chatbubble-ellipses-outline" size={18} color={textColor.faintest} />
             <Text variant="caption" style={{ flex: 1 }}>
               &ldquo;I took the lifetime on day one. Cheapest thing I did that year.&rdquo; — Aisha
             </Text>
