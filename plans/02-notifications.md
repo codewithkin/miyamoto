@@ -1,5 +1,8 @@
 # 02 — Notifications
 
+**Status: built (session 3). Not run on a device, which is the only place
+a notification can be seen to fire.**
+
 `expo-notifications` is installed and its config plugin registered, but
 nothing schedules anything. Onboarding screen 10 shows the user two preview
 notifications, records their choice and their preferred time, and neither is
@@ -10,7 +13,7 @@ reminded of one.
 
 ## T01 — Raise the real permission prompt
 
-- [ ] `pending-T01`
+- [x] `55bad9d`
 - **Commit:** `feat(native): raise the OS notification prompt after priming`
 - **Touches:** `apps/native/app/(onboarding)/reminders.tsx`
 - **Done when:** tapping "Wake me at 06:00" raises the OS prompt, and a
@@ -20,7 +23,7 @@ reminded of one.
 
 ## T02 — Schedule the two daily reminders
 
-- [ ] `pending-T02`
+- [x] `5bafce9`
 - **Commit:** `feat(native): schedule the morning and evening reminders`
 - **Depends on:** T01
 - **Done when:** two local notifications fire at the user's chosen times in
@@ -29,7 +32,7 @@ reminded of one.
 
 ## T03 — The reminder is in the Master's voice
 
-- [ ] `pending-T03`
+- [x] `d38ce2f`
 - **Commit:** `feat(native): put the day's trial in the notification`
 - **Depends on:** T02
 - **Done when:** the morning notification carries the day's actual trial text
@@ -40,7 +43,7 @@ reminded of one.
 
 ## T04 — Streak reminders only on the day one would break
 
-- [ ] `pending-T04`
+- [x] `b771bb2`
 - **Commit:** `feat(native): warn only on the day the streak would break`
 - **Depends on:** T02
 - **Done when:** behaviour matches the promise printed on screen 10 —

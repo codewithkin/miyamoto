@@ -1,6 +1,6 @@
 # 01 — Master corpus and guardrails
 
-**Status: in flight. T08 is next.**
+**Status: built to T11b. T12 is next, and it is blocked on `OPENROUTER_API_KEY`.**
 
 The schema, compiler and generation path landed in session 1. The corpus
 itself landed in session 2 — voice fields, tiers, principles and quotations
@@ -11,8 +11,11 @@ itself landed in session 2 — voice fields, tiers, principles and quotations
 > quotations. Chat is no longer blocked on data. It is still blocked on
 > `OPENROUTER_API_KEY`, which is a different problem and the owner's.
 
-What remains here is withdrawing Mandela (T08–T10), enforcing citations
-(T11), and the voice evaluation (T12) that is the only real check on D-013.
+Session 3 withdrew Mandela (T08–T10), made citation enforced rather than
+requested (T11, D-030–D-032), wrote the charge a Master hands over (T11a)
+and opened chat on its history (T11b). What remains is T12, the voice
+evaluation — the only real check on D-013, and the first thing that will
+show whether a real model follows the trailer format at all.
 
 **Depends on:** nothing outstanding.
 **Read first:** `systems/04-masters.md`, then `systems/09-decisions.md`
@@ -110,13 +113,9 @@ D-007 to D-013.
   nonsense question no longer returns Boju while a question about
   credit and reputation still does.
 
----
-
-## Next
-
 ## T08 — Reassign Mandela's stories, deactivate him
 
-- [ ] `pending-T08`
+- [x] `0ead343`
 - **Commit:** `seed: withdraw Mandela from the app`
 - **Depends on:** T05
 - **Touches:** `packages/db/prisma/seed/masters.ts`, `seed/adversity.ts`
@@ -131,7 +130,7 @@ D-007 to D-013.
 
 ## T09 — Filter inactive Masters from every query
 
-- [ ] `pending-T09`
+- [x] `e59a51e`
 - **Commit:** `feat(api): withdraw inactive Masters from every surface`
 - **Depends on:** T08
 - **Touches:** `packages/api/src/routers/library.ts`, `chat.ts`
@@ -140,7 +139,7 @@ D-007 to D-013.
 
 ## T10 — Remove Mandela from the native app screens
 
-- [ ] `pending-T10`
+- [x] `5494ba6`
 - **Commit:** `feat(native): drop Mandela from onboarding and samples`
 - **Depends on:** T09
 - **Touches:** `apps/native/content/onboarding-options.ts`,
@@ -160,7 +159,7 @@ D-007 to D-013.
 
 ## T11 — Citation enforcement
 
-- [ ] `pending-T11`
+- [x] `f2d47c0`
 - **Commit:** `feat(server): make the model name the corpus entry it used`
 - **Depends on:** T06
 - **Touches:** `apps/server/src/routes/ai.ts`, `mastra/template.ts`
@@ -173,7 +172,7 @@ D-007 to D-013.
 
 ## T11a — Write the Charge a Master hands over
 
-- [ ] `pending-T11a`
+- [x] `ab9b5e5` + `cc74337`
 - **Commit:** `feat(server): record the charge at the end of every answer`
 - **Depends on:** T11
 - **Touches:** `apps/server/src/routes/ai.ts`, `mastra/template.ts`
@@ -188,7 +187,7 @@ D-007 to D-013.
 
 ## T11b — Chat opens on its history
 
-- [ ] `pending-T11b`
+- [x] `d3ca7be` + `6da674c`
 - **Commit:** `feat(server): return a thread's history` then
   `feat(native): open a thread on what was already said`
 - **Depends on:** T11
@@ -202,6 +201,10 @@ D-007 to D-013.
 - **Done when:** an authenticated route returns an owned thread's messages
   from Mastra, refusing threads the caller does not own, and the chat screen
   opens a thread with them in place.
+
+---
+
+## Next
 
 ## T12 — Voice evaluation
 

@@ -11,6 +11,7 @@ Everything between "it works" and "it is in the store".
 | `APPLE_CLIENT_ID` / `_SECRET` | Apple sign-in |
 | `SMTP_HOST` / `_USER` / `_PASS` | The deletion confirmation email |
 | RevenueCat API keys | All purchases |
+| `REVENUECAT_WEBHOOK_AUTH` | The server's own copy of entitlement. The webhook answers 503 without it; set the same value as the Authorization header of the dashboard webhook pointed at `/webhooks/revenuecat` |
 
 Everything degrades honestly without them — providers register only when
 their pair is present, mail logs under `[mail]`, purchases say they are

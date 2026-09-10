@@ -41,6 +41,10 @@ what was written down.
 | PowerShell 5.1 | **No `&&`.** Use `;` or separate commands. |
 | Heredocs | Break on apostrophes in prose. Use the file tool. |
 | Prisma reset | Requires fresh per-command consent, even when authorised. |
+| Parallel shell calls | **Share one working directory.** A `cd` in one moves every call after it. Start every call with an absolute `cd`. |
+| `tsc -b` at the repo root | **Emits `.js` beside every source file** in every app and package. Run it from `apps/server`, or use `pnpm check-types`. Happened twice in session 3, about 110 strays each time. |
+| Shell heredocs | Not reliable for Python or prose with escapes: one turned an escaped newline into a real one, another failed to parse at all. Write the script to a file with the file tool, then run the file. |
+| Logic inside React Native files | Cannot be run by bun. Pull decision logic into a file with no RN imports and run fixtures against it — `lib/streak-warning.ts`, `lib/chat-errors.ts`. |
 
 ## Rules with teeth
 

@@ -1,6 +1,6 @@
 # 04 — Persist the onboarding draft
 
-**The most user-visible gap currently in the app.**
+**Status: done (session 3).** It was the most user-visible gap in the app.
 
 Onboarding collects eleven screens of answers into a local SecureStore draft
 — the seed problem, wounds, first Master, pressure, reminder times, timezone
@@ -15,7 +15,7 @@ sitting there. Nothing consumes it.
 
 ## T01 — The claim mutation
 
-- [ ] `pending-T01`
+- [x] `262af12`
 - **Commit:** `feat(api): claim the onboarding draft at sign-up`
 - **Touches:** `packages/api/src/routers/onboarding.ts` (new)
 - **Done when:** an authenticated mutation takes the draft, resolves wound
@@ -26,7 +26,7 @@ sitting there. Nothing consumes it.
 
 ## T02 — Call it after sign-in, then clear the draft
 
-- [ ] `pending-T02`
+- [x] `baf4d10`
 - **Commit:** `feat(native): submit the draft once a session exists`
 - **Depends on:** T01
 - **Touches:** `apps/native/app/(onboarding)/sign-in.tsx`
@@ -41,7 +41,7 @@ sitting there. Nothing consumes it.
 
 ## T02a — A signed-in user does not see onboarding again
 
-- [ ] `pending-T02a`
+- [x] `784c15c`
 - **Commit:** `feat(native): send a signed-in user straight to the Path`
 - **Depends on:** T02
 - **Touches:** `apps/native/app/(onboarding)/_layout.tsx`, `app/(app)/_layout.tsx`
@@ -53,7 +53,7 @@ sitting there. Nothing consumes it.
 
 ## T03 — Day 1 reflects the quiz
 
-- [ ] `pending-T03`
+- [x] `2146b94`
 - **Commit:** `feat(native): build Day 1 from the user's own answers`
 - **Depends on:** T02
 - **Done when:** the home screen's trial is at the chosen pressure with the
@@ -62,7 +62,7 @@ sitting there. Nothing consumes it.
 
 ## T04 — The first question has somewhere to go
 
-- [ ] `pending-T04`
+- [x] `2994c86`
 - **Commit:** `feat(native): open the first thread with the problem they brought`
 - **Depends on:** T01
 - **Touches:** `packages/api/src/routers/onboarding.ts`, `app/(app)/chat.tsx`

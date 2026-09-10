@@ -11,11 +11,11 @@ diverge silently.
 
 | # | Plan | Status | Blocked on |
 |---|---|---|---|
-| 01 | `01-master-corpus.md` | **In flight** — T08 next | — |
-| 02 | `02-notifications.md` | Not started | 01 T08 |
-| 03 | `03-revenuecat.md` | Groundwork done, inert | RevenueCat API keys |
-| 04 | `04-onboarding-claim.md` | Not started | — |
-| 05 | `05-launch-readiness.md` | Not started | 01–04 |
+| 01 | `01-master-corpus.md` | **Built to T11b** — T12 next | `OPENROUTER_API_KEY` |
+| 02 | `02-notifications.md` | **Built**, not run on a device | A device |
+| 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
+| 04 | `04-onboarding-claim.md` | **Done** | — |
+| 05 | `05-launch-readiness.md` | Not started | The owner: icon, consoles, domain, device |
 
 ## Why this order
 
@@ -39,3 +39,7 @@ inert; this is unblocking, not building.
   separately.
 - Message bodies in the data export. Blocked by the Mastra split (D-014), and
   the export screen says so rather than omitting them quietly.
+  **Note (session 3):** no longer blocked in principle — `loadThreadHistory`
+  in `apps/server` now reads them — but not built. The export lives in
+  `packages/api`, which cannot import Mastra, so it would move to a server
+  route.

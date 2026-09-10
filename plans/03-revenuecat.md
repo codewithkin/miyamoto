@@ -1,5 +1,8 @@
 # 03 — RevenueCat
 
+**Status: T00 and T02 built (session 3). T01 and T03 need the keys, the
+dashboard and a device.**
+
 Groundwork is done and deliberately inert. `apps/native/lib/purchases.tsx`
 configures per platform, binds `appUserID` to the Better-Auth user id
 (D-021), reads the `miyamoto_meet_the_masters_pro` entitlement and presents
@@ -11,7 +14,7 @@ unblocking, not building.
 
 ## T00 — One definition of Pro
 
-- [ ] `pending-T00`
+- [x] `2d3459c`
 - **Commit:** `fix(api): one definition of Pro for every gate`
 - **Touches:** `packages/api/src/lib/usage.ts`, `routers/library.ts`,
   `routers/chat.ts`, `routers/account.ts`
@@ -35,7 +38,7 @@ unblocking, not building.
 
 ## T02 — Entitlement webhook to the server
 
-- [ ] `pending-T02`
+- [x] `fbf6198`
 - **Commit:** `feat(server): write entitlement from RevenueCat webhooks`
 - **Depends on:** T01
 - **Done when:** RevenueCat webhooks write the `Subscription` row, so the
@@ -63,3 +66,7 @@ unblocking, not building.
 - Also verify the reverse: that an expired subscription loses access even if
   the clearing webhook never arrived. `usage.ts` already treats a lapsed
   `expiresAt` as not-Pro; this confirms it.
+- **Note (session 3):** the reverse is already verified server-side, by
+  behaviour: a subscription flagged active with an `expiresAt` in the past is
+  refused by the library, the Master switch, settings and the counter alike
+  (`2d3459c`). What remains is seeing it on a device with a sandbox account.

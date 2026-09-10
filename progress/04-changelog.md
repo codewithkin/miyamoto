@@ -5,6 +5,115 @@ Write the entry you would want to find.
 
 ---
 
+## Session 3 — 2026-09-10
+
+**Every remaining buildable todo in plans 01–04, four gaps no plan had, and
+three bugs found only by running things. 26 commits.**
+
+The honest summary first: a great deal is now built and verified, and two
+things are still unproven by any of it. No Master has ever replied to anyone,
+and nothing has run on a phone.
+
+### Found by reading before building
+
+Four gaps were added to the plans before any code, because none was in them:
+nothing ever created a Charge; three of five Pro gates ignored `expiresAt`;
+nothing read the session at launch; and a new user's Chat tab had no thread
+to send on. Two more surfaced mid-session: chat never loaded a thread's
+history, which was added to the plan as 01 T11b before it was built, and
+refusals reached the screen as raw JSON, which was small enough to fix
+directly in one commit.
+
+And one that had been shipping: **sign-in routed to `/(drawer)`, a group
+that does not exist.** Every successful sign-in landed on not-found.
+
+### Mandela, withdrawn properly
+
+Deactivating him was one line. Doing it without breaking D-007 was not:
+reassigning his four library stories to Seneca would have had Seneca
+narrating Rivonia as his own life, in the seed, where no citation check can
+see it. Each was retold from the new Master's own corpus — Nero sending word
+(Tacitus), the letter from Corsica to his mother, De Ira to Novatus, Curie's
+attic. The first draft of the De Ira line added a clause that is not in the
+work, and it was cut before commit.
+
+Removing him also broke copy no grep for "mandela" would find: "five
+people", "all five", "The other four" — and "No waiting for Day 7, 14 or 21"
+on the offer and paywall, where Day 14 was his. That count and those days
+are now derived from the Master list (D-033). **Day 14 is now empty, and
+that is the owner's call.**
+
+Musashi's onboarding sample, the first thing any visitor reads, was also
+stating the Yoshioka duel as first-hand fact and citing Go Rin No Sho, which
+names no opponent. It now says "They tell a story of me".
+
+### Citations, charges, refunds — the Master system, enforced
+
+T11 asked for a decision on streaming, and the answer is not to stream
+(D-030). A streamed sentence has been read; an invented duel cannot be
+withdrawn by rejecting it afterwards. So a reply is generated in full with
+memory read-only, validated, retried once with a correction, and released
+sentence by sentence. Only the accepted exchange enters Mastra's history.
+
+The reply ends in two machine lines, `<<<charge: …>>>` and `<<<cited: ID>>>`
+(D-031). The charge becomes a Charge row due on the user's local date and a
+card under the letter — labelled "Your charge", overriding screen 14's "Your
+trial" because the naming rule outranks one screen (D-035). A question spent
+on an answer never delivered is refunded (D-032).
+
+### Onboarding persistence
+
+The claim is idempotent and the first claim wins (D-034). The race check
+failed the first time: Prisma's upsert is not atomic on insert, so two
+concurrent claims both inserted Profile and one threw. Now retried on P2002,
+and three concurrent claims produce one row, three rounds running. The
+first thread is created in the same transaction, titled with the user's own
+words, and Chat offers that problem back unsent.
+
+### Notifications
+
+Prompt once, remember a refusal and never re-ask. Two daily reminders in the
+exact shape screen 10 previewed — the morning carrying the day's real trial.
+A streak warning only on the day the streak would break, which exposed that
+the home screen was showing streaks users had already lost.
+
+### RevenueCat, ahead of the keys
+
+The webhook needs a secret, not the store keys, so it was built. It never
+grants on doubt, ignores stale expirations, and revokes on transfer without
+granting.
+
+### What was verified, and how
+
+No model was called and no device was used. Everything else ran against
+real code paths, the real database and Mastra's real store, with users and
+threads created for each check and deleted after it:
+
+| Check | Result |
+|---|---|
+| Withdrawn Master through every procedure | refused; switch refused with a real thread |
+| Expired-but-flagged subscription | free in all four gates; lifetime and future expiry Pro |
+| Claim: fresh, retry on Day 12, 3×3 concurrent | answers kept, Day 12 kept, 1/1/1 rows |
+| Webhook, 12 synthetic events | every case, including 401, 503, stale expiry, transfer |
+| Citation validator | 13 fixtures, then 9 with charges; no trailer leaks |
+| Charge loop | listed, accepted, Bushido 0 → 5 → 5 |
+| History round trip | 24 messages in order, charge re-attached as ACCEPTED |
+| Streak shown / at risk | 4 cases against the database |
+| Streak warning time, chat error text | 5 and 10 fixtures, logic pulled out of React Native |
+| Whole monorepo | `pnpm check-types`, 4 of 4 |
+
+### What went wrong on my side
+
+`tsc -b` ran at the repo root twice, because parallel shell calls share one
+working directory and a `cd` in one moved the next. Each time it wrote about
+110 `.js` files across every app and package. Both times they were
+inventoried, confirmed untracked and minutes old, and deleted; nothing
+tracked was touched. A Python heredoc also turned an escaped newline into a
+real one and broke a string, caught by `tsc`. All three are now in
+AGENT-PROCESS as local facts.
+
+---
+
 ## Session 2 — 2026-09-09
 
 **The corpus the reset emptied, rebuilt as something that can be checked

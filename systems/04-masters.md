@@ -77,6 +77,13 @@ Anything a Master claims about their own life that is not a `Moment` row is
 a fabrication. The prompt says so; retrieval supplies the entries; the model
 must cite which one it used (D-012).
 
+This is enforced, not requested (session 3). Every reply ends with
+`<<<charge: …>>>` and `<<<cited: ID>>>`. The server strips both, rejects a
+reply that tells a life event without citing a `MOMENT` it was actually
+given, retries once with a correction, and refuses — refunding the question —
+if the retry fails too (D-030, D-031, D-032). The life-claim detector in
+`checkReply` is only a tripwire; the citation is the proof.
+
 ### 2. Confidence — not all Masters are equally documented (D-008)
 
 | Tier | Means | How it may be spoken |
@@ -123,6 +130,7 @@ era. Forbidden in the same rule.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Reaches for a contested claim unprompted | Eligibility regressed to ranking | `DISPUTED` is filtered, not merely biased — see the note in `retrieval.ts` |
+| Replies refused, users told "Ask again" | The model skips the trailer, or keeps telling events it was not given | `[ai] … rejected (REASON)` in the server log names why. Fix the corpus or `correctionFor`; never loosen `checkReply` |
 | Sounds like every other Master | `characteristicMove` too vague, or `neverDo` too short | Sharpen the move; add prohibitions |
 | Too gentle | `SHARED_LAW` manner clause losing to a soft `register` | Cool the register |
 | Claims something not in the corpus | Retrieval returned nothing and the model improvised | Add a `PRINCIPLE`; check the citation rejection is firing |

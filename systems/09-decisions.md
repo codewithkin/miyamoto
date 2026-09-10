@@ -186,3 +186,49 @@ See `CLAUDE.md`.
 Where a change genuinely cannot be split — a Prisma file whose models are
 mutually referential, a generated lockfile — the commit says so rather than
 pretending it was scoped.
+
+---
+
+## The Masters, enforced (session 3)
+
+**D-030 — A Master's reply is validated before any of it is shown.**
+Generated in full with memory read-only, checked against the corpus it was
+given, retried once with a correction, then released sentence by sentence.
+A token stream and a validated reply do not compose: a streamed sentence has
+already been read, and an invented duel cannot be withdrawn by rejecting it
+afterwards. The cost is latency, which the "is writing…" state covers. Only
+the accepted exchange is saved to Mastra memory, so a rejected draft never
+becomes something the Master "said".
+
+**D-031 — The reply ends in two machine lines, not structured output.**
+`<<<charge: …>>>` then `<<<cited: ID>>>`, both stripped server-side; the
+charge becomes a Charge row and a card. A JSON envelope would put the letter
+inside a string and make the Master's cadence depend on escaping. A first
+draft gets no leniency on either line. A retry may omit the citation only if
+it claims no life event, and may omit the charge. The truth rules are never
+relaxed. See `checkReply` in `apps/server/src/mastra/template.ts`.
+
+**D-032 — A question spent on an answer never delivered is refunded.**
+A withdrawn Master, a model failure, a reply rejected twice. Spending first
+(D-018) stands. A refund only follows a failure on our side and delivers
+nothing, so it reopens no hole. It refunds the local date it was charged to.
+
+**D-033 — Withdrawn is not locked.**
+A locked Master or Pro story is returned with its content withheld, because
+showing what has not been earned is the mechanic. A withdrawn one (`active`
+false) is NOT_FOUND everywhere, deep links included, because there is
+nothing to earn. Copy that counts Masters or names unlock days is derived
+from the Master list, since withdrawing one stranded "five" and "Day 14" on
+six screens.
+
+**D-034 — The onboarding claim is idempotent, and the first claim wins.**
+The device submits from the app shell until the server confirms, and clears
+its draft only then. The server never overwrites answers, creates Profile
+and PathProgress only if missing, and resolves concurrent claims to one row
+(Prisma's upsert is not atomic on insert; P2002 is retried). A claim on Day
+12 from a new phone changes nothing.
+
+**D-035 — The chat card says "Your charge", not screen 14's "Your trial".**
+The naming rule (CLAUDE.md, D-003) spans screens and outranks one screen's
+copy: a Trial is an authored Path day and feeds the streak; a Charge does
+not. Registered as a design exception in START-HERE.
