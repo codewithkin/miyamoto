@@ -7,11 +7,17 @@ their own voice. This file is self-contained.
 > Read `progress/AGENT-PROCESS.md` for *how* work is done here.
 > This file is *what* to build next.
 
-**Last updated:** end of session 4 (2026-09-10).
+**Last updated:** end of session 5 (2026-09-10).
 
 ---
 
 ## ⚠️ Read this first
+
+**Session 5** (plan 07, done): welcome *is* the sign-in screen now, with
+one "Continue with Google" button and no `/sign-in` route (D-040). It was
+redesigned around a full-bleed ink hero of Musashi. TelemetryDeck
+analytics count the funnel welcome -> sign-in -> onboarding done -> first
+message (D-041, `systems/10-analytics.md`).
 
 **Session 4 rebuilt onboarding around sign-in** (plan 06, done): sign-in
 comes first and the quiz after it (D-038), Google is the only provider
@@ -31,8 +37,10 @@ face.
    `http://192.168.1.5:3000`. Google cannot redirect a phone to either.
    `systems/06-auth.md` is the step-by-step; the server prints what is wrong
    at boot, under `[auth]`.
-3. **Nothing has run on a device.** Every screen in plan 06 was typechecked
-   and bundled (`expo export`), never seen. The same goes for everything
+3. **Nothing has run on a device.** Every screen in plans 06 and 07 was
+   typechecked and bundled (`expo export`), never seen. No signal has
+   reached TelemetryDeck yet. The signal body and hash were checked
+   locally in Node; nothing was sent. The same goes for everything
    before it: onboarding persistence, the permission prompt, both daily
    reminders, the streak warning, the charge card.
 
@@ -70,7 +78,8 @@ and its markup. The markup is the only place the real hex values live.
 
 | Design says | We do | Why |
 |---|---|---|
-| Screen 01 "Try it — no account" and "I already have one" | One "Get started" to Google sign-in; the quiz runs after it | D-004, D-038. Nothing works without an account, so the old promise was untrue. The sample answers still give the aha with no model call. |
+| Screen 01 "Try it — no account" and "I already have one" | Welcome's one button is "Continue with Google"; the quiz runs after it | D-004, D-038, D-040. Nothing works without an account, so the old promise was untrue. The sample answers still give the aha with no model call. |
+| Screen 01's layout | A full-bleed ink hero, the four faces, one white Google pill | D-040. Redesigned at the owner's request after a reference app. |
 | Sign-in offers Apple and Google | Google only; Apple commented out | D-039. |
 | The design's entry choreography | Restrained everywhere except forging, the offer and the paywall | D-036. The owner's call: serious, not showy. |
 | Selection shown with blade marks | A green tick in a circle; an empty ring when not chosen | D-037. |
@@ -127,7 +136,8 @@ Nothing is uncommitted. The tree is clean.
 
 | Area | State | What "built" means here |
 |---|---|---|
-| Onboarding, 12 screens | **Built, auth-first** | Welcome and sign-in in `(auth)`, the quiz in `(onboarding)` after sign-in (D-038). Never run on a device. |
+| Onboarding, 12 screens | **Built, auth-first** | Welcome (which is sign-in, D-040) in `(auth)`, the quiz in `(onboarding)` after sign-in (D-038). Never run on a device. |
+| Analytics | **Built**, never seen to send | TelemetryDeck through `track()`; four funnel steps plus sign-in failures (D-041, `systems/10-analytics.md`). |
 | Onboarding persistence | **Built** | Claimed from the app shell once the offer screen marks the draft `finishedAt`; retried until confirmed; idempotent on the server (D-034). |
 | Session routing | **Built** | One gate, `app/(app)/_layout.tsx`: no session → `/welcome`; new account → the quiz; otherwise the app. |
 | Google sign-in | **Built**, never completed | Needs the owner's OAuth client and an HTTPS server URL — `systems/06-auth.md`. |
@@ -160,6 +170,14 @@ Nothing is uncommitted. The tree is clean.
   to `/`. That one is `(app)/index.tsx`; welcome is `/welcome`. After adding
   or moving a route, regenerate typed routes by starting Metro briefly
   (`CI=1 npx expo start`), or `tsc` rejects the new href.
+- **Do not run prettier.** The repo has no prettier config, so it
+  reformats to 80 columns against code written at about 100. Session 5 had
+  to revert a whole layout file.
+- **Every new analytics signal** goes into the `SignalType` union and the
+  table in `systems/10-analytics.md`, in the same commit, and never carries
+  content (D-041).
+- **The hero is generated.** `python designs/make-hero.py` rebuilds
+  `hero-musashi.jpg` from `icon.png`. Replacing the icon means re-running it.
 - **Portraits are cut once, offline.** `python designs/crop-portraits.py`
   writes `avatar-*.png` from the supplied `master-*.png`. The component
   assumes squares; do not position faces at runtime.
@@ -224,7 +242,8 @@ notes do not survive a clone.
    check on D-013. The key is set; nothing blocks it.
 2. **Google sign-in, end to end** — the owner's OAuth client and an HTTPS
    address for the server (`systems/06-auth.md`). Until then no one can get
-   past the sign-in screen on a phone, which also blocks item 3.
+   past welcome on a phone, which also blocks item 3. TelemetryDeck will
+   show it as `Auth.signInFailed` with `reason: provider-off`.
 3. **A device pass** — 05 T04. Now covers far more than it did: sign-in, the
    gate, the reworked onboarding, the claim, the permission prompt, three
    kinds of notification, the charge card, history.
@@ -250,6 +269,9 @@ notes do not survive a clone.
    and secret, then a sandbox pass.
 10. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
 11. **Mandela on the marketing site** — owner said later, separately.
+12. **The privacy policy and Play data safety must mention analytics**
+    before launch. The wording is in `systems/10-analytics.md`, "Before
+    launch".
 
 ## Waiting on the owner
 
@@ -257,8 +279,9 @@ A Google OAuth client and an HTTPS server address (blocks sign-in on a
 phone), `SMTP_*`, RevenueCat keys, `REVENUECAT_WEBHOOK_AUTH` and the
 dashboard webhook, an original app icon, larger Curie and Sun Tzu portraits,
 a device with an EAS development build, a decision about Day 14, and a
-decision about the payoff figures and testimonials. Apple sign-in is off,
-so Apple credentials are no longer needed.
+decision about the payoff figures and testimonials, and a line about
+TelemetryDeck in the privacy policy. Apple sign-in is off, so Apple
+credentials are no longer needed.
 
 ---
 

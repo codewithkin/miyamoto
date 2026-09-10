@@ -16,7 +16,7 @@ diverge silently.
 | 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
 | 04 | `04-onboarding-claim.md` | **Done** | — |
 | 06 | `06-onboarding-rework.md` | **Built** (session 4), not run on a device | Google OAuth client + an HTTPS server URL; a device |
-| 07 | `07-welcome-and-analytics.md` | **In flight (session 5)** | — |
+| 07 | `07-welcome-and-analytics.md` | **Built** (session 5), not run on a device | A device; the privacy policy line |
 | 05 | `05-launch-readiness.md` | Not started | The owner: icon, consoles, domain, device |
 
 ## Why this order

@@ -5,6 +5,73 @@ Write the entry you would want to find.
 
 ---
 
+## Session 5 — 2026-09-10
+
+**Welcome became the sign-in screen and got a real design, and TelemetryDeck
+now counts the funnel. Plan 07, 10 commits.**
+
+### One screen (D-040)
+
+With Google as the only provider, "Get started" opened a screen whose only
+content was the same button. Welcome's button now runs the sign-in itself,
+and `/sign-in` is deleted. The sign-in logic moved into
+`lib/use-google-sign-in.ts`. That keeps the screen about the design, and it
+gives analytics a failure category that never carries a server message.
+
+### The design
+
+The owner's reference was a food app with a full-bleed photo, a big title
+and one black pill. The only image in the repo big enough to fill a phone's
+width is the 1024px icon drawing. `designs/make-hero.py` inverts it to light
+lines on ink, duotones it to the palette and bakes in the fade to
+`ink.base`. So the screen needs no gradient library and shows no seam, and
+at 107KB it costs little. Over it sit the wordmark, the four Masters' faces,
+a 40pt title, one line of promise and a white "Continue with Google" pill
+with Google's four-colour G, as its branding asks. The legal line under it
+links to the real terms and privacy pages, now kept in `lib/links.ts` so
+settings cannot drift from them.
+
+### Analytics (D-041)
+
+The TelemetryDeck React Native guide monkey-patches `globalThis.crypto`
+with `expo-crypto`. That is a native module, so it would have meant a new
+EAS development build. The SDK source showed a `subtleCrypto` option, so
+`@noble/hashes` (pure JS) is passed in and nothing global is touched. A
+local Node check confirmed the hash matches Node's crypto and the signal
+body is correctly shaped. Nothing was sent.
+
+The React SDK also has a trap: with `testMode` undefined, it reads
+`window.location.hostname`. React Native has `window` but no `location`,
+so the read throws. `testMode` is always passed.
+
+Identity is a random per-install id, never the account. That keeps one
+person's welcome-to-first-message path a single funnel across sign-in, and
+it means nothing personal leaves the phone. `systems/10-analytics.md` has
+the signals, the payloads and how to build the funnel.
+
+### Found along the way
+
+- `prettier` reformatted a file to 80 columns; the repo has no config and
+  is written at about 100. The file was reverted and the edit redone. It
+  is now a trap in START-HERE.
+- `pnpm add` re-resolved three `expo` peer entries in the lockfile to
+  native's react 19.2.3. The web app still resolves 19.2.8.
+
+### Not proven
+
+Nothing ran on a device, and no signal has reached TelemetryDeck. The app
+bundles for Android (`expo export`) with the SDK, `@noble/hashes` and the
+hero. The first real signals will come from a development build, so they
+appear only with the dashboard's Test Mode toggle on.
+
+### Flags for the owner
+
+- **The privacy policy and Play data safety** must mention TelemetryDeck
+  before launch. Suggested wording is in `systems/10-analytics.md`.
+- **The hero is Vagabond artwork**, like the icon it comes from.
+
+---
+
 ## Session 4 — 2026-09-10
 
 **Onboarding rebuilt around sign-in, the motion calmed, faces for the

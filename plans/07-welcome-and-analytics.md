@@ -1,6 +1,6 @@
 # 07 — Welcome is sign-in, and analytics
 
-**Status: in flight (session 5).**
+**Status: built (session 5).** Not yet seen on a device.
 
 The owner's brief, condensed. With Google as the only sign-in method, a
 separate sign-in screen is one more tap in front of the only thing a new
@@ -19,7 +19,7 @@ send a Master a message.
 
 ## A1 — The hero image
 
-- [ ] `pending-A1`
+- [x] `f8ea32a`
 - **Commit:** `feat(native): an ink hero for the welcome screen`
 - **Touches:** `designs/make-hero.py` (new), `apps/native/assets/images/hero-musashi.jpg` (generated)
 - **Done when:** a script turns the 1024px icon drawing into a dark hero.
@@ -35,7 +35,7 @@ send a Master a message.
 
 ## A2 — One screen
 
-- [ ] `pending-A2`
+- [x] `c701e46` (and `cc677c6`, two comments that still named the deleted screen)
 - **Commit:** `feat(native): sign in from the welcome screen`
 - **Touches:** `app/(auth)/welcome.tsx`, `app/(auth)/sign-in.tsx` (deleted),
   `systems/06-auth.md`
@@ -46,7 +46,7 @@ send a Master a message.
 
 ## A3 — The design
 
-- [ ] `pending-A3`
+- [x] `40c0399`
 - **Commit:** `feat(native): give welcome a real design`
 - **Touches:** `app/(auth)/welcome.tsx`, `lib/links.ts` (new),
   `app/settings.tsx`
@@ -63,7 +63,7 @@ send a Master a message.
 
 ## B1 — The client, no events yet
 
-- [ ] `pending-B1`
+- [x] `fefe31a`
 - **Commit:** `feat(native): wire TelemetryDeck`
 - **Touches:** `apps/native/package.json`, `lib/telemetry.tsx` (new),
   `app/_layout.tsx`, `packages/env/src/native.ts`
@@ -76,6 +76,10 @@ send a Master a message.
   development build. `@noble/hashes` is pure JavaScript, already in the
   tree through Better Auth, and does SHA-256 just as well. Hermes has
   `TextEncoder` natively.
+- **Note (session 5):** the SDK turned out to take a `subtleCrypto`
+  option. So there is no global patch at all: the noble digest is passed
+  in directly. And the planned `useTrack()` hook became a plain `track()`
+  function, which does the same job and also works outside components.
 - **Who is counted:** a random id made on first launch and kept in
   SecureStore. Never the account id or the email. One id per install
   means one person's path from welcome to their first message is a single
@@ -83,7 +87,7 @@ send a Master a message.
 
 ## B2 — Welcome and sign-in
 
-- [ ] `pending-B2`
+- [x] `8429270`
 - **Commit:** `feat(native): count who sees welcome and who signs in`
 - **Signals:** `Welcome.shown`, `Auth.signInStarted`,
   `Auth.signInCompleted`, and `Auth.signInFailed` with a reason category,
@@ -91,7 +95,7 @@ send a Master a message.
 
 ## B3 — Onboarding completed
 
-- [ ] `pending-B3`
+- [x] `404f5e8`
 - **Commit:** `feat(native): count who finishes onboarding`
 - **Signal:** `Onboarding.completed` with how it ended (offer claimed or
   skipped), the pressure, and how many wounds were picked. Fired once, from
@@ -99,13 +103,13 @@ send a Master a message.
 
 ## B4 — Messages to a Master
 
-- [ ] `pending-B4`
+- [x] `2dc9ec4`
 - **Commit:** `feat(native): count messages sent to a Master`
 - **Signal:** `Chat.messageSent` with the Master's slug. Never the text.
 
 ## B5 — Record it
 
-- [ ] `pending-B5`
+- [x] this commit
 - **Commit:** `docs: record session 5`
 - **Done when:** `systems/10-analytics.md` lists every signal, what it
   carries, and how to build the four-step funnel in the dashboard. The

@@ -277,3 +277,24 @@ it back on. The Google client is a *Web application*, because the server is
 the OAuth client. The server prints the redirect URI to register at boot,
 and warns if `BETTER_AUTH_URL` is localhost or plain http. Either one
 leaves a phone stranded after the account chooser.
+
+---
+
+## Welcome and analytics (session 5)
+
+**D-040 — Welcome is the sign-in screen.**
+With one provider, a separate sign-in screen was a second tap to reach the
+only thing a new person can do. Welcome's single button is "Continue with
+Google" and runs the sign-in. `/sign-in` no longer exists. D-038 still
+holds, except that a signed-out person can now reach only `/welcome`. The
+sign-in logic lives in `apps/native/lib/use-google-sign-in.ts`. If Apple
+returns, it gets a second button on welcome, not its own screen.
+
+**D-041 — Analytics count installs, not people, and never content.**
+TelemetryDeck, through `track()` in `apps/native/lib/telemetry.tsx`. The
+identity is a random per-install id in SecureStore, salted and hashed by
+the SDK. It is never the account id or the email. Payloads are short
+enums, counts and slugs, never message text or anything the user typed.
+Development builds report in test mode. The full list of signals is in
+`systems/10-analytics.md`, and a new signal is added there in the same
+commit.
