@@ -10,16 +10,18 @@ export const env = createEnv({
     CORS_ORIGIN: z.url(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
-    // Sign-in is Google and Apple only — the design has no password or
-    // magic-link path. Both are optional so the server still boots without
-    // credentials; a provider is only registered when its pair is present,
-    // and sign-in for that provider is unavailable until then.
+    // Sign-in is Google only for now (D-034) — there is no password or
+    // magic-link path. Optional so the server still boots without
+    // credentials; the provider is only registered when both are present,
+    // and the server says at boot whether a phone can complete the flow.
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
-    APPLE_CLIENT_ID: z.string().min(1).optional(),
-    APPLE_CLIENT_SECRET: z.string().min(1).optional(),
-    /** Native iOS bundle id, required for Sign in with Apple on device. */
-    APPLE_APP_BUNDLE_IDENTIFIER: z.string().min(1).optional(),
+    // Apple sign-in is off for now (D-034). Uncomment together with the
+    // provider block in packages/auth/src/index.ts.
+    // APPLE_CLIENT_ID: z.string().min(1).optional(),
+    // APPLE_CLIENT_SECRET: z.string().min(1).optional(),
+    // /** Native iOS bundle id, required for Sign in with Apple on device. */
+    // APPLE_APP_BUNDLE_IDENTIFIER: z.string().min(1).optional(),
 
     // The Masters run through OpenRouter, not DeepSeek directly — one key
     // covers every model and lets a Master be moved to another provider by
