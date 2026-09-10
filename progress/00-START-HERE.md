@@ -45,11 +45,12 @@ face.
    the next task. Citation enforcement, the charge, refunds and history have
    only ever seen fixture replies. The first real reply may not follow the
    trailer format at all.
-2. **Nobody has signed in on a phone.** There are no Google credentials yet,
-   and `BETTER_AUTH_URL` is `http://localhost:3000` while the app points at
-   `http://192.168.1.5:3000`. Google cannot redirect a phone to either.
-   `systems/06-auth.md` is the step-by-step; the server prints what is wrong
-   at boot, under `[auth]`.
+2. **Nobody has finished signing in on a phone yet.** The Google client and
+   the HTTPS server (Render) exist, and the owner has reached Google's
+   callback from a development build — but the session never made it back
+   into the app. Plan 09 fixes that return trip; it has not yet been seen
+   working on the device. `systems/06-auth.md` has the flow and the
+   troubleshooting table.
 3. **Nothing has run on a device.** Every screen in plans 06 and 07 was
    typechecked and bundled (`expo export`), never seen. No signal has
    reached TelemetryDeck yet. The signal body and hash were checked
