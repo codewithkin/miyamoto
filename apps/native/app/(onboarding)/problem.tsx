@@ -6,6 +6,7 @@ import { BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
+import { Chevron } from "@/components/icon";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { ink, indigo, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -105,9 +106,7 @@ export default function ProblemScreen() {
                   {isSelected ? (
                     <BladeTick done />
                   ) : (
-                    <Text variant="title" color={textColor.faintest}>
-                      ›
-                    </Text>
+                    <Chevron />
                   )}
                 </Touchable>
               </Enter>

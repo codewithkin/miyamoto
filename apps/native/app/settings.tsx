@@ -8,6 +8,7 @@ import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
+import { BackButton, Chevron } from "@/components/icon";
 import { REMINDER_TIMES } from "@/content/onboarding-options";
 import { requestReminderPermission } from "@/lib/notifications";
 import { usePurchases } from "@/lib/purchases";
@@ -62,11 +63,7 @@ export default function SettingsScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          <BackButton onPress={() => router.back()} />
           <Text variant="title">Settings</Text>
         </View>
       </Enter>
@@ -188,9 +185,7 @@ export default function SettingsScreen() {
               <Text variant="label" color={red.base} style={{ flex: 1, fontSize: size.body }}>
                 Delete my account
               </Text>
-              <Text variant="eyebrow" color={textColor.faintest}>
-                ›
-              </Text>
+              <Chevron />
             </Touchable>
           </Group>
         </Enter>
@@ -247,9 +242,7 @@ function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
       <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
         {label}
       </Text>
-      <Text variant="eyebrow" color={indigo.light}>
-        ›
-      </Text>
+      <Chevron color={indigo.light} />
     </Touchable>
   );
 }

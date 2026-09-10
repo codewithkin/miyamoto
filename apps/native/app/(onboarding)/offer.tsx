@@ -6,6 +6,7 @@ import { Blade, BladeTick } from "@/components/blade";
 import { Animated, Enter, MotionTone, Stagger, usePulse } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
+import { CloseButton } from "@/components/icon";
 import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { usePurchases } from "@/lib/purchases";
@@ -95,11 +96,7 @@ function OfferScreenBody() {
               {expired ? "Offer ended" : `Offer ends in ${label}`}
             </Text>
           </View>
-          <Touchable feel="chip" onPress={finish} hitSlop={12} accessibilityLabel="Skip the offer">
-            <Text variant="title" color={textColor.muted}>
-              ✕
-            </Text>
-          </Touchable>
+          <CloseButton onPress={finish} accessibilityLabel="Skip the offer" />
         </View>
       </Enter>
 

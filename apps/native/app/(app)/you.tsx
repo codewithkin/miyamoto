@@ -7,6 +7,7 @@ import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
+import { Chevron } from "@/components/icon";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -162,9 +163,13 @@ function Row({
       <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
         {label}
       </Text>
-      <Text variant="eyebrow" color={accent ? gold.base : textColor.faintest}>
-        {accent ? "Upgrade" : "›"}
-      </Text>
+      {accent ? (
+        <Text variant="eyebrow" color={gold.base}>
+          Upgrade
+        </Text>
+      ) : (
+        <Chevron />
+      )}
     </Touchable>
   );
 }

@@ -6,6 +6,7 @@ import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
+import { BackButton } from "@/components/icon";
 import { authClient } from "@/lib/auth-client";
 import { ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
@@ -60,11 +61,7 @@ export default function SignInScreen() {
     <Screen>
       <Enter preset="drop">
         <View style={{ paddingVertical: space.lg }}>
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          <BackButton onPress={() => router.back()} />
         </View>
       </Enter>
 

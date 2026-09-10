@@ -6,6 +6,7 @@ import { Blade, BladeRail, BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
+import { BackButton } from "@/components/icon";
 import { MASTERS, inWords } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -48,11 +49,7 @@ export default function MasterScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          <BackButton onPress={() => router.back()} />
           <Text variant="eyebrow">3/4</Text>
           <View style={{ flex: 1 }}>
             <BladeRail count={4} progress={3} activeIndex={2} delay={200} step={70} />

@@ -7,6 +7,7 @@ import { BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, MotionTone, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
+import { CloseButton } from "@/components/icon";
 import { usePurchases } from "@/lib/purchases";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 import { MASTER_COUNT, MASTER_COUNT_TITLE, UNLOCK_WAITS } from "@/content/onboarding-options";
@@ -57,11 +58,7 @@ function PaywallScreenBody() {
           <Text variant="eyebrow" color={gold.base}>
             Miyamoto Pro
           </Text>
-          <Touchable feel="chip" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ✕
-            </Text>
-          </Touchable>
+          <CloseButton onPress={() => router.back()} />
         </View>
       </Enter>
 

@@ -7,6 +7,7 @@ import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
+import { Chevron } from "@/components/icon";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -140,9 +141,13 @@ function StoryRow({
         </Text>
         <Text variant="caption">{meta}</Text>
       </View>
-      <Text variant="eyebrow" color={locked ? gold.base : indigo.light}>
-        {locked ? "Pro" : "›"}
-      </Text>
+      {locked ? (
+        <Text variant="eyebrow" color={gold.base}>
+          Pro
+        </Text>
+      ) : (
+        <Chevron color={indigo.light} />
+      )}
     </Touchable>
   );
 }

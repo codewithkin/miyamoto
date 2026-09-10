@@ -8,6 +8,7 @@ import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
+import { BackButton } from "@/components/icon";
 import { trpc } from "@/utils/trpc";
 import { ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -73,11 +74,7 @@ export default function ExportDataScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          <BackButton onPress={() => router.back()} />
           <Text variant="eyebrow">Your data</Text>
         </View>
       </Enter>

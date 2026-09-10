@@ -16,6 +16,7 @@ import { Animated, Enter, usePulse } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
+import { Icon } from "@/components/icon";
 import { authClient } from "@/lib/auth-client";
 import { describeChatError } from "@/lib/chat-errors";
 import { trpc } from "@/utils/trpc";
@@ -193,10 +194,14 @@ export default function ChatScreen() {
               {activeThread?.master.title ?? "The Strategist"}
             </Text>
           </View>
-          <Touchable feel="chip" hitSlop={10} onPress={() => setShowSwitch(true)}>
+          <Touchable feel="chip" hitSlop={10} onPress={() => setShowSwitch(true)}
+            accessibilityLabel="Switch Master"
+            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+          >
             <Text variant="eyebrow" color={indigo.light}>
-              Switch ▾
+              Switch
             </Text>
+            <Icon name="chevron-down" size={14} color={indigo.light} />
           </Touchable>
         </View>
       </Enter>
@@ -302,6 +307,7 @@ export default function ChatScreen() {
               <Touchable
                 feel="chip"
                 onPress={() => setShowAttach(true)}
+                accessibilityLabel="Attach evidence"
                 style={{
                   width: 48,
                   height: 48,
@@ -311,9 +317,7 @@ export default function ChatScreen() {
                   backgroundColor: ink.high,
                 }}
               >
-                <Text variant="title" color={textColor.muted}>
-                  +
-                </Text>
+                <Icon name="add" size={24} color={textColor.body} />
               </Touchable>
               <TextInput
                 value={input}
@@ -340,6 +344,7 @@ export default function ChatScreen() {
                 feel="button"
                 onPress={send}
                 disabled={!canSend}
+                accessibilityLabel="Send"
                 style={{
                   width: 48,
                   height: 48,
@@ -349,9 +354,7 @@ export default function ChatScreen() {
                   backgroundColor: canSend ? indigo.base : ink.high,
                 }}
               >
-                <Text variant="title" color={textColor.primary}>
-                  ↑
-                </Text>
+                <Icon name="arrow-up" size={22} color={canSend ? textColor.primary : textColor.faintest} />
               </Touchable>
             </View>
           )}

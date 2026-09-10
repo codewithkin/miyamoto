@@ -8,6 +8,7 @@ import { Enter, Stagger } from "@/components/motion";
 import { Sheet } from "@/components/sheet";
 import { Touchable } from "@/components/touchable";
 import { Button, Text } from "@/components/ui";
+import { Chevron } from "@/components/icon";
 import { showRewardedAd } from "@/lib/ads";
 import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
@@ -108,11 +109,12 @@ export function SwitchMasterSheet({
                   {speaking
                     ? "Speaking"
                     : m.available
-                      ? "›"
+                      ? ""
                       : m.lockReason === "PRO"
                         ? "Pro"
                         : `Day ${m.unlockDay}`}
                 </Text>
+                {m.available && !speaking ? <Chevron /> : null}
               </Touchable>
             </Enter>
           );

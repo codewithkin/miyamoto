@@ -6,6 +6,7 @@ import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
+import { BackButton } from "@/components/icon";
 import { SAMPLE_ANSWERS } from "@/content/sample-answers";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { green, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -62,11 +63,7 @@ export default function AnswerScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          <BackButton onPress={() => router.back()} />
           <View>
             <Text variant="title">{answer.masterName}</Text>
             <Text variant="caption">{answer.masterEra}</Text>
