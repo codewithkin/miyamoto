@@ -4,7 +4,8 @@ import { authClient } from "@/lib/auth-client";
 import { ink } from "@/theme/tokens";
 
 /**
- * Welcome and sign-in — the only two screens a signed-out person can reach.
+ * Welcome — the only screen a signed-out person can reach, and where they
+ * sign in (D-040).
  *
  * Anyone with a session is sent to "/", the app shell, whose layout is the
  * gate that decides between onboarding and the app. This group never makes

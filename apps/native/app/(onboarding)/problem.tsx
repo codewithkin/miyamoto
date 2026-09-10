@@ -59,8 +59,8 @@ export default function ProblemScreen() {
           }}
         >
           {/* No back arrow: this is the first screen after sign-in, and behind
-              it is only the sign-in screen, which would bounce a signed-in user
-              straight back here through the gate. */}
+              it is only welcome, which would bounce a signed-in user straight
+              back here through the gate. */}
           <View />
           <Touchable feel="row" onPress={() => router.push("/(onboarding)/carrying")} hitSlop={12}>
             <Text variant="label" color={textColor.muted}>
