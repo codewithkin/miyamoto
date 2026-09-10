@@ -24,23 +24,27 @@ const CONTENTS = [
 const COLLECTED = [
   {
     label: "Account",
-    body: "Name and email from Google or Apple sign-in. No password is ever created or stored.",
+    body: "Your name, email and profile picture link from Google sign-in, and the sign-in sessions that keep you logged in (with the device and IP address each came from, for security). No password is ever created or stored.",
   },
   {
     label: "Your writing",
-    body: "Messages you send, trials you accept, journal notes and quiz answers — stored so the app can continue the conversation.",
+    body: "Messages you send to the Masters and their replies, the trials and charges you accept, your onboarding answers and your time zone — stored so the app can continue the conversation and count your days correctly.",
   },
   {
-    label: "Attachments",
-    body: "Images you attach are processed for context and deleted from our servers within 24 hours unless you turn on “keep image after answer”.",
+    label: "Photos",
+    body: "The app asks for camera or photo access only at the moment you attach a photo. Photos are not uploaded to our servers.",
   },
   {
-    label: "Device & usage",
-    body: "App version, OS, crash logs, and which screens are opened — used to fix bugs and understand which features earn their place.",
+    label: "Anonymous analytics",
+    body: "A small number of anonymous events — that the welcome screen was seen, that sign-in or onboarding finished, that a message was sent to a Master — plus the app version and operating system. They are counted with TelemetryDeck against a random ID created on your phone and hashed before it leaves it. They never contain your name, email, account, or anything you write, and they are not linked to your account.",
+  },
+  {
+    label: "Ads",
+    body: "Only if you choose to watch one for an extra question. Ads are served by Google AdMob, non-personalised only. To show the ad, measure it and prevent fraud, Google may collect your device’s advertising ID, IP address and how you interacted with the ad.",
   },
   {
     label: "Purchases",
-    body: "A receipt token from Apple or Google confirming your subscription state. We never see your card details.",
+    body: "A receipt from Google Play or the App Store, handled by RevenueCat, confirming your subscription state. We never see your card details.",
   },
 ];
 
@@ -49,8 +53,8 @@ export default function PrivacyPage() {
     <SiteShell>
       <LegalPage
         title="Privacy Policy"
-        updated="Last updated 12 August 2026 · Founderling Ltd. is the data controller"
-        summary="We store your name, email, your conversations and your trial history so the app works and remembers you. We don't sell your data and we don't use your conversations for advertising. Images you attach are read once for context and deleted. You can export or delete everything, any time, and the account is gone within 30 days."
+        updated="Last updated 10 September 2026 · Founderling Ltd. is the data controller"
+        summary="We store your name, email, your conversations and your trial history so the app works and remembers you. We count a few anonymous events to find where people get stuck — never your words, never linked to you. We don't sell your data and we don't use your conversations for advertising. You can export or delete everything, any time, and the account is gone within 30 days."
         contents={CONTENTS}
       >
         <Clause id="what-we-collect" title="What we collect">
@@ -88,17 +92,20 @@ export default function PrivacyPage() {
           <p>
             To run the app you asked for (contract), to keep it working and safe (legitimate
             interest), and to send you the trial reminders you enabled (consent — withdraw any time
-            in Settings). We do not profile you for advertising and we do not use your conversations
-            to train third-party models.
+            in Settings). Anonymous analytics tell us where people get stuck, so we can fix it
+            (legitimate interest); they cannot identify you. We do not profile you for advertising
+            and we do not use your conversations to train third-party models.
           </p>
         </Clause>
 
         <Clause id="who-else" title="Who else sees it">
           <p>
-            Only the processors we need: our AI provider to generate a response, our hosting and
-            database provider to store it, crash reporting, and the app stores for billing. Each is
-            bound by a data-processing agreement. We disclose data to authorities only where the law
-            requires it. We never sell personal data.
+            Only the processors we need: our AI provider to generate a Master&apos;s reply, our
+            hosting and database provider to store it, our email provider for account messages,
+            RevenueCat and the app stores for billing, TelemetryDeck for anonymous analytics, and
+            Google AdMob only when you choose to watch an ad. Each is bound by a data-processing
+            agreement. We disclose data to authorities only where the law requires it. We never
+            sell personal data.
           </p>
         </Clause>
 
