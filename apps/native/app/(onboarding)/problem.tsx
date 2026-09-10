@@ -7,17 +7,22 @@ import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Chevron } from "@/components/icon";
+import { authClient } from "@/lib/auth-client";
+import { firstName } from "@/lib/names";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { ink, indigo, radius, size, space, text as textColor } from "@/theme/tokens";
 
 /**
- * 02 · Try it first.
+ * 02 · Try it first — the first screen after sign-in (D-038).
  *
- * The four sample problems are fixed, which is what lets this screen keep
- * the design's "no account" promise: each one has an authored answer waiting
- * on the next screen, so nothing is generated and no quota is spent before
- * the user has an identity. Typing your own is the path that needs an
- * account, and says so.
+ * The four sample problems are fixed: each has an authored answer waiting on
+ * the next screen, so the aha lands without a model call or a quota spend.
+ * A typed problem becomes the first thread with the user's Master.
+ *
+ * The question is addressed by first name. Sign-in has just handed us the
+ * Google name, and this is the first thing they read after it — being named
+ * is what makes it read as a Master speaking rather than a form asking.
+ * Without a usable name (see lib/names) it asks the question plainly.
  */
 
 const SAMPLES = [
@@ -36,6 +41,8 @@ const MASTER_NAMES: Record<string, string> = {
 export default function ProblemScreen() {
   const router = useRouter();
   const { draft, set } = useOnboarding();
+  const { data: session } = authClient.useSession();
+  const name = firstName(session?.user?.name);
   const [typed, setTyped] = React.useState("");
 
   const selected = SAMPLES.find((s) => s.slug === draft.seedProblemSlug) ?? null;
@@ -73,7 +80,11 @@ export default function ProblemScreen() {
       <View style={{ flex: 1, gap: space.section }}>
         <View style={{ gap: space.md }}>
           <Enter preset="rise" delay={120}>
-            <Text variant="display">What&apos;s sitting on your chest right now?</Text>
+            <Text variant="display">
+              {name
+                ? `${name} — what’s sitting on your chest right now?`
+                : "What’s sitting on your chest right now?"}
+            </Text>
           </Enter>
           <Enter preset="rise" delay={280}>
             <Text variant="lead">Pick one. You&apos;ll get a real answer in ten seconds.</Text>
