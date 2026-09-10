@@ -9,6 +9,7 @@ import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
 import { BackButton, Chevron, Icon } from "@/components/icon";
 import { REMINDER_TIMES } from "@/content/onboarding-options";
+import { LINKS } from "@/lib/links";
 import { requestReminderPermission } from "@/lib/notifications";
 import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
@@ -153,15 +154,15 @@ export default function SettingsScreen() {
           <Group title="Legal">
             <LinkRow
               label="Privacy Policy"
-              onPress={() => void Linking.openURL("https://miyamoto.app/privacy")}
+              onPress={() => void Linking.openURL(LINKS.privacy)}
             />
             <LinkRow
               label="Terms of Service"
-              onPress={() => void Linking.openURL("https://miyamoto.app/terms")}
+              onPress={() => void Linking.openURL(LINKS.terms)}
             />
             <LinkRow
               label="Support"
-              onPress={() => void Linking.openURL("https://miyamoto.app/support")}
+              onPress={() => void Linking.openURL(LINKS.support)}
             />
           </Group>
         </Enter>
