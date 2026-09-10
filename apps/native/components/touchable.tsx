@@ -11,6 +11,17 @@ import Animated, {
 import { duration, easing, spring } from "@/theme/motion";
 
 /**
+ * The pressable is itself the animated element.
+ *
+ * It used to wrap an inner Animated.View that carried the style. That left the
+ * Pressable sizing to its content, so a caller's `flex: 1` resolved against a
+ * parent with no width and the whole control collapsed to nothing — which is
+ * how the 4/4 reminder chips rendered with no visible label. With one element,
+ * layout props go where layout happens.
+ */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/**
  * The app's press interaction.
  *
  * Entry animations tell you a screen arrived; these tell you the screen
@@ -93,8 +104,9 @@ export function Touchable({
   }));
 
   return (
-    <Pressable
+    <AnimatedPressable
       disabled={disabled}
+      style={[style, animated, disabled ? { opacity: 0.45 } : null]}
       onPressIn={(e) => {
         if (spec && !disabled) {
           scale.value = withSpring(spec.scale, spring.snappy);
@@ -113,9 +125,7 @@ export function Touchable({
       }}
       {...rest}
     >
-      <Animated.View style={[style, animated, disabled ? { opacity: 0.45 } : null]}>
-        {children}
-      </Animated.View>
-    </Pressable>
+      {children}
+    </AnimatedPressable>
   );
 }
