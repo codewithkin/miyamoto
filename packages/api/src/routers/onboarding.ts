@@ -149,19 +149,42 @@ export const onboardingRouter = router({
     ]);
 
     try {
-      const created = await db.onboardingProfile.create({
-        data: {
-          userId,
-          seedProblem: input.seedProblem || null,
-          pressure: input.pressure,
-          firstMasterId: master?.id ?? null,
-          morningReminder: input.morningReminder,
-          eveningReminder: input.eveningReminder,
-          remindersEnabled: input.remindersEnabled,
-          completedAt: new Date(),
-          wounds: { create: wounds.map((w) => ({ woundId: w.id })) },
-        },
-      });
+      const seedProblem = input.seedProblem || null;
+
+      // The profile and the first thread land together or not at all. The
+      // thread is where the problem they brought gets answered; creating it
+      // separately would let a lost race or a failed insert leave a claimed
+      // account whose Chat tab has nothing to send on, and a retry would then
+      // see alreadyClaimed and never make one.
+      const [created] = await db.$transaction([
+        db.onboardingProfile.create({
+          data: {
+            userId,
+            seedProblem,
+            pressure: input.pressure,
+            firstMasterId: master?.id ?? null,
+            morningReminder: input.morningReminder,
+            eveningReminder: input.eveningReminder,
+            remindersEnabled: input.remindersEnabled,
+            completedAt: new Date(),
+            wounds: { create: wounds.map((w) => ({ woundId: w.id })) },
+          },
+        }),
+        ...(master
+          ? [
+              db.thread.create({
+                data: {
+                  userId,
+                  mastraThreadId: crypto.randomUUID(),
+                  masterId: master.id,
+                  // Titled with their own words, so the thread list reads as
+                  // their problem rather than "New conversation".
+                  title: seedProblem ? seedProblem.slice(0, 120) : null,
+                },
+              }),
+            ]
+          : []),
+      ]);
 
       return {
         claimed: true as const,

@@ -70,6 +70,25 @@ export default function ChatScreen() {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, busy]);
 
+  // The onboarding claim opens the first thread titled with the problem the
+  // user brought. Until anything has been sent on it — the AI route moves
+  // lastMessageAt on the first send, so the two timestamps are still equal —
+  // offer that problem back in the composer.
+  //
+  // Offered, never sent. Sending spends one of three free questions, and
+  // spending it is the user's decision rather than something a screen does on
+  // arrival (D-018). Seeded once per thread, so clearing the field sticks.
+  const seededFor = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const t = activeThread;
+    if (!t || seededFor.current === t.id) return;
+    seededFor.current = t.id;
+    const untouched = String(t.lastMessageAt) === String(t.createdAt);
+    if (untouched && t.title && messages.length === 0) {
+      setInput((current) => current || t.title!);
+    }
+  }, [activeThread, messages.length]);
+
   // Raise the sheet the moment the counter empties, rather than leaving the
   // composer silently disabled.
   React.useEffect(() => {
