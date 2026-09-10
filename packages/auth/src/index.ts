@@ -27,7 +27,7 @@ function socialProviders() {
 
   // Apple sign-in — off for now (D-039). Kept rather than deleted so turning
   // it back on is uncommenting this block, the env vars in
-  // packages/env/src/server.ts and the button in app/(auth)/sign-in.tsx.
+  // packages/env/src/server.ts and lib/use-google-sign-in.ts in apps/native.
   //
   // if (env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET) {
   //   providers.apple = {

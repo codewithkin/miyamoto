@@ -5,15 +5,15 @@ three places and switched back on by uncommenting them — see the bottom of
 this file. There is no password path, and the server has the credential
 endpoint turned off to match.
 
-Onboarding runs **after** sign-in (D-038). A signed-out person can reach two
-screens: `/welcome` and `/sign-in`.
+Onboarding runs **after** sign-in (D-038). A signed-out person can reach one
+screen, `/welcome`, and its one button is sign-in (D-040).
 
 ---
 
 ## How the flow works
 
 ```
-phone: Get started -> /sign-in -> Continue with Google
+phone: /welcome -> Continue with Google
   authClient.signIn.social({ provider: "google", callbackURL: "/" })
     -> opens a browser sheet at  BETTER_AUTH_URL/api/auth/sign-in/social
     -> Google's account chooser (prompt=select_account)
@@ -110,7 +110,7 @@ warning**. If it warns, stop there — the phone will not get through.
 
 ### 5. Try it on the phone
 
-Welcome -> Get started -> Continue with Google -> choose the test account ->
+Welcome -> Continue with Google -> choose the test account ->
 back in the app, on the first onboarding screen.
 
 ### 6. Before launch
@@ -137,8 +137,9 @@ default scopes, publishing is immediate.
 
 1. `packages/env/src/server.ts` — uncomment the three `APPLE_*` variables.
 2. `packages/auth/src/index.ts` — uncomment the Apple provider block.
-3. `apps/native/app/(auth)/sign-in.tsx` — add `"apple"` to the `Provider`
-   type and uncomment the Apple button.
+3. `apps/native/lib/use-google-sign-in.ts` — add `"apple"` to the
+   `Provider` type; then add a second button on
+   `apps/native/app/(auth)/welcome.tsx` calling `signIn("apple")`.
 4. Set `APPLE_CLIENT_ID`, `APPLE_CLIENT_SECRET` and
    `APPLE_APP_BUNDLE_IDENTIFIER`. Apple requires a paid developer account and
    a Services ID configured with the same redirect pattern:
@@ -153,5 +154,6 @@ default scopes, publishing is immediate.
 | `packages/auth/src/index.ts` | Provider registration, `select_account`, the boot readiness report |
 | `packages/env/src/server.ts` | The env schema |
 | `apps/native/lib/auth-client.ts` | Better Auth client with the Expo plugin |
-| `apps/native/app/(auth)/sign-in.tsx` | The screen, and the error-to-sentence mapping |
+| `apps/native/app/(auth)/welcome.tsx` | The screen: the only thing a signed-out person sees |
+| `apps/native/lib/use-google-sign-in.ts` | Running the sign-in, and the error-to-sentence mapping |
 | `apps/native/app/(app)/_layout.tsx` | The gate that decides where a new session goes |
