@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React from "react";
 
+import { authClient } from "@/lib/auth-client";
 import { useClaimDraft } from "@/lib/claim-draft";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
 import { font, size, tracking } from "@/theme/tokens";
@@ -15,9 +16,18 @@ import { font, size, tracking } from "@/theme/tokens";
  * is the thing the app is for.
  */
 export default function AppLayout() {
+  const { data: session, isPending } = authClient.useSession();
+
   // Submits the onboarding draft whenever a session exists and it has not
-  // landed yet — retried on every launch until the server confirms.
+  // landed yet — retried on every launch until the server confirms. Called
+  // before the early returns below so hook order never changes.
   useClaimDraft();
+
+  // The shell is for an identity (D-004). Rendering nothing while the
+  // cached session is read avoids flashing the Path at someone who is about
+  // to be sent back to sign in.
+  if (isPending) return null;
+  if (!session) return <Redirect href="/(onboarding)" />;
 
   return (
     <Tabs
