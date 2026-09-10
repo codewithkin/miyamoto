@@ -10,6 +10,7 @@ import { AppThemeProvider } from "@/contexts/app-theme-context";
 import { ink } from "@/theme/tokens";
 import { OnboardingProvider } from "@/lib/onboarding-store";
 import { PurchasesProvider } from "@/lib/purchases";
+import { TelemetryProvider } from "@/lib/telemetry";
 import { queryClient } from "@/utils/trpc";
 
 export const unstable_settings = {
@@ -45,20 +46,22 @@ function StackLayout() {
 
 export default function Layout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <KeyboardProvider>
-          <AppThemeProvider>
-            <HeroUINativeProvider>
-              <PurchasesProvider>
-                <OnboardingProvider>
-                  <StackLayout />
-                </OnboardingProvider>
-              </PurchasesProvider>
-            </HeroUINativeProvider>
-          </AppThemeProvider>
-        </KeyboardProvider>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <TelemetryProvider>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <KeyboardProvider>
+            <AppThemeProvider>
+              <HeroUINativeProvider>
+                <PurchasesProvider>
+                  <OnboardingProvider>
+                    <StackLayout />
+                  </OnboardingProvider>
+                </PurchasesProvider>
+              </HeroUINativeProvider>
+            </AppThemeProvider>
+          </KeyboardProvider>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </TelemetryProvider>
   );
 }
