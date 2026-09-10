@@ -4,9 +4,12 @@ import React from "react";
 import { MASTERS } from "@/content/onboarding-options";
 import {
   cancelDailyReminders,
+  cancelStreakWarning,
   configureForegroundDisplay,
   scheduleDailyReminders,
+  scheduleStreakWarning,
 } from "@/lib/notifications";
+import { streakWarningAt } from "@/lib/streak-warning";
 import { trpc } from "@/utils/trpc";
 
 /**
@@ -33,6 +36,7 @@ import { trpc } from "@/utils/trpc";
 /** Screen 10's evening preview, verbatim. The promise is the copy. */
 const EVENING_BODY = "Did you do it? One word is enough.";
 
+
 export function useReminderSchedule(enabled: boolean) {
   const account = useQuery({ ...trpc.account.overview.queryOptions(), enabled });
   const today = useQuery({ ...trpc.path.today.queryOptions(), enabled });
@@ -50,6 +54,46 @@ export function useReminderSchedule(enabled: boolean) {
   React.useEffect(() => {
     configureForegroundDisplay();
   }, []);
+
+  // The streak warning (02 T04). The server says whether the streak is alive
+  // and whether today is the day it would break; this only picks the moment.
+  //
+  //   - done yesterday, not yet today: it breaks tonight, so warn tonight.
+  //   - done today with a streak: nothing can break tonight, but tomorrow it
+  //     can, and a user who does not open the app tomorrow would otherwise
+  //     get no warning at all. So warn tomorrow night — completing tomorrow
+  //     refetches path.today and moves the warning on again.
+  //   - no streak: nothing to warn about, and nothing is sent.
+  //
+  // Tomorrow is taken as midnight plus 24 hours, so a DST change moves the
+  // warning by an hour on that one night. That is the whole cost.
+  const streak = today.data?.streak ?? 0;
+  const atRisk = today.data?.streakAtRisk ?? false;
+  const doneToday = today.data?.completedToday ?? false;
+  const untilMidnight = today.data?.msUntilReset;
+  // Ten-minute buckets, so a refetch a few seconds later does not reschedule.
+  const midnightBucket = untilMidnight == null ? null : Math.round((Date.now() + untilMidnight) / 600_000);
+
+  React.useEffect(() => {
+    if (!enabled || !reminders || midnightBucket == null) return;
+    if (!reminders.enabled || streak === 0) {
+      void cancelStreakWarning();
+      return;
+    }
+
+    const at = streakWarningAt({ streak, atRisk, doneToday, midnight: midnightBucket * 600_000 });
+
+    if (!at) {
+      void cancelStreakWarning();
+      return;
+    }
+
+    void scheduleStreakWarning({
+      at,
+      title: morningFrom,
+      body: `${streak} days. It ends at midnight unless today's trial is done.`,
+    }).catch(() => {});
+  }, [enabled, reminders?.enabled, streak, atRisk, doneToday, midnightBucket, morningFrom]);
 
   React.useEffect(() => {
     if (!enabled || !reminders) return;

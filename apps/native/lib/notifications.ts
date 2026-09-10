@@ -158,6 +158,52 @@ export async function scheduleDailyReminders(plan: ReminderPlan): Promise<boolea
   return true;
 }
 
+// ── The streak warning ───────────────────────────────────────────────────
+
+const STREAK_ID = "streak-warning";
+
+/**
+ * Removes the pending streak warning, if any. Safe when there is none.
+ */
+export async function cancelStreakWarning(): Promise<void> {
+  if (Platform.OS === "web") return;
+  await Notifications.cancelScheduledNotificationAsync(STREAK_ID).catch(() => {});
+}
+
+/**
+ * Schedules the single streak warning, replacing any pending one.
+ *
+ * Screen 10 promises "Streak reminders only on the day you'd break it". So
+ * this is a one-off at a specific moment, never a repeating trigger, and the
+ * caller decides the moment from the server's own streak arithmetic. A
+ * moment already in the past schedules nothing.
+ */
+export async function scheduleStreakWarning(args: {
+  at: Date;
+  title: string;
+  body: string;
+}): Promise<boolean> {
+  if (Platform.OS === "web") return false;
+  if (args.at.getTime() <= Date.now()) {
+    await cancelStreakWarning();
+    return false;
+  }
+  if (!(await hasReminderPermission())) return false;
+
+  await ensureChannel();
+  await cancelStreakWarning();
+  await Notifications.scheduleNotificationAsync({
+    identifier: STREAK_ID,
+    content: { title: args.title, body: args.body },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: args.at,
+      channelId: TRIAL_CHANNEL,
+    },
+  });
+  return true;
+}
+
 /**
  * A reminder arriving while the app is open is still shown, without sound —
  * the user is already here, and the trial is on the screen in front of them.

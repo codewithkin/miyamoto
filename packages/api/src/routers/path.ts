@@ -47,6 +47,11 @@ export const pathRouter = router({
       select: { id: true },
     });
 
+    // streakCount is only reset by the next completion, so on its own it can
+    // show a streak the user lost two days ago. The day arithmetic decides.
+    const streakDay = streakState(progress?.lastCompletedOn ?? null, today);
+    const streakAlive = streakDay === "extends" || streakDay === "already-done-today";
+
     return {
       day,
       trial: day?.trials[0] ?? null,
@@ -55,7 +60,10 @@ export const pathRouter = router({
       // draft is claimed, which the home screen reads as "not yet yours".
       master: onboarding?.firstMaster ?? null,
       currentDay,
-      streak: progress?.streakCount ?? 0,
+      streak: streakAlive ? (progress?.streakCount ?? 0) : 0,
+      // Done yesterday, not yet today: the only kind of day on which a streak
+      // reminder may fire. Screen 10 promises "only on the day you'd break it".
+      streakAtRisk: streakDay === "extends" && (progress?.streakCount ?? 0) > 0,
       longestStreak: progress?.longestStreak ?? 0,
       bushidoScore: progress?.bushidoScore ?? 0,
       completedToday: Boolean(completedToday),
