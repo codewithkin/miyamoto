@@ -3,6 +3,7 @@ import React from "react";
 import { View } from "react-native";
 
 import { Blade } from "@/components/blade";
+import { MasterAvatar } from "@/components/master-avatar";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
@@ -108,10 +109,13 @@ export default function PayoffScreen() {
             <Text variant="voice">
               Name the person you&apos;re avoiding. Out loud, to yourself, before breakfast.
             </Text>
-            <Text variant="caption">
-              Chosen by {master?.name ?? "your Master"} from your{" "}
-              {draft.wounds.length === 1 ? "wound" : `${draft.wounds.length} wounds`}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
+              {master ? <MasterAvatar slug={master.slug} name={master.name} size={28} /> : null}
+              <Text variant="caption" style={{ flex: 1 }}>
+                Chosen by {master?.name ?? "your Master"} from your{" "}
+                {draft.wounds.length === 1 ? "wound" : `${draft.wounds.length} wounds`}
+              </Text>
+            </View>
           </View>
         </Enter>
 

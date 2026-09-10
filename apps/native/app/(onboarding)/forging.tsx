@@ -3,6 +3,7 @@ import React from "react";
 import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
+import { MasterAvatar } from "@/components/master-avatar";
 import { Animated, Enter, MotionTone, useFlicker } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
@@ -68,9 +69,12 @@ function ForgingScreenBody() {
           </Enter>
 
           <Enter preset="fade" delay={520}>
-            <Text variant="lead" style={{ textAlign: "center" }}>
-              {master?.name ?? "Your Master"} is picking the first trial from what you told us.
-            </Text>
+            <View style={{ alignItems: "center", gap: space.md }}>
+              {master ? <MasterAvatar slug={master.slug} name={master.name} size={44} active /> : null}
+              <Text variant="lead" style={{ textAlign: "center" }}>
+                {master?.name ?? "Your Master"} is picking the first trial from what you told us.
+              </Text>
+            </View>
           </Enter>
         </View>
 

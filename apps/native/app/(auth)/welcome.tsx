@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
+import { MasterAvatar } from "@/components/master-avatar";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTER_COUNT_TITLE } from "@/content/onboarding-options";
@@ -59,10 +60,13 @@ export default function WelcomeScreen() {
                 </Text>
               </View>
 
-              <View style={{ gap: space.sm }}>
-                <Text variant="eyebrow" color={indigo.light}>
-                  {EXCHANGE.masterName} replies
-                </Text>
+              <View style={{ gap: space.base }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
+                  <MasterAvatar slug={EXCHANGE.masterSlug} name={EXCHANGE.masterName} size={32} />
+                  <Text variant="eyebrow" color={indigo.light}>
+                    {EXCHANGE.masterName} replies
+                  </Text>
+                </View>
                 <Text variant="voice" numberOfLines={5}>
                   {opening}
                 </Text>

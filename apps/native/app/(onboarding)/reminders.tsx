@@ -2,7 +2,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade } from "@/components/blade";
+import { IconBadge } from "@/components/icon";
+import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
@@ -27,17 +28,20 @@ export default function RemindersScreen() {
   const router = useRouter();
   const { draft, set } = useOnboarding();
 
-  const master = MASTERS.find((m) => m.slug === draft.firstMaster);
-  const eveningMaster = MASTERS.find((m) => m.slug !== draft.firstMaster && !m.proOnly);
+  // Both reminders come from the Master the user has. The evening one used
+  // to come from "the next free Master", which is Seneca — locked until
+  // Day 7 — so the preview promised a message from someone the user could
+  // not yet speak to. lib/use-reminders sends from the same Master.
+  const master = MASTERS.find((m) => m.slug === draft.firstMaster) ?? MASTERS[0];
 
   const previews = [
     {
-      who: master?.name ?? "Musashi",
+      key: "morning",
       time: draft.morningReminder,
       body: "Day 1. Name the person you're avoiding. Before breakfast.",
     },
     {
-      who: eveningMaster?.name ?? "Seneca",
+      key: "evening",
       time: draft.eveningReminder,
       body: "Did you do it? One word is enough.",
     },
@@ -83,7 +87,7 @@ export default function RemindersScreen() {
         {/* Previews drop in from the top edge, the way the real ones will. */}
         <Stagger initialDelay={480} step={260} style={{ gap: space.base }}>
           {previews.map((p) => (
-            <Enter key={p.who} preset="slideDown">
+            <Enter key={p.key} preset="slideDown">
               <View
                 style={{
                   padding: space.xl,
@@ -94,10 +98,10 @@ export default function RemindersScreen() {
                   gap: space.sm,
                 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-                  <Blade state="complete" length={12} />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
+                  {master ? <MasterAvatar slug={master.slug} name={master.name} size={32} /> : null}
                   <Text variant="label" style={{ flex: 1 }}>
-                    {p.who}
+                    {master?.name ?? "Your Master"}
                   </Text>
                   <Text variant="caption">{p.time}</Text>
                 </View>
@@ -110,13 +114,15 @@ export default function RemindersScreen() {
         </Stagger>
 
         <Stagger initialDelay={1060} step={140} style={{ gap: space.md }}>
-          {[
-            "Streak reminders only on the day you'd break it",
-            "No marketing, no “we miss you”",
-          ].map((line) => (
+          {(
+            [
+              { icon: "flame-outline", line: "Streak reminders only on the day you'd break it" },
+              { icon: "notifications-off-outline", line: "No marketing, no “we miss you”" },
+            ] as const
+          ).map(({ icon, line }) => (
             <Enter key={line} preset="slideLeft">
               <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
-                <Blade state="empty" length={10} />
+                <IconBadge name={icon} size={28} />
                 <Text variant="caption" style={{ flex: 1 }}>
                   {line}
                 </Text>

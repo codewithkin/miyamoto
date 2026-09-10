@@ -7,6 +7,7 @@ import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { BackButton } from "@/components/icon";
+import { MasterAvatar } from "@/components/master-avatar";
 import { SAMPLE_ANSWERS } from "@/content/sample-answers";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { green, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -64,6 +65,7 @@ export default function AnswerScreen() {
           }}
         >
           <BackButton onPress={() => router.back()} />
+          <MasterAvatar slug={answer.masterSlug} name={answer.masterName} size={44} active />
           <View>
             <Text variant="title">{answer.masterName}</Text>
             <Text variant="caption">{answer.masterEra}</Text>

@@ -7,6 +7,7 @@ import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { BackButton } from "@/components/icon";
+import { MasterAvatar } from "@/components/master-avatar";
 import { MASTERS, inWords } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -78,19 +79,24 @@ export default function MasterScreen() {
                 padding: space.xl,
                 borderRadius: radius.card,
                 backgroundColor: indigo.tint,
-                borderWidth: 1,
+                borderWidth: 1.5,
                 borderColor: indigo.base,
                 flexDirection: "row",
                 alignItems: "center",
-                gap: space.base,
+                gap: space.xl,
               }}
             >
+              {/* The face of whoever answers first, large — this is who they
+                  will be writing to. */}
+              <MasterAvatar slug={starter.slug} name={starter.name} size={72} active />
               <View style={{ flex: 1, gap: 3 }}>
-                <Text variant="title" style={{ fontSize: size.lead }}>
+                <Text variant="title" style={{ fontSize: size.subtitle }}>
                   {starter.name}
                 </Text>
-                <Text variant="caption">{starter.domains}</Text>
-                <Text variant="caption" color={textColor.faintest}>
+                <Text variant="caption" color={indigo.light}>
+                  {starter.domains}
+                </Text>
+                <Text variant="caption" color={textColor.muted}>
                   {starter.manner}
                 </Text>
               </View>
@@ -112,20 +118,30 @@ export default function MasterScreen() {
                   flexDirection: "row",
                   alignItems: "center",
                   gap: space.base,
-                  padding: space.xl,
+                  padding: space.base,
+                  paddingRight: space.xl,
                   borderRadius: radius.card,
                   backgroundColor: ink.surface,
                   borderWidth: 1,
                   borderColor: ink.border,
-                  opacity: 0.6,
                 }}
               >
-                <Blade state={master.proOnly ? "locked" : "empty"} length={14} />
-                <View style={{ flex: 1, gap: 3 }}>
-                  <Text variant="title" style={{ fontSize: size.lead }}>
+                {/* Visible so you can see who is coming; dimmed and locked so
+                    they cannot be mistaken for available. */}
+                <MasterAvatar
+                  slug={master.slug}
+                  name={master.name}
+                  size={44}
+                  locked
+                  pro={master.proOnly}
+                />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="label" color={textColor.muted} style={{ fontSize: size.bodyLg }}>
                     {master.name}
                   </Text>
-                  <Text variant="caption">{master.domains}</Text>
+                  <Text variant="caption" color={textColor.faintest}>
+                    {master.domains}
+                  </Text>
                 </View>
                 <Text variant="eyebrow" color={master.proOnly ? gold.base : textColor.faintest}>
                   {master.proOnly ? "Pro" : `Day ${master.unlockDay}`}
