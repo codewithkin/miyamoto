@@ -14,17 +14,46 @@ screen, `/welcome`, and its one button is sign-in (D-040).
 
 ```
 phone: /welcome -> Continue with Google
-  authClient.signIn.social({ provider: "google", callbackURL: "/" })
-    -> opens a browser sheet at  BETTER_AUTH_URL/api/auth/sign-in/social
+  lib/use-google-sign-in.ts: marks a sign-in pending (SecureStore, 10 min)
+  authClient.signIn.social({ provider: "google",
+                             callbackURL: "/", errorCallbackURL: "/welcome" })
+    -> opens a browser sheet at  BETTER_AUTH_URL/api/auth/expo-authorization-proxy
     -> Google's account chooser (prompt=select_account)
     -> Google redirects the browser to  BETTER_AUTH_URL/api/auth/callback/google
-    -> Better Auth creates the session, then redirects to  miyamoto:///
-    -> the Expo plugin catches the deep link, stores the session cookie
-       in SecureStore, and closes the sheet
-phone: router.replace("/")  ->  the gate in app/(app)/_layout.tsx
+    -> Better Auth creates the session, then redirects to
+         miyamoto:///?cookie=<session>                 (production build)
+         miyamoto://<metro-host>:8081/?cookie=<session> (dev build, Metro attached)
+       or, on failure, to  miyamoto:///welcome?error=<code>
+phone: the link is finished by whichever of these gets it first —
+  - the Expo plugin, via the browser promise (iOS; a clean Android return)
+  - app/+native-intent.tsx -> lib/auth-redirect.ts (cold start, the dev
+    launcher, or Android's browser promise giving up first) — D-044
+  both store the same cookie; the one that confirms the session first records it
+phone: "/"  ->  the gate in app/(app)/_layout.tsx
   new account      -> /(onboarding)/problem
   returning account -> the tabs
 ```
+
+Two things about that return trip are not obvious and were each a bug:
+
+- **The browser promise is not a reliable carrier on Android.** Its
+  polyfill resolves "dismiss" the moment the app is active again and drops
+  its link listener, which can happen a beat before the link carrying the
+  session arrives. And if Android kills the app while Chrome is in front,
+  the link cold-starts it (a development build shows the dev launcher, then
+  replays the link into the loaded app). Either way the promise's owner is
+  gone. `app/+native-intent.tsx` sees every link, on a cold start and while
+  running, so the session is stored regardless. It only does so if this
+  install started a sign-in in the last ten minutes, so a link from anywhere
+  else can't sign the phone into someone else's account.
+- **An error must come back into the app too.** Better Auth's default for a
+  failure it can't tie to a request is the API's `/`, a plain page inside
+  the sign-in browser reading "OK", with no way out.
+  `onAPIError.errorURL` sends it to `miyamoto:///welcome?error=<code>`
+  instead, and welcome turns the code into a sentence.
+
+A successful sign-in lasts 60 days, refreshed at most daily while the app is
+in use.
 
 The piece that breaks on real devices is the second redirect. **Google sends
 the phone's browser to whatever `BETTER_AUTH_URL` says.** If that is
@@ -50,12 +79,19 @@ Pick one:
 
 Call that address `https://SERVER` below.
 
-**Production, deployed (session 6):**
+**Production, deployed (session 7):**
 
 ```
-API   https://aoi-miyamoto.gamesforstrangers.lol   (apps/server on Vercel — this is SERVER below)
-Web   https://miyamoto.gamesforstrangers.lol       (apps/web on Vercel — CORS_ORIGIN, step 2)
+API   https://miyamoto-server.onrender.com   (apps/server on Render — this is SERVER below)
+Web   https://miyamoto.gamesforstrangers.lol (apps/web on Vercel — CORS_ORIGIN, step 2)
 ```
+
+Session 6 recorded the API on Vercel at `aoi-miyamoto.gamesforstrangers.lol`.
+The server has since moved to Render, which is where Google now redirects
+(the boot log prints `[auth] Google redirect URI to register:
+https://miyamoto-server.onrender.com/api/auth/callback/google`). If a custom
+domain is later pointed at Render, `BETTER_AUTH_URL`, the app's
+`EXPO_PUBLIC_SERVER_URL` and the Google redirect URI all move with it.
 
 ### 2. Point both sides at it
 
@@ -71,12 +107,12 @@ Local dev, `apps/native/.env`:
 EXPO_PUBLIC_SERVER_URL=https://SERVER
 ```
 
-**Production** — set on the Vercel **server** project's own environment
-variables (not `apps/server/.env`, which is local-only and gitignored;
-Vercel reads its own dashboard-configured values):
+**Production** — set on the **Render** service's own environment variables
+(not `apps/server/.env`, which is local-only and gitignored; the host reads
+its own dashboard-configured values):
 
 ```
-BETTER_AUTH_URL=https://aoi-miyamoto.gamesforstrangers.lol
+BETTER_AUTH_URL=https://miyamoto-server.onrender.com
 CORS_ORIGIN=https://miyamoto.gamesforstrangers.lol
 GOOGLE_CLIENT_ID=<from step 3>
 GOOGLE_CLIENT_SECRET=<from step 3>
@@ -160,6 +196,10 @@ default scopes, publishing is immediate.
 | Google page: `Error 403: access_denied` | Your account is not a test user while the app is in Testing | Add it under Audience -> Test users |
 | Returns to the app but still signed out | `EXPO_PUBLIC_SERVER_URL` and `BETTER_AUTH_URL` are different hosts | Step 2 — make them identical |
 | "Couldn't reach Miyamoto." | The app cannot reach `EXPO_PUBLIC_SERVER_URL` at all | Check the tunnel or deployment is up |
+| After choosing an account: the dev launcher, then welcome, still signed out | The app was relaunched mid-sign-in and the session in the link was never stored (fixed, D-044) | If it recurs, check `app/+native-intent.tsx` is in the bundle and the pending marker was set — it only honours a sign-in started in the last ten minutes |
+| Stuck inside the sign-in browser on a page reading "OK" | A failed callback redirected to the API's `/` (fixed: `onAPIError.errorURL`) | If it recurs, the server is running code from before `67bebf9` — redeploy |
+| "That sign-in went stale before it finished." | A Google page from an earlier attempt was submitted again after its one-time state was used (`state_mismatch`) | Just try again — it starts a fresh state |
+| Render log: `Rate limiting could not determine a client IP` | Neither `true-client-ip` nor `cf-connecting-ip` reached the server, and `x-forwarded-for` has several hops, which Better Auth won't trust on its own | Set `advanced.ipAddress.trustedProxies` in `packages/auth/src/index.ts` to the host's proxy ranges |
 
 ---
 

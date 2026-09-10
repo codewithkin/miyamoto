@@ -333,3 +333,24 @@ confirmed the data was disposable — via `AskUserQuestion`, with
 `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` set for that one command,
 per the standing rule for dangerous Prisma actions. See
 `systems/12-deploys.md`.
+
+---
+
+## Sign-in round trip (session 7)
+
+**D-044 — A sign-in is finished by the link back into the app, not only
+by the browser promise that started it.**
+The Better Auth Expo plugin stores the session only when
+`openAuthSessionAsync` resolves "success". On Android that promise races the
+app becoming active ("dismiss") against the link arriving, and a cold start
+(Android reclaiming the app while Chrome is in front; in a development build,
+the dev launcher) leaves no promise at all. Every link therefore passes
+through `app/+native-intent.tsx`, and `lib/auth-redirect.ts` stores a
+`cookie=` link's session in the plugin's own key and format, confirms it with
+the server, and routes to the gate. It does this only if a sign-in started on
+this install within the last ten minutes. The pending marker in SecureStore
+is set when sign-in starts and cleared on read, so a link from anywhere else
+can't sign the phone into another account, and the sign-in is recorded
+exactly once. Errors come back the same way: the server's `onAPIError.errorURL`
+is the app's welcome link, never the API's own page. Sessions last 60 days,
+refreshed at most daily while the app is in use. See `systems/06-auth.md`.

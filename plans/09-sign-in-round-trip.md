@@ -1,6 +1,6 @@
 # 09 — The Google sign-in round trip, end to end
 
-**Status: in flight (session 7).**
+**Status: built (session 7).** Not yet seen on a device.
 
 The owner's report, against the Render server: choose an account, grant
 consent, and land on the development build's *launcher* home screen instead
@@ -45,7 +45,7 @@ Traced through the installed sources, not guessed:
 
 ## A1 — Finish sign-in from the link itself
 
-- [ ] `pending-A1`
+- [x] `a02f8f4`
 - **Commit:** `fix(native): finish Google sign-in from the returning link, whatever relaunched the app`
 - **Touches:** `apps/native/lib/auth-redirect.ts` (new),
   `apps/native/app/+native-intent.tsx` (new), `apps/native/lib/auth-client.ts`
@@ -64,7 +64,7 @@ Traced through the installed sources, not guessed:
 
 ## A2 — The hook settles honestly
 
-- [ ] `pending-A2`
+- [x] `b0f1bd1`
 - **Commit:** `fix(native): only call sign-in done when a session exists`
 - **Touches:** `apps/native/lib/use-google-sign-in.ts`,
   `apps/native/app/(auth)/welcome.tsx`, `apps/native/lib/telemetry.tsx`,
@@ -82,7 +82,7 @@ Traced through the installed sources, not guessed:
 
 ## B1 — Errors return to the app; real IPs; sessions that last
 
-- [ ] `pending-B1`
+- [x] `67bebf9`
 - **Commit:** `fix(auth): send sign-in errors back into the app, and keep sessions`
 - **Touches:** `packages/auth/src/index.ts`
 - **Done when:** `onAPIError.errorURL` is the app's own welcome deep link, so
@@ -96,7 +96,7 @@ Traced through the installed sources, not guessed:
 
 ## C1
 
-- [ ] `pending-C1`
+- [x] this commit
 - **Commit:** `docs: record the sign-in round trip`
 - **Done when:** `systems/06-auth.md` describes the flow as it now works and
   names the Render URL. The decisions are logged, the plan is ticked, and

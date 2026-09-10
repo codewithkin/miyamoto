@@ -1,5 +1,14 @@
 # Deploys — Vercel, and its second, hidden type-check
 
+> **As of session 7 the server runs on Render**
+> (`https://miyamoto-server.onrender.com`, started with `bun run
+> dist/index.mjs`). The Vercel sections below record why deploying
+> `apps/server` there failed, and still apply if it ever moves back.
+> Render's own notes: the database URL's `sslmode=require` prints a `pg`
+> deprecation warning on every boot; `sslmode=verify-full` means the same
+> thing today and silences it. The client-IP header note is in
+> `systems/06-auth.md`.
+
 `apps/server` deploys to Vercel as its own project (`christus-veritas-technologies/server`, Root Directory `apps/server`). This is not the whole story: **Vercel runs two independent passes**, and only the first one is ours.
 
 ```

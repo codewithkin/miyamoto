@@ -7,11 +7,24 @@ their own voice. This file is self-contained.
 > Read `progress/AGENT-PROCESS.md` for *how* work is done here.
 > This file is *what* to build next.
 
-**Last updated:** end of session 5 (2026-09-10).
+**Last updated:** session 7 (2026-09-10).
 
 ---
 
 ## ⚠️ Read this first
+
+**Sessions 6–7.** The server now runs on **Render**
+(`https://miyamoto-server.onrender.com`). Vercel's separate type-check broke
+every deploy there (D-042, `systems/12-deploys.md`). Production's database
+turned out to be a leftover from an unrelated app; with the owner's
+confirmation it was reset, migrated and seeded (D-043). Google sign-in now
+reaches the server. **Plan 09** (built) fixes the round trip back into the
+app: the session is finished from the returning link itself, so a relaunch
+mid-sign-in (the dev launcher) or Android's browser promise giving up can't
+lose it, and errors come back into the app instead of stranding the browser
+on the API's "OK" page (D-044, `systems/06-auth.md`). **Plan 08** (extending
+welcome's craft across the app) is part-built: ScreenHero, You, Adversity,
+Masters done; Settings review and chat's empty state remain.
 
 **Session 5** (plan 07, done): welcome *is* the sign-in screen now, with
 one "Continue with Google" button and no `/sign-in` route (D-040). It was
@@ -240,10 +253,12 @@ notes do not survive a clone.
 
 1. **The voice evaluation** — 01 T12. The first real reply, and the only
    check on D-013. The key is set; nothing blocks it.
-2. **Google sign-in, end to end** — the owner's OAuth client and an HTTPS
-   address for the server (`systems/06-auth.md`). Until then no one can get
-   past welcome on a phone, which also blocks item 3. TelemetryDeck will
-   show it as `Auth.signInFailed` with `reason: provider-off`.
+2. **Google sign-in on a device** — the OAuth client and the HTTPS server
+   (Render) exist now, and plan 09 fixes the return trip. What remains is
+   the owner signing in on a development build: landing inside the app,
+   signed in, and still signed in after a restart. If Render's logs still
+   show `Rate limiting could not determine a client IP` after deploying
+   `67bebf9`, set `trustedProxies` (`systems/06-auth.md`).
 3. **A device pass** — 05 T04. Now covers far more than it did: sign-in, the
    gate, the reworked onboarding, the claim, the permission prompt, three
    kinds of notification, the charge card, history.
