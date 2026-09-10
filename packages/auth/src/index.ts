@@ -98,6 +98,15 @@ function reportGoogleReadiness() {
   }
 }
 
+/**
+ * The native app's URL scheme (apps/native/app.json). Better Auth redirects
+ * back into the app on it, and the app finishes sign-in from that link
+ * (apps/native/lib/auth-redirect.ts, D-044).
+ */
+const APP_SCHEME = "miyamoto";
+
+const DAY_SECONDS = 60 * 60 * 24;
+
 export function createAuth() {
   const prisma = createPrismaClient();
   reportGoogleReadiness();
@@ -110,10 +119,33 @@ export function createAuth() {
     trustedOrigins: [
       env.CORS_ORIGIN,
 
-      "miyamoto://",
+      // Any miyamoto:// link — including a development build's
+      // miyamoto://<metro-host>:8081/, which Linking.createURL produces when
+      // Metro is attached. Better Auth matches a bare scheme to any authority.
+      `${APP_SCHEME}://`,
       "exp://",
       "http://localhost:8081",
     ],
+
+    // Where a sign-in goes when it fails before Better Auth can recover the
+    // request's own error URL — a stale Google page resubmitted after the
+    // first callback used up its state is the common one (state_mismatch).
+    // The default is the API's own /error, which redirects to "/": a plain
+    // page inside the sign-in browser, reading "OK", with no way back into
+    // the app. This sends it back into the app instead, where welcome turns
+    // the `error=` code into a sentence.
+    onAPIError: {
+      errorURL: `${APP_SCHEME}:///welcome`,
+    },
+
+    // A phone that signed in once should stay signed in. Better Auth's
+    // default is seven days; for an app used daily that means a sign-in
+    // prompt after any week away. Sixty days, refreshed at most once a day
+    // while the app is in use.
+    session: {
+      expiresIn: 60 * DAY_SECONDS,
+      updateAge: DAY_SECONDS,
+    },
 
     // The design promises "no passwords or emailed links". Leaving this on
     // would leave a credential endpoint live that no screen ever uses.
@@ -134,6 +166,17 @@ export function createAuth() {
         sameSite: "none",
         secure: true,
         httpOnly: true,
+      },
+      // Rate limiting keys on the client IP. Behind a hosting proxy
+      // x-forwarded-for carries several hops, and Better Auth only trusts a
+      // single-value header unless proxies are listed — so every request
+      // fell into one shared bucket (the "could not determine a client IP"
+      // warning on Render), and a handful of sign-ins from anyone could
+      // throttle everyone. Edge-set single-value headers are tried first.
+      // If the warning is still in the logs after a deploy, none of these
+      // is set by the host: see systems/06-auth.md.
+      ipAddress: {
+        ipAddressHeaders: ["true-client-ip", "cf-connecting-ip", "x-forwarded-for"],
       },
     },
     plugins: [expo()],
