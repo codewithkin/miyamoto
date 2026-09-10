@@ -48,11 +48,11 @@ export const SAMPLE_ANSWERS: Record<string, SampleAnswer> = {
     masterName: "Musashi",
     masterEra: "Duelist · 1584–1645",
     echo: "I got passed over at work.",
-    body: "The Yoshioka school refused me a fair duel. They named a boy as their head, so that beating him would shame me and losing to him would end me.\n\nI arrived early, took the boy first, and left through the rice fields before the school could form a line.\n\nA rigged contest is information, not a verdict. You have been told what ground you are standing on.",
+    body: "They tell a story of me. The Yoshioka school refused me a fair duel. They named a boy as their head, so that beating him would shame me and losing to him would end me.\n\nIn the story, I arrived early, took the boy first, and left through the rice fields before the school could form a line.\n\nA rigged contest is information, not a verdict. You have been told what ground you are standing on.",
     action:
       "Write the one thing that decision told you about your ground. One sentence. Then book the conversation.",
     sourceNote:
-      "The Yoshioka duels, Kyoto, c. 1604, as recorded in the Nitenki and Musashi's own Go Rin No Sho.",
+      "The Yoshioka duels, Kyoto, c. 1604, as told in the Nitenki (1776) — a later, admiring account. Musashi's own Go Rin No Sho names no opponent, so this is told as the story that survives (D-008).",
   },
 
   "betrayed": {
