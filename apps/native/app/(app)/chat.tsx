@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 
+import { MasterAvatar } from "@/components/master-avatar";
 import { Blade, BladeTick } from "@/components/blade";
 import { Animated, Enter, usePulse } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
@@ -186,6 +187,12 @@ export default function ChatScreen() {
             borderBottomColor: ink.border,
           }}
         >
+          <MasterAvatar
+            slug={activeThread?.master.slug ?? "musashi"}
+            name={activeThread?.master.name ?? "Musashi"}
+            size={40}
+            active
+          />
           <View style={{ flex: 1 }}>
             <Text variant="title" style={{ fontSize: size.lead }}>
               {activeThread?.master.name ?? "Musashi"}
@@ -265,8 +272,12 @@ export default function ChatScreen() {
           })}
 
           {busy ? (
-            <Animated.View style={[{ flexDirection: "row", gap: space.sm }, typing]}>
-              <Blade state="active" length={12} />
+            <Animated.View style={[{ flexDirection: "row", alignItems: "center", gap: space.sm }, typing]}>
+              <MasterAvatar
+                slug={activeThread?.master.slug ?? "musashi"}
+                name={activeThread?.master.name ?? "Musashi"}
+                size={24}
+              />
               <Text variant="caption">
                 {activeThread?.master.name ?? "Musashi"} is writing…
               </Text>

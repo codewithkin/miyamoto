@@ -4,6 +4,7 @@ import React from "react";
 import { View } from "react-native";
 
 import { Blade, BladeTick } from "@/components/blade";
+import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
 import { Sheet } from "@/components/sheet";
 import { Touchable } from "@/components/touchable";
@@ -75,23 +76,22 @@ export function SwitchMasterSheet({
                   backgroundColor: speaking ? indigo.tint : ink.surface,
                   borderWidth: 1,
                   borderColor: speaking ? indigo.base : ink.border,
-                  opacity: m.available ? 1 : 0.55,
                 }}
               >
-                <Blade
-                  state={
-                    speaking
-                      ? "active"
-                      : m.available
-                        ? "complete"
-                        : m.lockReason === "PRO"
-                          ? "locked"
-                          : "empty"
-                  }
-                  length={14}
+                <MasterAvatar
+                  slug={m.slug}
+                  name={m.name}
+                  size={44}
+                  active={speaking}
+                  locked={!m.available}
+                  pro={m.lockReason === "PRO"}
                 />
                 <View style={{ flex: 1 }}>
-                  <Text variant="label" style={{ fontSize: size.body }}>
+                  <Text
+                    variant="label"
+                    color={m.available ? undefined : textColor.muted}
+                    style={{ fontSize: size.body }}
+                  >
                     {m.name}
                   </Text>
                   <Text variant="caption">{m.domains.join(" · ")}</Text>

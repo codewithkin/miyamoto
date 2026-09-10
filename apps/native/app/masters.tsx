@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade } from "@/components/blade";
+import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
@@ -54,17 +54,23 @@ export default function MastersScreen() {
                   backgroundColor: m.available ? ink.surface : ink.surfaceDim,
                   borderWidth: 1,
                   borderColor: m.available ? ink.border : ink.borderDim,
-                  opacity: m.available ? 1 : 0.55,
                   gap: space.sm,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
-                  <Blade
-                    state={m.available ? "complete" : m.lockReason === "PRO" ? "locked" : "empty"}
-                    length={16}
+                  <MasterAvatar
+                    slug={m.slug}
+                    name={m.name}
+                    size={52}
+                    locked={!m.available}
+                    pro={m.lockReason === "PRO"}
                   />
                   <View style={{ flex: 1 }}>
-                    <Text variant="title" style={{ fontSize: size.lead }}>
+                    <Text
+                      variant="title"
+                      color={m.available ? textColor.primary : textColor.muted}
+                      style={{ fontSize: size.lead }}
+                    >
                       {m.name}
                     </Text>
                     <Text variant="caption">
@@ -84,7 +90,9 @@ export default function MastersScreen() {
                     {m.available ? "Speak" : m.lockReason === "PRO" ? "Pro" : `Day ${m.unlockDay}`}
                   </Text>
                 </View>
-                <Text variant="caption">{m.domains.join(" · ")}</Text>
+                <Text variant="caption" color={m.available ? undefined : textColor.faintest}>
+                  {m.domains.join(" · ")}
+                </Text>
               </Touchable>
             </Enter>
           ))}

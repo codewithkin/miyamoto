@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
+import { MasterAvatar } from "@/components/master-avatar";
 import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
@@ -50,9 +51,12 @@ export default function StoryScreen() {
                 {s.category.name} · {s.readSeconds}s read
               </Text>
               <Text variant="display">{s.title}</Text>
-              <Text variant="caption">
-                {s.master.name} answers · {s.master.era}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.xs }}>
+                <MasterAvatar slug={s.master.slug} name={s.master.name} size={32} />
+                <Text variant="caption" style={{ flex: 1 }}>
+                  {s.master.name} answers · {s.master.era}
+                </Text>
+              </View>
             </View>
           </Enter>
 
@@ -68,7 +72,7 @@ export default function StoryScreen() {
                   gap: space.base,
                 }}
               >
-                <Blade state="locked" length={20} />
+                <MasterAvatar slug={s.master.slug} name={s.master.name} size={48} locked pro />
                 <Text variant="voice">
                   {s.master.name} has an answer to this one. It is behind Pro.
                 </Text>
