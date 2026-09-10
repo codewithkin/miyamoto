@@ -7,9 +7,10 @@ import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { BackButton } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
+import { MASTERS } from "@/content/onboarding-options";
 import { SAMPLE_ANSWERS } from "@/content/sample-answers";
 import { useOnboarding } from "@/lib/onboarding-store";
-import { green, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
+import { indigo, ink, radius, size, space } from "@/theme/tokens";
 
 /**
  * 03 · The Aha.
@@ -19,6 +20,10 @@ import { green, indigo, ink, radius, size, space, text as textColor } from "@/th
  * lands first, then the Master's paragraphs arrive one at a time as if
  * being written, then the charge, and only afterwards the ask. Rushing this
  * screen would waste the one moment that sells the product.
+ *
+ * The charge is drawn exactly as chat's ChargeCard draws one — indigo edge,
+ * "Your charge", the Master's voice — so the first charge anyone sees looks
+ * like every one after it (D-003, D-045).
  */
 export default function AnswerScreen() {
   const router = useRouter();
@@ -29,13 +34,44 @@ export default function AnswerScreen() {
   // Typed problems have no authored answer. The claim turns them into the
   // title of the first thread with the user's Master, so the honest promise
   // is that it will be waiting in the dojo — they are already signed in.
+  // Who that Master is is already known (D-005: the one unlocked at Day 1),
+  // so the screen opens on that face and on the person's own words.
   if (!answer) {
+    const starter = MASTERS.find((m) => !m.proOnly && m.unlockDay === null);
+    const ownWords = draft.seedProblem?.trim();
     return (
-      <Screen>
+      <Screen scroll>
         <View style={{ flex: 1, justifyContent: "center", gap: space.xl }}>
+          {starter ? (
+            <Enter preset="fade">
+              <MasterAvatar slug={starter.slug} name={starter.name} size={72} active />
+            </Enter>
+          ) : null}
           <Enter preset="rise">
-            <Text variant="display">A Master will answer that one properly.</Text>
+            <Text variant="display">
+              {starter
+                ? `${starter.name} will answer that one properly.`
+                : "A Master will answer that one properly."}
+            </Text>
           </Enter>
+          {ownWords ? (
+            <Enter preset="rise" delay={120}>
+              <View
+                style={{
+                  alignSelf: "flex-end",
+                  maxWidth: "86%",
+                  backgroundColor: indigo.tint,
+                  borderRadius: radius.sheet,
+                  borderBottomRightRadius: space.sm,
+                  padding: space.xl,
+                }}
+              >
+                <Text variant="label" numberOfLines={4} style={{ fontSize: size.bodyLg }}>
+                  {ownWords}
+                </Text>
+              </View>
+            </Enter>
+          ) : null}
           <Enter preset="rise" delay={200}>
             <Text variant="lead">
               Your own words deserve a real reply, not a sample. Three more questions and it
@@ -101,23 +137,26 @@ export default function AnswerScreen() {
           ))}
         </View>
 
-        {/* The charge. */}
+        {/* The charge — drawn as chat draws every charge after this one. */}
         <Enter preset="blade" delay={460 + paragraphs.length * 380 + 200}>
           <View
             style={{
               borderRadius: radius.card,
               backgroundColor: ink.surface,
-              borderWidth: 1,
-              borderColor: ink.border,
+              borderWidth: 1.5,
+              borderColor: indigo.base,
               padding: space.xl,
-              gap: space.md,
+              gap: space.base,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-              <Blade state="active" length={14} delay={0} />
-              <Text variant="eyebrow">Do this today</Text>
+              <Blade state="active" length={12} delay={0} />
+              <Text variant="eyebrow" color={indigo.light} style={{ flex: 1 }}>
+                Your charge
+              </Text>
+              <Text variant="caption">Today</Text>
             </View>
-            <Text variant="label" style={{ fontSize: size.bodyLg, lineHeight: size.bodyLg * 1.5 }}>
+            <Text variant="voice" style={{ fontSize: size.lead }}>
               {answer.action}
             </Text>
           </View>
