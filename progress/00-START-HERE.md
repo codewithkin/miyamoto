@@ -23,8 +23,9 @@ app: the session is finished from the returning link itself, so a relaunch
 mid-sign-in (the dev launcher) or Android's browser promise giving up can't
 lose it, and errors come back into the app instead of stranding the browser
 on the API's "OK" page (D-044, `systems/06-auth.md`). **Plan 08** (extending
-welcome's craft across the app) is part-built: ScreenHero, You, Adversity,
-Masters done; Settings review and chat's empty state remain.
+welcome's craft across the app) is built: ScreenHero, You, Adversity,
+Masters, chat's empty state; Settings reviewed and left as is. The rules a
+new screen is held to are D-045.
 
 **Session 5** (plan 07, done): welcome *is* the sign-in screen now, with
 one "Continue with Google" button and no `/sign-in` route (D-040). It was

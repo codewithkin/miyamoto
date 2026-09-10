@@ -8,7 +8,7 @@ import { space, text as textColor } from "@/theme/tokens";
 /**
  * The opening of a screen: an eyebrow, a headline, an optional line of
  * context, and an optional visual anchor — a face, an icon, a number —
- * that gives the eye somewhere to land before it reads anything (D-043,
+ * that gives the eye somewhere to land before it reads anything (D-045,
  * `plans/08-visual-craft.md`).
  *
  * Extracted from what made welcome (`app/(auth)/welcome.tsx`) read as

@@ -354,3 +354,25 @@ can't sign the phone into another account, and the sign-in is recorded
 exactly once. Errors come back the same way: the server's `onAPIError.errorURL`
 is the app's welcome link, never the API's own page. Sessions last 60 days,
 refreshed at most daily while the app is in use. See `systems/06-auth.md`.
+
+---
+
+## Screen craft (session 7)
+
+**D-045 — A screen opens with something to look at, one action, and colour
+that means something.**
+The owner named welcome as the bar for every screen ("a full course meal").
+What made it work, and so what a new screen is held to:
+1. A visual anchor above the fold. It can be a face, an icon or a number,
+   not only a photo.
+2. Exactly one filled, high-contrast action.
+3. A hierarchy that never flattens to two sizes: eyebrow, headline, a line
+   of context, then body.
+4. Colour tied to meaning. Indigo for structure and progress, gold for
+   earned or premium, green for confirmed, red only for alerts.
+5. Real information over placeholders: a face rather than an initial, a
+   number rather than a bullet.
+`components/screen-hero.tsx` is the opening for any screen without a photo.
+The exception is lists whose platform convention is plain, such as Settings:
+a nav-bar title and grouped rows are correct there, and a hero would be
+decoration. See `plans/08-visual-craft.md`.

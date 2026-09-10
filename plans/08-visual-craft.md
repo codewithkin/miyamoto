@@ -1,6 +1,6 @@
 # 08 — Extend welcome's craft across the app
 
-**Status: in flight (session 7).**
+**Status: built (session 7).** Not yet seen on a device. The rules are D-045.
 
 The owner's brief: welcome (`(auth)/welcome.tsx`, plan 07) reads as "a full
 course meal" — layered imagery, real typographic hierarchy, color used with
@@ -39,7 +39,7 @@ be motion for its own sake.
 
 ## A1 — A `ScreenHero` header
 
-- [ ] `pending-A1`
+- [x] `aa7e1ff`
 - **Commit:** `feat(native): a shared hero header for screens without a photo`
 - **Touches:** `apps/native/components/screen-hero.tsx` (new)
 - **Done when:** one component renders an eyebrow, a display/hero title,
@@ -53,7 +53,7 @@ be motion for its own sake.
 
 ## B1 — You (profile)
 
-- [ ] `pending-B1`
+- [x] `d029831`
 - **Commit:** `feat(native): give the profile screen a real focus`
 - **Done when:** the user's chosen Master's face anchors the header (who is
   walking this with them), the three stats read as achievements (icons,
@@ -63,7 +63,7 @@ be motion for its own sake.
 
 ## B2 — Adversity (the library)
 
-- [ ] `pending-B2`
+- [x] `5b327b2`
 - **Commit:** `feat(native): give the adversity library a real opening`
 - **Done when:** the headline section explains what the library is in one
   line (it currently doesn't say anything), "Most searched" reads as a
@@ -72,7 +72,7 @@ be motion for its own sake.
 
 ## B3 — Masters roster, second pass
 
-- [ ] `pending-B3`
+- [x] `0d2b208`
 - **Commit:** `feat(native): make the masters roster read as a roster`
 - **Done when:** the header states the shape of the ladder (earned vs.
   waiting vs. Pro) instead of only a count, and the visual difference
@@ -81,14 +81,16 @@ be motion for its own sake.
 
 ## B4 — Settings
 
-- [ ] `pending-B4`
+- [x] reviewed, no change. A back button beside a nav-bar title, then
+  grouped rows, is the platform's own settings pattern; a hero opening
+  there would be decoration.
 - **Done when reviewed:** a plain grouped list is the *correct* pattern for
   a settings screen (this is true of every OS's own settings app) — confirm
   it needs no change, or note the one thing that does.
 
 ## B5 — Chat, composer and empty state
 
-- [ ] `pending-B5`
+- [x] `d32466a` (also fixed "He won't comfort you", which was wrong for Curie)
 - **Commit:** `feat(native): a real chat empty state`
 - **Done when:** opening a fresh thread shows the Master's face and a
   proper opening rather than one line of body text with nothing above it.
