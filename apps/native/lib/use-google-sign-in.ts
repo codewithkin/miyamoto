@@ -2,6 +2,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 
 import { authClient } from "@/lib/auth-client";
+import { failureFromApiError, SIGN_IN_SENTENCE } from "@/lib/auth-errors";
+import { markSignInPending } from "@/lib/auth-redirect";
 import { track } from "@/lib/telemetry";
 
 /**
@@ -25,34 +27,6 @@ import { track } from "@/lib/telemetry";
 
 export type Provider = "google"; // | "apple"
 
-/**
- * Why a sign-in failed, as a category. The sentence is for the person; the
- * category is safe to count (it never carries a server message).
- */
-export type SignInFailure = "provider-off" | "network" | "cancelled-or-other";
-
-/**
- * Turns Better Auth's error into a sentence a person can act on.
- *
- * The one worth singling out is a provider the server has not registered —
- * which is what happens when GOOGLE_CLIENT_ID / _SECRET are missing. Without
- * this it surfaces as "Provider not found", which reads like a bug in the app
- * rather than a missing setting.
- */
-function classify(error: { code?: string; message?: string } | null | undefined): SignInFailure {
-  const code = error?.code ?? "";
-  const message = error?.message ?? "";
-  if (/PROVIDER_NOT_FOUND/i.test(code) || /provider/i.test(message)) return "provider-off";
-  if (/network|fetch/i.test(message)) return "network";
-  return "cancelled-or-other";
-}
-
-const SENTENCE: Record<SignInFailure, string> = {
-  "provider-off": "Google sign-in isn't switched on for this server yet.",
-  network: "Couldn't reach Miyamoto. Check your connection and try again.",
-  "cancelled-or-other": "That didn't go through. Try again.",
-};
-
 export function useGoogleSignIn() {
   const router = useRouter();
   const [busy, setBusy] = React.useState<Provider | null>(null);
@@ -63,6 +37,9 @@ export function useGoogleSignIn() {
       setBusy(provider);
       setError(null);
       track("Auth.signInStarted", { provider });
+      // Lets the link back from Google finish this sign-in even if the app
+      // is relaunched before the browser promise below returns (D-044).
+      await markSignInPending();
       try {
         // callbackURL is a real path, turned into a deep link (miyamoto:///)
         // by the Expo plugin. "/" is the gate.
@@ -75,17 +52,17 @@ export function useGoogleSignIn() {
         // has to be read here or the user falls through to a gate with no
         // session.
         if (authError) {
-          const reason = classify(authError);
+          const reason = failureFromApiError(authError);
           track("Auth.signInFailed", { provider, reason });
-          setError(SENTENCE[reason]);
+          setError(SIGN_IN_SENTENCE[reason]);
           return;
         }
         track("Auth.signInCompleted", { provider });
         router.replace("/");
       } catch (e) {
-        const reason = classify(e instanceof Error ? { message: e.message } : null);
+        const reason = failureFromApiError(e instanceof Error ? { message: e.message } : null);
         track("Auth.signInFailed", { provider, reason });
-        setError(SENTENCE[reason]);
+        setError(SIGN_IN_SENTENCE[reason]);
       } finally {
         setBusy(null);
       }

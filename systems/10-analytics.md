@@ -39,8 +39,8 @@ Masters*, App ID `5D5EE985-6FCF-4D10-B283-AC4F7F7F5A08`.
 |---|---|---|
 | `Welcome.shown` | `app/(auth)/welcome.tsx`, once per visit | — |
 | `Auth.signInStarted` | `lib/use-google-sign-in.ts`, on tap | `provider` |
-| `Auth.signInCompleted` | same, when Better Auth returns no error | `provider` |
-| `Auth.signInFailed` | same, on a returned or thrown error | `provider`, `reason`: `provider-off` \| `network` \| `cancelled-or-other` |
+| `Auth.signInCompleted` | `lib/use-google-sign-in.ts` when Better Auth returns no error; `lib/auth-redirect.ts` with `via: "link"` when the link back from Google finishes it (cold start, or Android's browser promise giving up first — D-044) | `provider`, `via` (link path only) |
+| `Auth.signInFailed` | the hook, on a returned or thrown error; `lib/auth-redirect.ts` with `via: "link"`, on an `error=` link back from Google | `provider`, `reason`: `provider-off` \| `network` \| `declined` \| `expired` \| `not-saved` \| `cancelled-or-other`; `via` (link path only) |
 | `Onboarding.completed` | `app/(onboarding)/offer.tsx` `finish()`, once | `outcome`: `purchased` \| `declined` \| `started-free` \| `skipped`; `plan`: `LIFETIME` \| `MONTHLY` \| `none`; `pressure`; `wounds` (count); `master` (slug) |
 | `Chat.messageSent` | `app/(app)/chat.tsx` `send()` | `master` (slug), `firstInThread` |
 
