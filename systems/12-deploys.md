@@ -47,16 +47,29 @@ Two real bugs were only visible there, confirmed and fixed in `3ba9f82`
    their own defaults and `env`'s type collapses to `Readonly<{}>`. Caught
    by `pnpm check-types` before it was committed.)
 
-A third symptom in the same failing build — `ai.ts` accessing `.reason` on
-`ReplyCheck` inside `if (!check.ok)`, which is entirely valid TypeScript —
-was **not reproduced** by `pnpm check-types`, `tsc -b` in `apps/server`,
-or by diffing the failing commit against `HEAD` (byte-identical). The
-leading theory is that step 2's compiler, upon meeting the two unsupported
-tsconfig features above, did not degrade gracefully — so the `paths` fix
-may resolve it too. **Unconfirmed** as of this writing; the next deploy is
-the real test. If it recurs, it needs its own investigation before touching
-`template.ts` or `ai.ts` — that file enforces D-007/D-030, and should not
-be reshaped on a guess.
+3. **A third symptom in the same failing build was a genuinely separate
+   bug, not a consequence of the first two.** `ai.ts` accessed `.reason`
+   on `ReplyCheck` inside `if (!check.ok)` — entirely valid TypeScript,
+   never reproduced by `pnpm check-types`, `tsc -b` in `apps/server`, or by
+   diffing the failing commit against `HEAD` (byte-identical each time).
+   Fixing (1) and (2) above and redeploying did **not** clear it — three
+   separate deploys reported the exact same three lines and the exact same
+   reported shape (`{ok:true, charge: string}`, `check` shown as the
+   *accepted* variant, inside a block guarded by `!check.ok`), unmoved by
+   either fix. So the "step 2 doesn't degrade gracefully on an unsupported
+   tsconfig feature" theory from the first two bugs does **not** explain
+   this one — it is unrelated, whatever its actual mechanism is.
+
+   Fixed in `170d3a0` without ever identifying that mechanism: `reason` was
+   made a field on *both* branches of `ReplyCheck` (`null` when accepted,
+   the same shape `charge` already had), so reading it stops depending on
+   `check.ok` having been narrowed correctly by whatever compiler evaluates
+   it. This is additive and type-only — no behaviour moved, confirmed with
+   `pnpm check-types` — and it is the last resort for this class of bug,
+   not the first one to reach for: it stops being worth using guesses about
+   an opaque checker to justify reshaping a type that enforces D-007/D-030,
+   in favour of a change whose correctness doesn't depend on the guess
+   being right at all.
 
 ## What this means for a new deploy-breaking error
 
@@ -77,6 +90,15 @@ Vercel's build still fails on a TypeScript error:
    error before assuming the code is wrong — a fix already on `main` can
    predate the deploy that reports the old error, if the deploy was
    triggered by an older commit.
+5. **Don't assume one fix explains a second, unrelated-looking error in
+   the same failed build.** The `ai.ts`/`ReplyCheck` case above looked, at
+   first, like it might share a cause with the tsconfig/`createEnv` bugs —
+   it didn't, and redeploying was what actually showed that. If a
+   discriminated-union field access fails only on this second check and
+   never locally, and a redeploy after an unrelated fix doesn't clear it,
+   the direct fix is to put that field on every branch of the union
+   (`null` where it doesn't otherwise apply) rather than keep narrowing a
+   theory about why the checker disagrees.
 
 ## Migrations are not run on deploy
 
