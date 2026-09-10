@@ -32,6 +32,9 @@ No anonymous sessions. The four onboarding sample problems are fixed and
 have *authored* answers (`apps/native/content/sample-answers.ts`), which is
 how the design's "Try it — no account" promise is kept without a model call,
 a quota spend, or a throwaway user row.
+**Superseded in part by D-038:** the rule stands, but the "no account"
+promise is gone. Sign-in now comes first, and the sample answers are shown
+to a signed-in user.
 
 **D-005 — Masters are earned, not chosen.**
 Musashi from Day 1; Seneca Day 7, Mandela Day 14, Curie Day 21, Sun Tzu
@@ -232,3 +235,45 @@ and PathProgress only if missing, and resolves concurrent claims to one row
 The naming rule (CLAUDE.md, D-003) spans screens and outranks one screen's
 copy: a Trial is an authored Path day and feeds the streak; a Charge does
 not. Registered as a design exception in START-HERE.
+
+---
+
+## Onboarding rework (session 4)
+
+**D-036 — Motion is restrained by default; three screens opt out.**
+The owner found the motion over the top for a serious product. Every entry
+preset now resolves to a short settle: 220ms, at most 6px of vertical
+travel, nothing from the side, no bounce, spin, flip, roll or pinwheel, and
+stagger delays compressed to 40%. The original choreography survives behind
+an `expressive` motion tone, which forging, the one-time offer and the Pro
+paywall opt into because the owner asked to keep them. The default is
+calm, so a new screen is restrained unless it asks not to be. See
+`MotionTone` in `apps/native/components/motion.tsx` and `restraint` in
+`apps/native/theme/motion.ts`.
+
+**D-037 — Selection is marked with a real tick, not a blade mark.**
+Blade marks remain the brand's language for progress (rails, the charge
+header, the forge). For "this is chosen" they failed: the owner could not
+read a slash in a box as selected. `BladeTick` is a green circle with a
+checkmark, and an empty ring when not chosen. Options that are one of
+several show the ring (radio), and multi-select chips show a "+" until
+picked. Blade marks used as generic bullets were replaced with icons too.
+
+**D-038 — Sign-in comes first, and onboarding runs after it.**
+A signed-out person can reach `/welcome` and `/sign-in`, nothing else.
+`app/(app)/_layout.tsx` is the single gate. With no session it sends the
+user to welcome. With a session and no finished draft, it asks the server
+whether this account is onboarded, and sends a new account to the quiz.
+Otherwise it opens the app. The draft is claimed when the offer screen
+marks it `finishedAt`, not when sign-in was reached; claiming on arrival
+would have saved an empty draft and skipped the quiz for good. A finished
+draft counts as onboarded before the claim lands, so going offline at the
+end never puts the user back in the quiz.
+
+**D-039 — Google is the only sign-in provider, for now.**
+Apple is commented out, not deleted, in three places: the env schema, the
+provider block and the sign-in screen. `systems/06-auth.md` covers turning
+it back on. The Google client is a *Web application*, because the server is
+the OAuth client. The server prints the redirect URI to register at boot,
+and warns if `BETTER_AUTH_URL` is localhost or plain http. Either one
+leaves a phone stranded after the account chooser.

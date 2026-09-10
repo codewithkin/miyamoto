@@ -5,6 +5,106 @@ Write the entry you would want to find.
 
 ---
 
+## Session 4 — 2026-09-10
+
+**Onboarding rebuilt around sign-in, the motion calmed, faces for the
+Masters, and every screen given one thing to look at. Plan 06, 23 commits.**
+
+The owner's brief was that the app should feel serious, not showy. The
+first screen was also lying, and several screens gave the eye nowhere to
+land.
+
+### Auth-first (D-038, D-039)
+
+"Try it — no account" was untrue, because nothing works without an
+account. Welcome now has one "Get started" that goes to Google sign-in, and
+the quiz runs after it. The hard part was the claim. It used to fire when
+a draft reached the sign-in screen. Moving onboarding after sign-in without
+moving that trigger would have saved an empty draft the moment anyone
+signed in, and skipped them past the quiz for good. So B1 and B4 landed as
+one commit. The draft is now claimed when the offer screen marks it
+`finishedAt`.
+
+Routing is one gate in `app/(app)/_layout.tsx`. A root `app/index.tsx` gate
+was tried first and collided with `(app)/index.tsx`, because route groups
+add no path segment. Welcome moved to `/welcome` instead.
+
+Google is the only provider; Apple is commented out in three places. The
+server now prints the redirect URI to register at boot, and warns when
+`BETTER_AUTH_URL` cannot work from a phone. It currently cannot:
+`BETTER_AUTH_URL` is `http://localhost:3000` while the app talks to
+`http://192.168.1.5:3000`. `systems/06-auth.md` covers the fix from
+nothing.
+
+### Restraint (D-036)
+
+Rather than editing every screen, the presets themselves changed. Every
+entry is now a 220ms settle with at most 6px of rise, nothing arrives from
+the side, and delays are compressed to 40%. The owner asked to keep the
+original choreography on forging, the offer and the paywall, so it survives
+behind an `expressive` motion tone that only those three opt into. A new
+screen is calm unless it asks otherwise.
+
+### Legibility
+
+- **The 4/4 bug had two causes.** `Touchable` put the caller's style on an
+  inner view, so a `flex: 1` chip collapsed to zero width and showed no
+  label. The screen also did not scroll, so on a short phone the time row
+  overflowed and painted over "Unbreakable". Both are fixed, and the time
+  is now its own section.
+- **Ticks (D-037).** The slash in a box read as nothing. A selection is
+  now a green circle with a checkmark. Options that are one of several show
+  an empty ring, and multi-select chips show a "+".
+- **Icons.** Text glyphs (← › ✕ + ↑) and blade marks used as bullets were
+  replaced with Ionicons through `components/icon.tsx`. Blade marks stay
+  wherever they mean progress.
+- **Faces.** `designs/crop-portraits.py` cuts a square around each face,
+  once. Sun Tzu's portrait is 1:2 with the face in the top third, so a
+  centred crop showed his robe. `MasterAvatar` is in onboarding, chat, the
+  roster, the switch sheet, stories and home. Locked Masters show as dimmed
+  faces with a lock badge, where they used to be dimmed rows.
+- **Focus.** On the payoff, home and offer screens, one card now has a
+  coloured ground and a heavy border, and nothing else does. The offer
+  leads with a solid gold 60% OFF block beside a 52pt red-edged countdown.
+  Once today's trial is done, home offers the next move instead of going
+  quiet.
+
+### Found along the way
+
+- The evening reminder, and its preview, came from Seneca, who is locked
+  until Day 7. Both reminders now come from the user's own Master.
+- "5 masters to earn" was still hardcoded from the Mandela era.
+- The aha screen still said a typed problem "takes an account". It called
+  an authored sample "1 of 3 free answers" and had two buttons with no
+  handlers.
+- The session-4 decisions were first cited in code as D-031 to D-034, and
+  those numbers were already taken. They were renumbered to D-036 to D-039
+  before anything was recorded.
+- A `tsc` run in `packages/env` left three `.js` files beside the sources.
+  This is the trap START-HERE already warns about. They were deleted.
+
+### Not proven
+
+Nothing in this session ran on a device. Every screen was typechecked and
+the app bundled with `expo export`, which proves that the imports and the
+portrait assets resolve, and nothing more. Nobody has completed a Google
+sign-in.
+
+### Flags for the owner
+
+- **Figures with no data behind them:** "2.4× more often", 18% vs 43%, and
+  the named testimonials on the offer and paywall. They are design copy.
+  Replace them with real numbers after launch, or cut them.
+- **Soft portraits:** Curie (120px) and Sun Tzu (128px) go soft above about
+  64pt.
+- **The Musashi portraits are *Vagabond* artwork**, the same risk as the
+  icon.
+- **The draft is per device, not per account.** If a finished draft is
+  still unclaimed when a different account signs in on the same phone, the
+  second account gets it. That is rare, and not fixed.
+
+---
+
 ## Session 3 — 2026-09-10
 
 **Every remaining buildable todo in plans 01–04, four gaps no plan had, and

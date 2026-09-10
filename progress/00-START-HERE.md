@@ -7,27 +7,34 @@ their own voice. This file is self-contained.
 > Read `progress/AGENT-PROCESS.md` for *how* work is done here.
 > This file is *what* to build next.
 
-**Last updated:** end of session 3 (2026-09-10).
+**Last updated:** end of session 4 (2026-09-10).
 
 ---
 
 ## ⚠️ Read this first
 
-**Everything buildable without the owner is built.** Plans 01–04 are done
-except 01 T12 and 03 T01/T03, all three of which wait on something only the
-owner can supply.
+**Session 4 rebuilt onboarding around sign-in** (plan 06, done): sign-in
+comes first and the quiz after it (D-038), Google is the only provider
+(D-039), motion is restrained everywhere but three screens (D-036), choices
+are marked with a real tick (D-037), and every Master mentioned shows their
+face.
 
-**Two things have never happened, and nothing built so far proves them:**
+**Three things have never happened, and nothing built so far proves them:**
 
-1. **No Master reply has ever been generated.** `OPENROUTER_API_KEY` is
-   missing. Citation enforcement, the charge, refunds and history are all
-   verified against the real database and Mastra store with fixture replies
-   — never with a real model. The first real reply may not follow the
+1. **No Master reply has ever been generated.** `OPENROUTER_API_KEY` **is
+   now set** in `apps/server/.env`, so this is finally unblocked — 01 T12 is
+   the next task. Citation enforcement, the charge, refunds and history have
+   only ever seen fixture replies. The first real reply may not follow the
    trailer format at all.
-2. **Nothing has run on a device.** Onboarding persistence, the session
-   redirect, the permission prompt, both daily reminders, the streak warning
-   and the charge card are typechecked and, where the logic could be pulled
-   out, run. None has been seen.
+2. **Nobody has signed in on a phone.** There are no Google credentials yet,
+   and `BETTER_AUTH_URL` is `http://localhost:3000` while the app points at
+   `http://192.168.1.5:3000`. Google cannot redirect a phone to either.
+   `systems/06-auth.md` is the step-by-step; the server prints what is wrong
+   at boot, under `[auth]`.
+3. **Nothing has run on a device.** Every screen in plan 06 was typechecked
+   and bundled (`expo export`), never seen. The same goes for everything
+   before it: onboarding persistence, the permission prompt, both daily
+   reminders, the streak warning, the charge card.
 
 The database is seeded: 5 Masters (4 active), 28 Moments, 14 quotations, 20
 stories, 30 Path days. Re-seed any time with `pnpm --filter @miyamoto/db
@@ -63,7 +70,10 @@ and its markup. The markup is the only place the real hex values live.
 
 | Design says | We do | Why |
 |---|---|---|
-| Screen 01 "Try it — no account" | Auth required before a real question | D-004. The four sample problems have authored answers, so the aha still lands with no model call. |
+| Screen 01 "Try it — no account" and "I already have one" | One "Get started" to Google sign-in; the quiz runs after it | D-004, D-038. Nothing works without an account, so the old promise was untrue. The sample answers still give the aha with no model call. |
+| Sign-in offers Apple and Google | Google only; Apple commented out | D-039. |
+| The design's entry choreography | Restrained everywhere except forging, the offer and the paywall | D-036. The owner's call: serious, not showy. |
+| Selection shown with blade marks | A green tick in a circle; an empty ring when not chosen | D-037. |
 | Screen 05 is a Master picker | It is a ladder; Musashi is claimed automatically | D-005. Only Musashi is unlocked at Day 1. |
 | Mandela appears throughout | Withdrawn from the app | D-006. Estate enforces personality rights. |
 | Offer and paywall: "Day 7, 14 and 21" | "Day 7 and 21", derived from the Master list | D-006, D-033. Day 14 was Mandela's unlock and is now empty. |
@@ -73,15 +83,14 @@ and its markup. The markup is the only place the real hex values live.
 
 ## Your task
 
-**If `OPENROUTER_API_KEY` is now set:** `plans/01-master-corpus.md` T12. Run
-the same ten problems against all four active Masters and read them side by
-side. Before judging the voices, check the server log for `[ai] … rejected`
-— if drafts are being refused, the trailer format is the first problem, not
-the voice.
+**`plans/01-master-corpus.md` T12.** The key is set. Run the same ten
+problems against all four active Masters and read them side by side.
+Before judging the voices, check the server log for `[ai] … rejected` — if
+drafts are being refused, the trailer format is the first problem, not the
+voice.
 
-**If it is not:** nothing in the plans is buildable. The best unplanned
-candidate is message bodies in the data export — no longer blocked in
-principle, because `loadThreadHistory` in `apps/server` can read them. Add it
+After that, the best unplanned candidate is message bodies in the data
+export. `loadThreadHistory` in `apps/server` can already read them. Add it
 to a plan before building it.
 
 ```bash
@@ -118,11 +127,12 @@ Nothing is uncommitted. The tree is clean.
 
 | Area | State | What "built" means here |
 |---|---|---|
-| Onboarding, 12 screens | **Built** | Never run on a device. |
-| Onboarding persistence | **Built** | Claimed from the app shell, retried until confirmed, idempotent on the server (D-034). Verified server-side. |
-| Session routing | **Built** | Signed-in users skip onboarding; signed-out users cannot see the shell. |
+| Onboarding, 12 screens | **Built, auth-first** | Welcome and sign-in in `(auth)`, the quiz in `(onboarding)` after sign-in (D-038). Never run on a device. |
+| Onboarding persistence | **Built** | Claimed from the app shell once the offer screen marks the draft `finishedAt`; retried until confirmed; idempotent on the server (D-034). |
+| Session routing | **Built** | One gate, `app/(app)/_layout.tsx`: no session → `/welcome`; new account → the quiz; otherwise the app. |
+| Google sign-in | **Built**, never completed | Needs the owner's OAuth client and an HTTPS server URL — `systems/06-auth.md`. |
 | App shell, 8 screens + 3 overlays | **Built** | Path, Adversity, Chat, You, story, Masters, paywall, sheets. |
-| Design system | **Built** | Tokens, blade marks, 18 entry presets, press interaction with haptics. |
+| Design system | **Built** | Tokens; blade marks for progress; restrained motion with an `expressive` opt-in (D-036); `BladeTick` for selection (D-037); Ionicons through `components/icon.tsx`; Master portraits through `components/master-avatar.tsx`. |
 | Marketing site, 5 pages | **Built and deployed** | Still shows Mandela; the owner wants that removed separately. |
 | Account deletion | **Built and verified** | Web loop tested end to end against a real account; cascade proven. |
 | Master corpus | **Built and seeded** | 4 active Masters, tiered and cited; Mandela withdrawn with his corpus kept. |
@@ -141,7 +151,18 @@ Nothing is uncommitted. The tree is clean.
   "on device".
 - **Run `tsc -b` only from `apps/server`**, or use `pnpm check-types`. At the
   repo root it writes `.js` beside every source file — 110 of them, twice,
-  in session 3.
+  in session 3. Session 4 did it once more in `packages/env`: three stray
+  `.js` files next to the `.ts`, which could shadow them. In a package, use
+  `npx tsc --noEmit`.
+- **A new screen is calm by default** (D-036). Only wrap one in
+  `<MotionTone value="expressive">` if the owner asks for it.
+- **Route groups add no path segment,** so only one `index.tsx` may resolve
+  to `/`. That one is `(app)/index.tsx`; welcome is `/welcome`. After adding
+  or moving a route, regenerate typed routes by starting Metro briefly
+  (`CI=1 npx expo start`), or `tsc` rejects the new href.
+- **Portraits are cut once, offline.** `python designs/crop-portraits.py`
+  writes `avatar-*.png` from the supplied `master-*.png`. The component
+  assumes squares; do not position faces at runtime.
 - **Parallel shell calls share one working directory.** Start every call with
   an absolute `cd`.
 - **Write files containing escape sequences with the file tool,** not a
@@ -200,26 +221,44 @@ notes do not survive a clone.
 ## Open items, in priority order
 
 1. **The voice evaluation** — 01 T12. The first real reply, and the only
-   check on D-013. Needs the key.
-2. **A device pass** — 05 T04. Now covers far more than it did: the claim,
-   the redirect, the permission prompt, three kinds of notification, the
-   charge card, history.
-3. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
+   check on D-013. The key is set; nothing blocks it.
+2. **Google sign-in, end to end** — the owner's OAuth client and an HTTPS
+   address for the server (`systems/06-auth.md`). Until then no one can get
+   past the sign-in screen on a phone, which also blocks item 3.
+3. **A device pass** — 05 T04. Now covers far more than it did: sign-in, the
+   gate, the reworked onboarding, the claim, the permission prompt, three
+   kinds of notification, the charge card, history.
+4. **Figures the app cannot back.** "Your dojo is ready" says Firm-pressure
+   users "finish 2.4× more often", with bars at 18% and 43%. The offer and
+   paywall quote named users ("Aisha", "Tomás"). All of it is design copy
+   with no data behind it. That is legal exposure once the app is live, so
+   it is the owner's call: replace with real numbers after launch, or cut.
+5. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
+   128px, so both go soft above about 64pt. Both Musashi images are
+   *Vagabond* artwork, the same open risk as the app icon.
+6. **A finished but unclaimed draft is per device, not per account.** If
+   one person finishes onboarding offline, signs out, and someone else
+   signs in on that phone before the claim lands, the second account gets
+   the first person's answers. That is rare, and the fix is small: store
+   the user id in the draft and drop it on mismatch. It is not built.
+7. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
    true ("Day 7 and 21"), but the Path's pacing is the owner's call — move
    Curie to 14, add a Master, or leave the gap.
-4. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
+8. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
    Owner's call to commission.
-5. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
+9. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
    and secret, then a sandbox pass.
-6. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
-7. **Mandela on the marketing site** — owner said later, separately.
+10. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
+11. **Mandela on the marketing site** — owner said later, separately.
 
 ## Waiting on the owner
 
-`OPENROUTER_API_KEY` (blocks every Master reply), Google/Apple OAuth
-credentials, `SMTP_*`, RevenueCat keys, `REVENUECAT_WEBHOOK_AUTH` and the
-dashboard webhook, an original app icon, a device with an EAS development
-build, and a decision about Day 14.
+A Google OAuth client and an HTTPS server address (blocks sign-in on a
+phone), `SMTP_*`, RevenueCat keys, `REVENUECAT_WEBHOOK_AUTH` and the
+dashboard webhook, an original app icon, larger Curie and Sun Tzu portraits,
+a device with an EAS development build, a decision about Day 14, and a
+decision about the payoff figures and testimonials. Apple sign-in is off,
+so Apple credentials are no longer needed.
 
 ---
 

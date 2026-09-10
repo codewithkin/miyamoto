@@ -95,7 +95,7 @@ type Builder = { delay: (ms: number) => any };
  * Motion tone.
  *
  * `restrained` is the default and what almost every screen gets: a fade and a
- * few pixels of rise, nothing from the side, delays compressed (D-031).
+ * few pixels of rise, nothing from the side, delays compressed (D-036).
  * `expressive` is the original choreography, kept whole for the three places
  * the owner asked to keep it — the forging screen and the two paywalls. A new
  * screen is calm unless it opts out, never the other way round.

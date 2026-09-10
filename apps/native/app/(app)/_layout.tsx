@@ -35,7 +35,7 @@ export default function AppLayout() {
   // Keeps the two daily reminders in step with the account's settings.
   useReminderSchedule(Boolean(session));
 
-  // This layout is the gate (D-033). "/" resolves here — welcome lives at
+  // This layout is the gate (D-038). "/" resolves here — welcome lives at
   // /welcome precisely so that nothing else competes for it — so every
   // launch, sign-in and sign-out passes through these checks:
   //

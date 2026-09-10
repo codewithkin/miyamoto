@@ -53,7 +53,7 @@ function OfferScreenBody() {
 
   /**
    * The end of onboarding. Every exit from this screen lands here: marking
-   * the draft finished is what lets the app shell's claim send it (D-033),
+   * the draft finished is what lets the app shell's claim send it (D-038),
    * and the gate treats a finished draft as onboarded even before the claim
    * lands, so there is no way back into the quiz from here.
    */
@@ -348,7 +348,7 @@ function OfferScreenBody() {
 /**
  * Kept on the expressive motion tone at the owner's request. One of three
  * screens — this, the other paywall, and forging — where the original
- * choreography survives the restraint pass (D-031).
+ * choreography survives the restraint pass (D-036).
  */
 export default function OfferScreen() {
   return (

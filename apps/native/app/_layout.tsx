@@ -14,7 +14,7 @@ import { queryClient } from "@/utils/trpc";
 
 export const unstable_settings = {
   // "/" is the app shell, and its layout is the gate that decides between
-  // welcome, onboarding and the app (D-033).
+  // welcome, onboarding and the app (D-038).
   initialRouteName: "(app)",
 };
 

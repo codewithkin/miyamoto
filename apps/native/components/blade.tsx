@@ -13,7 +13,7 @@ import { alpha, gold, green, indigo, ink, radius, space } from "@/theme/tokens";
  * length rather than by a different shape, so a rail of them reads as one
  * continuous edge.
  *
- * Selection is the exception: see BladeTick, which is a real tick (D-032).
+ * Selection is the exception: see BladeTick, which is a real tick (D-037).
  */
 
 export type BladeState =
@@ -162,7 +162,7 @@ export type BladeTickProps = {
  * It used to be an angled cut in a green square, in keeping with the blade
  * vocabulary. The owner's reading of it was a green box with a slash — not
  * recognisable as selected at a glance, which is the only job it has. So this
- * is the one place the blade rule gives way (D-032): a filled green circle
+ * is the one place the blade rule gives way (D-037): a filled green circle
  * with a checkmark when chosen, an empty ring when not. Blade marks still
  * carry progress everywhere else.
  */

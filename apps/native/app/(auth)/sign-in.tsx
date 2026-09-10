@@ -11,12 +11,12 @@ import { ink, radius, red, size, space, text as textColor } from "@/theme/tokens
 /**
  * Sign in.
  *
- * Google only, for now (D-034). Apple is kept below, commented out rather
+ * Google only, for now (D-039). Apple is kept below, commented out rather
  * than deleted, so turning it back on is uncommenting and adding the
  * credentials — not rebuilding the screen. There is no password path and the
  * server has the credential endpoint turned off to match.
  *
- * Nothing is claimed here. Onboarding runs after sign-in (D-033): the gate at
+ * Nothing is claimed here. Onboarding runs after sign-in (D-038): the gate at
  * "/" sends a new account into the quiz and a returning one to the app.
  */
 
@@ -101,7 +101,7 @@ export default function SignInScreen() {
             />
 
             {/*
-              Apple sign-in — off for now (D-034). To turn it back on:
+              Apple sign-in — off for now (D-039). To turn it back on:
                 1. set APPLE_CLIENT_ID / APPLE_CLIENT_SECRET / APPLE_APP_BUNDLE_IDENTIFIER
                    and uncomment the Apple block in packages/auth/src/index.ts;
                 2. add "apple" to the Provider type above;

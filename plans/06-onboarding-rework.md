@@ -1,6 +1,7 @@
 # 06 — Onboarding rework, auth-first, restraint
 
-**Status: in flight (session 4).**
+**Status: built (session 4).** Not yet seen on a device, and Google sign-in
+waits on the owner's OAuth client and an HTTPS server address (B6).
 
 The owner's brief, condensed: the app is meant to be serious and
 professional, and the motion across it is over the top. Onboarding lies on
@@ -17,7 +18,7 @@ paywall animations. Everything else is toned down.
 
 ## A1 — Layout props land on the pressable
 
-- [ ] `pending-A1`
+- [x] `ec4173c`
 - **Commit:** `fix(native): let a Touchable take flex and width like any view`
 - **Touches:** `apps/native/components/touchable.tsx`
 - **Done when:** a `Touchable` styled `flex: 1` inside a row takes its share
@@ -28,7 +29,7 @@ paywall animations. Everything else is toned down.
 
 ## A2 — Motion restraint
 
-- [ ] `pending-A2`
+- [x] `0ad6e81`
 - **Commit:** `feat(native): calm the motion by more than half`
 - **Touches:** `apps/native/theme/motion.ts`, `apps/native/components/motion.tsx`
 - **Done when:** no preset travels horizontally; entry durations and travel
@@ -42,7 +43,7 @@ paywall animations. Everything else is toned down.
 
 ## A3 — A real tick
 
-- [ ] `pending-A3`
+- [x] `4252a00`
 - **Commit:** `feat(native): mark a selection with a tick, not a slash`
 - **Touches:** `apps/native/components/blade.tsx`
 - **Done when:** every `BladeTick` renders a green circle with a checkmark
@@ -52,7 +53,7 @@ paywall animations. Everything else is toned down.
 
 ## A4 — Icons instead of glyphs
 
-- [ ] `pending-A4`
+- [x] `3b3a53c`
 - **Commit:** `feat(native): replace text glyphs with real icons`
 - **Touches:** `apps/native/components/icon.tsx` (new), every screen using
   `←`, `›`, `✕`, `+`, `↑` as text
@@ -65,7 +66,7 @@ paywall animations. Everything else is toned down.
 
 ## B1 — One routing gate
 
-- [ ] `pending-B1`
+- [x] `7676bc0`
 - **Commit:** `feat(native): route every launch through one gate`
 - **Touches:** `apps/native/app/index.tsx` (new), `(auth)/` (new group),
   `(onboarding)/_layout.tsx`, `(app)/_layout.tsx`, `app/_layout.tsx`
@@ -84,7 +85,7 @@ at its end`.
 
 ## B2 — Welcome: one button
 
-- [ ] `pending-B2`
+- [x] `9fb464f`
 - **Commit:** `feat(native): welcome with a single Get started`
 - **Done when:** "Try it — no account" and "I already have one" are gone; one
   "Get started" goes to sign-in. That copy was untrue — nothing works without
@@ -92,7 +93,7 @@ at its end`.
 
 ## B3 — Sign-in: Google only
 
-- [ ] `pending-B3`
+- [x] `d3e20c2`
 - **Commit:** `feat(native): sign in with Google alone`
 - **Done when:** one Google button; Apple commented out, not deleted; "Why do
   I need an account?" removed; `callbackURL` is a real path (`/`), not a route
@@ -100,7 +101,7 @@ at its end`.
 
 ## B4 — Onboarding after sign-in
 
-- [ ] `pending-B1` (merged into B1 — see the note above)
+- [x] `7676bc0` (merged into B1 — see the note above)
 - **Commit:** `feat(native): run onboarding after sign-in and save it at the end`
 - **Touches:** `lib/onboarding-store.tsx`, `lib/claim-draft.tsx`, the
   onboarding screens that pointed at sign-in
@@ -110,7 +111,7 @@ at its end`.
 
 ## B5 — Server: Google, and a loud warning
 
-- [ ] `pending-B5`
+- [x] `da77946`
 - **Commit:** `feat(auth): Google alone, and warn when a phone cannot reach the callback`
 - **Touches:** `packages/auth/src/index.ts`, `packages/env/src/server.ts`
 - **Done when:** Apple is commented out; Google asks the user to pick an
@@ -120,13 +121,17 @@ at its end`.
 
 ## B6 — Google Cloud setup, written down
 
-- [ ] `pending-B6`
+- [x] `a2757c9`
 - **Commit:** `docs: the exact Google OAuth setup, end to end`
 - **Touches:** `apps/server/.env.example`, `systems/06-auth.md` (new)
 - **Done when:** someone with a Google account can go from nothing to a
   working sign-in on a phone by following it.
 - **Cannot be ticked by an agent.** Credentials and an HTTPS server URL are
-  the owner's to create.
+  the owner's to create. The tick above is for the document; the setup
+  itself is still outstanding. As of session 4, `BETTER_AUTH_URL` is
+  `http://localhost:3000` while the app points at `http://192.168.1.5:3000`,
+  so sign-in cannot complete on a phone until step 1 of `systems/06-auth.md`
+  is done.
 
 ---
 
@@ -134,7 +139,7 @@ at its end`.
 
 ## C1 — Avatars and the component
 
-- [ ] `pending-C1`
+- [x] `1f9904b`
 - **Commit:** `feat(native): give each Master a face`
 - **Touches:** `designs/crop-portraits.py` (new),
   `apps/native/assets/images/portraits/avatar-*.png` (generated),
@@ -149,7 +154,7 @@ at its end`.
 
 ## C2 — Faces in onboarding
 
-- [ ] `pending-C2`
+- [x] `69391b5`
 - **Commit:** `feat(native): show the Master's face wherever onboarding names one`
 - **Done when:** 3/4 shows Musashi's portrait large and the locked Masters
   small; the aha screen, forging, payoff and reminder previews show the face
@@ -157,7 +162,7 @@ at its end`.
 
 ## C3 — Faces in the app
 
-- [ ] `pending-C3`
+- [x] `81cccda`
 - **Commit:** `feat(native): show the Master's face across the app`
 - **Done when:** chat header, Masters list, switch sheet and story screen
   show portraits.
@@ -168,38 +173,53 @@ at its end`.
 
 ## D1 — 4/4 layout
 
-- [ ] `pending-D1`
+- [x] `7b8bcb8`
 - **Commit:** `fix(native): give the pressure screen room to breathe`
 - **Done when:** the reminder row sits clearly below the three options with
   real separation, every chip shows its time, and the chosen time is marked.
 
 ## D2 — A tick on every selection
 
-- [ ] `pending-D2`
+- [x] `0df34a3`
 - **Commit:** `feat(native): tick every choice the user makes in onboarding`
 - **Done when:** wound chips, the problem list, pressure options, reminder
   times and plan cards all show a tick when chosen.
 
 ## D3 — Your dojo is ready
 
-- [ ] `pending-D3`
+- [x] `678cc09`
 - **Commit:** `feat(native): make the dojo screen say one thing loudly`
 - **Done when:** the motion is calm, the Day 1 trial is the unmistakable
   focus, and the two stat cards read as achievements rather than footnotes.
 
 ## D4 — The offer, prominent
 
-- [ ] `pending-D4`
+- [x] `dff5ab6`
 - **Commit:** `feat(native): make the countdown and the discount impossible to miss`
 - **Done when:** the countdown is a large block, not a caption; the 60% off
   is a badge, not a label; the animations are unchanged.
 
 ## D5 — Focus on the home screen
 
-- [ ] `pending-D5`
+- [x] `11a7b48`
 - **Commit:** `feat(native): make today's trial the only thing competing for attention`
 - **Done when:** a first-time viewer's eye lands on the trial and its button
   before anything else.
+
+---
+
+**Note (session 4): three commits no todo named.** Each came from something
+found while doing a planned todo. Each was small, had nothing to do with
+the todo that found it, and was committed on its own:
+
+- `58948da`: the evening reminder came from Seneca, who is locked until
+  Day 7. Both reminders now come from the user's own Master. Found in C2.
+- `ee6745f`: blade marks used as generic bullets (adversity rows, delete
+  and export lists, the attach sheet) became icons. This finishes A4's
+  intent for the cases A4's glyph sweep could not see.
+- `f6804fa`: the aha screen still promised things from the anonymous era.
+  It said a typed problem "takes an account", called a sample "1 of 3 free
+  answers", and had two buttons with no handlers.
 
 ---
 
@@ -207,7 +227,7 @@ at its end`.
 
 ## E1 — Decisions and handoff
 
-- [ ] `pending-E1`
+- [x] this commit
 - **Commit:** `docs: record session 4`
 - **Done when:** D-004 superseded; new decisions for auth-first routing,
   motion restraint, ticks over blade marks for selection, and Google-only;

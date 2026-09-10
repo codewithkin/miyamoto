@@ -217,7 +217,7 @@ function PlanCard({
 /**
  * Kept on the expressive motion tone at the owner's request. One of three
  * screens — this, the other paywall, and forging — where the original
- * choreography survives the restraint pass (D-031).
+ * choreography survives the restraint pass (D-036).
  */
 export default function PaywallScreen() {
   return (

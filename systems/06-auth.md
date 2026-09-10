@@ -1,11 +1,11 @@
 # Auth — Google sign-in, end to end
 
-Google is the only sign-in method for now (D-034). Apple is commented out in
+Google is the only sign-in method for now (D-039). Apple is commented out in
 three places and switched back on by uncommenting them — see the bottom of
 this file. There is no password path, and the server has the credential
 endpoint turned off to match.
 
-Onboarding runs **after** sign-in (D-033). A signed-out person can reach two
+Onboarding runs **after** sign-in (D-038). A signed-out person can reach two
 screens: `/welcome` and `/sign-in`.
 
 ---

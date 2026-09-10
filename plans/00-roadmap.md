@@ -11,11 +11,11 @@ diverge silently.
 
 | # | Plan | Status | Blocked on |
 |---|---|---|---|
-| 01 | `01-master-corpus.md` | **Built to T11b** — T12 next | `OPENROUTER_API_KEY` |
+| 01 | `01-master-corpus.md` | **Built to T11b** — T12 next | Nothing: the key is set as of session 4 |
 | 02 | `02-notifications.md` | **Built**, not run on a device | A device |
 | 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
 | 04 | `04-onboarding-claim.md` | **Done** | — |
-| 06 | `06-onboarding-rework.md` | **In flight (session 4)** | — |
+| 06 | `06-onboarding-rework.md` | **Built** (session 4), not run on a device | Google OAuth client + an HTTPS server URL; a device |
 | 05 | `05-launch-readiness.md` | Not started | The owner: icon, consoles, domain, device |
 
 ## Why this order

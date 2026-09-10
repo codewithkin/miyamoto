@@ -93,7 +93,7 @@ export const ambient = {
  *   overshoot, bounce, spin, flip  ->  none
  *
  * The original presets survive behind the expressive tone, which only the
- * forging screen and the paywalls opt into (D-031).
+ * forging screen and the paywalls opt into (D-036).
  */
 export const restraint = {
   duration: 220,

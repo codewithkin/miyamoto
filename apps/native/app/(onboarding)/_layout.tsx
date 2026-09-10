@@ -7,7 +7,7 @@ import { ink } from "@/theme/tokens";
 import { trpc } from "@/utils/trpc";
 
 /**
- * The onboarding stack. Reached only with a session (D-033).
+ * The onboarding stack. Reached only with a session (D-038).
  *
  * Signed out, it sends the user to welcome. Already onboarded — claimed on the
  * server, or finished on this device and waiting to be claimed — it sends them

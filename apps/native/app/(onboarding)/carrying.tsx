@@ -15,7 +15,7 @@ import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tok
  * 04 · What are you carrying?
  *
  * Multi-select. An unpicked chip carries a "+", a picked one a green tick
- * (D-032), so it is obvious both that several can be chosen and which ones
+ * (D-037), so it is obvious both that several can be chosen and which ones
  * were. The nudge underneath only shows once there is something true to say
  * about the picks. The screen scrolls: the chip grid is tall on small phones.
  */

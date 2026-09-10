@@ -141,7 +141,7 @@ function ForgingScreenBody() {
 /**
  * Kept on the expressive motion tone at the owner's request. One of three
  * screens — this and the two paywalls — where the original choreography
- * survives the restraint pass (D-031).
+ * survives the restraint pass (D-036).
  */
 export default function ForgingScreen() {
   return (
