@@ -50,23 +50,45 @@ Pick one:
 
 Call that address `https://SERVER` below.
 
+**Production, deployed (session 6):**
+
+```
+API   https://aoi-miyamoto.gamesforstrangers.lol   (apps/server on Vercel — this is SERVER below)
+Web   https://miyamoto.gamesforstrangers.lol       (apps/web on Vercel — CORS_ORIGIN, step 2)
+```
+
 ### 2. Point both sides at it
 
-`apps/server/.env`:
+Local dev, `apps/server/.env`:
 
 ```
 BETTER_AUTH_URL=https://SERVER
 ```
 
-`apps/native/.env`:
+Local dev, `apps/native/.env`:
 
 ```
 EXPO_PUBLIC_SERVER_URL=https://SERVER
 ```
 
-**They must be the same host.** The session cookie is issued by
-`BETTER_AUTH_URL`; if the app then talks to a different host, it signs in and
-immediately looks signed out.
+**Production** — set on the Vercel **server** project's own environment
+variables (not `apps/server/.env`, which is local-only and gitignored;
+Vercel reads its own dashboard-configured values):
+
+```
+BETTER_AUTH_URL=https://aoi-miyamoto.gamesforstrangers.lol
+CORS_ORIGIN=https://miyamoto.gamesforstrangers.lol
+GOOGLE_CLIENT_ID=<from step 3>
+GOOGLE_CLIENT_SECRET=<from step 3>
+```
+
+An EAS production build of `apps/native` needs
+`EXPO_PUBLIC_SERVER_URL=https://aoi-miyamoto.gamesforstrangers.lol` set for
+that build profile (`eas.json` / `eas secret`), separately from local dev.
+
+**They must be the same host as each other on each side.** The session
+cookie is issued by `BETTER_AUTH_URL`; if the app then talks to a different
+host, it signs in and immediately looks signed out.
 
 `EXPO_PUBLIC_*` values are inlined when Metro bundles, so restart Metro with
 `--clear` after changing it. A development build does not need rebuilding —
@@ -89,12 +111,20 @@ At <https://console.cloud.google.com>:
    - Application type: **Web application.** Not Android, not iOS — the sign-in
      runs in a browser sheet and redirects to *your server*, which makes the
      server the OAuth client.
-   - Name: `Miyamoto server`.
+   - Name: `Miyamoto server` (cosmetic — shown only in this console, never
+     to a user).
+   - **Authorized JavaScript origins: leave this empty.** Nothing here ever
+     calls Google directly from a browser page — sign-in only redirects
+     through the server. If the console's "+ Add URI" row won't save blank,
+     just don't add a row at all; the whole section can stay with zero
+     entries. **Production:** none.
    - **Authorized redirect URIs:** `https://SERVER/api/auth/callback/google`
      — exactly what the server prints at boot after
      `[auth] Google redirect URI to register:`. No trailing slash.
-   - Authorized JavaScript origins: leave empty.
-6. Copy the **Client ID** and **Client secret**.
+     **Production:**
+     `https://aoi-miyamoto.gamesforstrangers.lol/api/auth/callback/google`
+6. Copy the **Client ID** and **Client secret** into the Vercel server
+   project's env vars, step 2 above.
 
 ### 4. Give the server the credentials
 
