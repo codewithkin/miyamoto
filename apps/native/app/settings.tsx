@@ -4,11 +4,10 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Screen, Text } from "@/components/ui";
-import { BackButton, Chevron } from "@/components/icon";
+import { BackButton, Chevron, Icon } from "@/components/icon";
 import { REMINDER_TIMES } from "@/content/onboarding-options";
 import { requestReminderPermission } from "@/lib/notifications";
 import { usePurchases } from "@/lib/purchases";
@@ -181,7 +180,7 @@ export default function SettingsScreen() {
                 paddingVertical: space.base,
               }}
             >
-              <Blade state="broken" length={14} />
+              <Icon name="trash-outline" size={18} color={red.base} />
               <Text variant="label" color={red.base} style={{ flex: 1, fontSize: size.body }}>
                 Delete my account
               </Text>

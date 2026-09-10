@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Share, View } from "react-native";
 
-import { Blade } from "@/components/blade";
+import { BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
@@ -98,8 +98,8 @@ export default function ExportDataScreen() {
               {INCLUDED.map((i) => (
                 <Enter key={i} preset="slideLeft">
                   <View style={{ flexDirection: "row", gap: space.base, alignItems: "flex-start" }}>
-                    <View style={{ paddingTop: 7 }}>
-                      <Blade state="complete" length={12} />
+                    <View style={{ paddingTop: 1 }}>
+                      <BladeTick done size={18} />
                     </View>
                     <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
                       {i}

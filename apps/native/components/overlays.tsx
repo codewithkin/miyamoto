@@ -3,13 +3,12 @@ import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { View } from "react-native";
 
-import { Blade, BladeTick } from "@/components/blade";
 import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
 import { Sheet } from "@/components/sheet";
 import { Touchable } from "@/components/touchable";
 import { Button, Text } from "@/components/ui";
-import { Chevron } from "@/components/icon";
+import { Chevron, Icon, IconBadge } from "@/components/icon";
 import { showRewardedAd } from "@/lib/ads";
 import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
@@ -193,11 +192,11 @@ export function AttachSheet({
   }
 
   const options = [
-    { label: "Photo from library", run: () => void pick("library"), ready: true },
-    { label: "Take a photo", run: () => void pick("camera"), ready: true },
-    { label: "Record a voice note", run: () => {}, ready: false },
-    { label: "From your failure log", run: () => {}, ready: false },
-  ];
+    { label: "Photo from library", icon: "images-outline", run: () => void pick("library"), ready: true },
+    { label: "Take a photo", icon: "camera-outline", run: () => void pick("camera"), ready: true },
+    { label: "Record a voice note", icon: "mic-outline", run: () => {}, ready: false },
+    { label: "From your failure log", icon: "document-text-outline", run: () => {}, ready: false },
+  ] as const;
 
   return (
     <Sheet visible={visible} onClose={onClose} title="Show him the evidence">
@@ -219,8 +218,16 @@ export function AttachSheet({
                 borderColor: ink.border,
               }}
             >
-              <Blade state={o.ready ? "complete" : "empty"} length={12} />
-              <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
+              <IconBadge
+                name={o.icon}
+                color={o.ready ? indigo.light : textColor.faintest}
+                size={36}
+              />
+              <Text
+                variant="label"
+                color={o.ready ? undefined : textColor.faintest}
+                style={{ flex: 1, fontSize: size.body }}
+              >
                 {o.label}
               </Text>
               {!o.ready ? <Text variant="eyebrow">Soon</Text> : null}
@@ -319,7 +326,7 @@ export function OutOfAnswersSheet({
 
       <Enter preset="fade" delay={400}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-          <BladeTick />
+          <Icon name="moon-outline" size={16} color={textColor.faintest} />
           <Text variant="caption">Or wait until tomorrow.</Text>
         </View>
       </Enter>

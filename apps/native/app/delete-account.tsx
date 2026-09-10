@@ -3,11 +3,10 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { TextInput, View } from "react-native";
 
-import { Blade } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { BackButton } from "@/components/icon";
+import { BackButton, Icon } from "@/components/icon";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import { gold, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
@@ -89,8 +88,8 @@ export default function DeleteAccountScreen() {
               {GOES.map((g) => (
                 <Enter key={g} preset="slideLeft">
                   <View style={{ flexDirection: "row", gap: space.base, alignItems: "flex-start" }}>
-                    <View style={{ paddingTop: 7 }}>
-                      <Blade state="broken" length={12} />
+                    <View style={{ paddingTop: 1 }}>
+                      <Icon name="trash-outline" size={18} color={red.base} />
                     </View>
                     <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
                       {g}

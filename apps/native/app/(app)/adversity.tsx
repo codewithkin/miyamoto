@@ -3,11 +3,10 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { TextInput, View } from "react-native";
 
-import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
-import { Chevron } from "@/components/icon";
+import { Chevron, IconBadge } from "@/components/icon";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -134,7 +133,12 @@ function StoryRow({
         borderColor: locked ? gold.tintAlt : ink.border,
       }}
     >
-      <Blade state={locked ? "locked" : "complete"} length={14} />
+      <IconBadge
+        name={locked ? "lock-closed" : "book-outline"}
+        color={locked ? gold.base : indigo.light}
+        background={locked ? gold.tint : ink.raised}
+        size={36}
+      />
       <View style={{ flex: 1, gap: 2 }}>
         <Text variant="label" style={{ fontSize: size.body }}>
           {title}
