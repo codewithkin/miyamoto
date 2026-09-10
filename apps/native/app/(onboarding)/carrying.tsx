@@ -2,11 +2,11 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { BladeRail } from "@/components/blade";
+import { BladeRail, BladeTick } from "@/components/blade";
 import { Enter } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { BackButton } from "@/components/icon";
+import { BackButton, Icon } from "@/components/icon";
 import { MASTERS, WOUNDS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -14,9 +14,10 @@ import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tok
 /**
  * 04 · What are you carrying?
  *
- * Multi-select. The chips pop in one at a time on a tight ladder so the
- * grid assembles rather than appears, and the nudge underneath only shows
- * once there is something true to say about the picks.
+ * Multi-select. An unpicked chip carries a "+", a picked one a green tick
+ * (D-032), so it is obvious both that several can be chosen and which ones
+ * were. The nudge underneath only shows once there is something true to say
+ * about the picks. The screen scrolls: the chip grid is tall on small phones.
  */
 export default function CarryingScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function CarryingScreen() {
   }, [draft.wounds]);
 
   return (
-    <Screen>
+    <Screen scroll>
       <Enter preset="drop">
         <View
           style={{
@@ -74,16 +75,29 @@ export default function CarryingScreen() {
               <Enter key={wound.slug} preset="pop" delay={440 + i * 70}>
                 <Touchable
                   feel="chip"
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: picked }}
                   onPress={() => toggleWound(wound.slug)}
                   style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: space.sm,
                     paddingVertical: space.base,
-                    paddingHorizontal: space.xl,
+                    paddingLeft: space.base,
+                    paddingRight: space.xl,
                     borderRadius: radius.pill,
-                    backgroundColor: picked ? indigo.base : ink.surface,
-                    borderWidth: 1,
-                    borderColor: picked ? indigo.bright : ink.border,
+                    backgroundColor: picked ? indigo.tint : ink.surface,
+                    borderWidth: picked ? 1.5 : 1,
+                    borderColor: picked ? indigo.base : ink.border,
                   }}
                 >
+                  {picked ? (
+                    <BladeTick done size={20} />
+                  ) : (
+                    <View style={{ width: 20, alignItems: "center" }}>
+                      <Icon name="add" size={18} color={textColor.faintest} />
+                    </View>
+                  )}
                   <Text
                     variant="label"
                     color={picked ? textColor.primary : textColor.muted}

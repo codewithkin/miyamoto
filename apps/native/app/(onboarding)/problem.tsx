@@ -96,7 +96,7 @@ export default function ProblemScreen() {
                     padding: space.xl,
                     borderRadius: radius.card,
                     backgroundColor: isSelected ? indigo.tint : ink.surface,
-                    borderWidth: 1,
+                    borderWidth: isSelected ? 1.5 : 1,
                     borderColor: isSelected ? indigo.base : ink.border,
                   }}
                 >

@@ -151,19 +151,24 @@ function OfferScreenBody() {
         {/* Plans. */}
         <Stagger initialDelay={1100} step={160} style={{ gap: space.base }}>
           <Enter preset="flip">
-            <Touchable feel="chip" onPress={() => setPlan("LIFETIME")}>
+            <Touchable
+              feel="chip"
+              accessibilityRole="radio"
+              accessibilityState={{ checked: plan === "LIFETIME" }}
+              onPress={() => setPlan("LIFETIME")}
+            >
               <View
                 style={{
                   padding: space.xl,
                   borderRadius: radius.card,
                   backgroundColor: plan === "LIFETIME" ? indigo.tint : ink.surface,
-                  borderWidth: 1,
+                  borderWidth: plan === "LIFETIME" ? 1.5 : 1,
                   borderColor: plan === "LIFETIME" ? indigo.base : ink.border,
                   gap: space.sm,
                 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-                  {plan === "LIFETIME" ? <BladeTick done size={16} /> : null}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
+                  <BladeTick done={plan === "LIFETIME"} size={24} />
                   <Text variant="title" style={{ flex: 1, fontSize: size.lead }}>
                     Lifetime
                   </Text>
@@ -171,7 +176,14 @@ function OfferScreenBody() {
                     {expired ? "$149" : "$59"}
                   </Text>
                 </View>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: space.sm,
+                    paddingLeft: 24 + space.base,
+                  }}
+                >
                   <Text variant="caption" style={{ flex: 1 }}>
                     One payment, yours forever
                   </Text>
@@ -186,20 +198,25 @@ function OfferScreenBody() {
           </Enter>
 
           <Enter preset="flip">
-            <Touchable feel="chip" onPress={() => setPlan("MONTHLY")}>
+            <Touchable
+              feel="chip"
+              accessibilityRole="radio"
+              accessibilityState={{ checked: plan === "MONTHLY" }}
+              onPress={() => setPlan("MONTHLY")}
+            >
               <View
                 style={{
                   padding: space.xl,
                   borderRadius: radius.card,
                   backgroundColor: plan === "MONTHLY" ? indigo.tint : ink.surface,
-                  borderWidth: 1,
+                  borderWidth: plan === "MONTHLY" ? 1.5 : 1,
                   borderColor: plan === "MONTHLY" ? indigo.base : ink.border,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: space.sm,
+                  gap: space.base,
                 }}
               >
-                {plan === "MONTHLY" ? <BladeTick done size={16} /> : null}
+                <BladeTick done={plan === "MONTHLY"} size={24} />
                 <View style={{ flex: 1 }}>
                   <Text variant="title" style={{ fontSize: size.lead }}>
                     Monthly

@@ -166,19 +166,24 @@ function PlanCard({
   onPress: () => void;
 }) {
   return (
-    <Touchable feel="chip" onPress={onPress}>
+    <Touchable
+      feel="chip"
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      onPress={onPress}
+    >
       <View
         style={{
           padding: space.xl,
           borderRadius: radius.card,
           backgroundColor: selected ? indigo.tint : ink.surface,
-          borderWidth: 1,
+          borderWidth: selected ? 1.5 : 1,
           borderColor: selected ? indigo.base : ink.border,
           gap: space.sm,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
-          {selected ? <BladeTick done size={16} /> : null}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
+          <BladeTick done={selected} size={24} />
           <Text variant="title" style={{ flex: 1, fontSize: size.lead }}>
             {title}
           </Text>
@@ -186,7 +191,14 @@ function PlanCard({
             {price}
           </Text>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: space.sm,
+            paddingLeft: 24 + space.base,
+          }}
+        >
           <Text variant="caption" style={{ flex: 1 }}>
             {detail}
             {note ? ` · ${note}` : ""}
