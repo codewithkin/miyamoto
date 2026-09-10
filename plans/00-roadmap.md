@@ -15,6 +15,7 @@ diverge silently.
 | 02 | `02-notifications.md` | **Built**, not run on a device | A device |
 | 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
 | 04 | `04-onboarding-claim.md` | **Done** | — |
+| 06 | `06-onboarding-rework.md` | **In flight (session 4)** | — |
 | 05 | `05-launch-readiness.md` | Not started | The owner: icon, consoles, domain, device |
 
 ## Why this order
