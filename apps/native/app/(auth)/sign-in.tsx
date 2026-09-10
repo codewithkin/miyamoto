@@ -7,7 +7,6 @@ import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { authClient } from "@/lib/auth-client";
-import { useOnboarding } from "@/lib/onboarding-store";
 import { ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
 /**
@@ -22,23 +21,19 @@ import { ink, radius, red, size, space, text as textColor } from "@/theme/tokens
  */
 export default function SignInScreen() {
   const router = useRouter();
-  const { draft, set } = useOnboarding();
   const [busy, setBusy] = React.useState<"google" | "apple" | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!draft.reachedAuthAt) set({ reachedAuthAt: new Date().toISOString() });
-  }, [draft.reachedAuthAt, set]);
 
   async function signIn(provider: "google" | "apple") {
     setBusy(provider);
     setError(null);
     try {
-      // This used to route to "/(drawer)", a group that does not exist — the
-      // shell is "(app)" — so every successful sign-in landed on not-found.
+      // callbackURL is a real path. The Expo plugin turns it into a deep link
+      // with Linking.createURL, and a route group like "/(app)" is not a URL
+      // path. "/" is the gate, which decides where a new session belongs.
       const { error: authError } = await authClient.signIn.social({
         provider,
-        callbackURL: "/(app)",
+        callbackURL: "/",
       });
       // Better Auth reports most failures as a returned error rather than a
       // throw, so a cancelled sheet or a rejected provider must be read here
@@ -47,11 +42,9 @@ export default function SignInScreen() {
         setError(authError.message ?? "That didn't go through. Try again, or use the other provider.");
         return;
       }
-      // The draft is not submitted here. useClaimDraft in the (app) shell
-      // does it once a session exists, and clears it only after the server
-      // confirms — so a failed round trip is retried on the next launch
-      // rather than losing eleven screens of answers.
-      router.replace("/(app)");
+      // Onboarding runs after sign-in (D-033). The gate sends a new account
+      // into it and a returning one straight to the app.
+      router.replace("/");
     } catch (e) {
       setError(
         e instanceof Error

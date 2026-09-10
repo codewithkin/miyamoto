@@ -57,11 +57,10 @@ export default function ProblemScreen() {
             paddingVertical: space.lg,
           }}
         >
-          <Touchable feel="row" onPress={() => router.back()} hitSlop={12}>
-            <Text variant="title" color={textColor.muted}>
-              ←
-            </Text>
-          </Touchable>
+          {/* No back arrow: this is the first screen after sign-in, and behind
+              it is only the sign-in screen, which would bounce a signed-in user
+              straight back here through the gate. */}
+          <View />
           <Touchable feel="row" onPress={() => router.push("/(onboarding)/carrying")} hitSlop={12}>
             <Text variant="label" color={textColor.muted}>
               Skip

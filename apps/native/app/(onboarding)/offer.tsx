@@ -8,6 +8,7 @@ import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES, UNLOCK_WAITS } from "@/content/onboarding-options";
 import { useOnboarding } from "@/lib/onboarding-store";
+import { usePurchases } from "@/lib/purchases";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 
 /**
@@ -40,7 +41,30 @@ function useCountdown(seconds: number) {
 
 function OfferScreenBody() {
   const router = useRouter();
-  const { draft } = useOnboarding();
+  const { draft, set } = useOnboarding();
+  const { buy } = usePurchases();
+  const [buying, setBuying] = React.useState(false);
+
+  /**
+   * The end of onboarding. Every exit from this screen lands here: marking
+   * the draft finished is what lets the app shell's claim send it (D-033),
+   * and the gate treats a finished draft as onboarded even before the claim
+   * lands, so there is no way back into the quiz from here.
+   */
+  function finish() {
+    set({ finishedAt: new Date().toISOString() });
+    router.replace("/(app)");
+  }
+
+  async function claimOffer() {
+    setBuying(true);
+    // Buying is optional at this point in the journey. Whether the store
+    // sheet completes, is cancelled or fails, onboarding still ends — the
+    // user is never held on a paywall to get into the app they signed up for.
+    await buy().catch(() => false);
+    setBuying(false);
+    finish();
+  }
   const { left, label } = useCountdown(OFFER_SECONDS);
   const livePulse = usePulse(left > 0);
   const [plan, setPlan] = React.useState<"LIFETIME" | "MONTHLY">("LIFETIME");
@@ -71,7 +95,7 @@ function OfferScreenBody() {
               {expired ? "Offer ended" : `Offer ends in ${label}`}
             </Text>
           </View>
-          <Touchable feel="chip" onPress={() => router.push("/(onboarding)/sign-in")} hitSlop={12}>
+          <Touchable feel="chip" onPress={finish} hitSlop={12} accessibilityLabel="Skip the offer">
             <Text variant="title" color={textColor.muted}>
               ✕
             </Text>
@@ -211,14 +235,16 @@ function OfferScreenBody() {
                   : "Claim 60% off · $59 once"
                 : "Start monthly · $9.99"
             }
-            onPress={() => router.push("/(onboarding)/sign-in")}
+            disabled={buying}
+            onPress={() => void claimOffer()}
           />
         </Enter>
         <Enter preset="fade" delay={1720}>
           <Button
             label="Start free with 3 questions a day"
             variant="ghost"
-            onPress={() => router.push("/(onboarding)/sign-in")}
+            disabled={buying}
+            onPress={finish}
           />
         </Enter>
       </View>

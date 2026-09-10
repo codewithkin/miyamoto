@@ -13,7 +13,9 @@ import { PurchasesProvider } from "@/lib/purchases";
 import { queryClient } from "@/utils/trpc";
 
 export const unstable_settings = {
-  initialRouteName: "(onboarding)",
+  // "/" is the app shell, and its layout is the gate that decides between
+  // welcome, onboarding and the app (D-033).
+  initialRouteName: "(app)",
 };
 
 function StackLayout() {
@@ -26,6 +28,7 @@ function StackLayout() {
         animationDuration: 200,
       }}
     >
+      <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(app)" />
       <Stack.Screen name="story/[slug]" />

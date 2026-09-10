@@ -44,7 +44,7 @@ export default function DeleteAccountScreen() {
         // at, so clear it and return to the start rather than leaving a
         // signed-in shell behind.
         await authClient.signOut().catch(() => {});
-        router.replace("/(onboarding)");
+        router.replace("/");
       },
     }),
   );

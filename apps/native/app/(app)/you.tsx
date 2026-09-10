@@ -109,7 +109,7 @@ export default function YouScreen() {
               label="Sign out"
               onPress={async () => {
                 await authClient.signOut();
-                router.replace("/(onboarding)");
+                router.replace("/");
               }}
             />
           </Enter>

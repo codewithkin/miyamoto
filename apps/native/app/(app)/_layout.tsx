@@ -1,12 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
+import { View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { useClaimDraft } from "@/lib/claim-draft";
+import { useOnboarding } from "@/lib/onboarding-store";
 import { useReminderSchedule } from "@/lib/use-reminders";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
 import { font, size, tracking } from "@/theme/tokens";
+import { trpc } from "@/utils/trpc";
 
 /**
  * The app shell.
@@ -18,6 +22,11 @@ import { font, size, tracking } from "@/theme/tokens";
  */
 export default function AppLayout() {
   const { data: session, isPending } = authClient.useSession();
+  const { draft, hydrated } = useOnboarding();
+  const status = useQuery({
+    ...trpc.onboarding.status.queryOptions(),
+    enabled: Boolean(session),
+  });
 
   // Submits the onboarding draft whenever a session exists and it has not
   // landed yet — retried on every launch until the server confirms. Called
@@ -26,11 +35,33 @@ export default function AppLayout() {
   // Keeps the two daily reminders in step with the account's settings.
   useReminderSchedule(Boolean(session));
 
-  // The shell is for an identity (D-004). Rendering nothing while the
-  // cached session is read avoids flashing the Path at someone who is about
-  // to be sent back to sign in.
-  if (isPending) return null;
-  if (!session) return <Redirect href="/(onboarding)" />;
+  // This layout is the gate (D-033). "/" resolves here — welcome lives at
+  // /welcome precisely so that nothing else competes for it — so every
+  // launch, sign-in and sign-out passes through these checks:
+  //
+  //   signed out                          -> /welcome
+  //   signed in, onboarding not finished  -> onboarding
+  //   signed in, onboarding finished      -> the tabs below
+  //
+  // "Finished" has two sources: the server's record of a claimed draft, and a
+  // finished draft on this device whose claim has not landed yet. The second
+  // counts, so a user who reached the end of the quiz offline is not sent
+  // back through it.
+  //
+  // The ground colour is rendered while anything is still unknown, rather
+  // than the Path: flashing the app at a brand-new account and then yanking
+  // them into onboarding reads as a bug.
+  const blank = <View style={{ flex: 1, backgroundColor: ink.base }} />;
+
+  if (isPending || !hydrated) return blank;
+  if (!session) return <Redirect href="/welcome" />;
+  if (!draft.finishedAt) {
+    if (status.isPending) return blank;
+    // Only an explicit "not claimed" sends someone to the quiz. If the
+    // status cannot be fetched at all the user comes in — an unreachable
+    // server must not trap a returning user in a quiz they already took.
+    if (status.data?.claimed === false) return <Redirect href="/(onboarding)/problem" />;
+  }
 
   return (
     <Tabs

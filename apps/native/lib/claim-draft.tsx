@@ -20,10 +20,9 @@ import { trpc } from "@/utils/trpc";
  * races an earlier success is harmless: it reports alreadyClaimed and the
  * draft is cleared the same way.
  *
- * A draft is pending once the user has reached the sign-in screen. That
- * includes "I already have one" with no quiz behind it, which is deliberate —
- * the claim still creates Profile with the device's timezone (D-017) and is a
- * no-op for an account that already has one.
+ * A draft is pending once onboarding has finished. Onboarding runs after
+ * sign-in now, so the account always exists before the answers do; what has
+ * to wait is the user reaching the end of the quiz.
  */
 export function useClaimDraft() {
   const { draft, hydrated, reset } = useOnboarding();
@@ -33,7 +32,7 @@ export function useClaimDraft() {
   const inFlight = React.useRef(false);
 
   const userId = session?.user?.id;
-  const pending = hydrated && Boolean(draft.reachedAuthAt);
+  const pending = hydrated && Boolean(draft.finishedAt);
 
   React.useEffect(() => {
     if (!userId || !pending || inFlight.current) return;
@@ -51,9 +50,15 @@ export function useClaimDraft() {
         timezone: draft.timezone,
       })
       .then(async () => {
-        // Only now. Every screen that read defaults before the claim landed
-        // — pressure, Master, timezone — is refetched against the real row.
+        // Mark the account onboarded in the cache *before* clearing the
+        // draft. The routing gates let a finished-but-unclaimed draft through
+        // to the app; if the draft vanished while the cached status still said
+        // "not claimed", the app shell would bounce the user back into the
+        // quiz for the length of one refetch.
+        qc.setQueryData(trpc.onboarding.status.queryKey(), { claimed: true });
         reset();
+        // Every screen that read defaults before the claim landed — pressure,
+        // Master, timezone — is refetched against the real row.
         await qc.invalidateQueries();
       })
       .catch(() => {

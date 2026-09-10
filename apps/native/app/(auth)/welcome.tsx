@@ -113,7 +113,7 @@ export default function WelcomeScreen() {
           <Button
             label="I already have one"
             variant="ghost"
-            onPress={() => router.push("/(onboarding)/sign-in")}
+            onPress={() => router.push("/sign-in")}
           />
         </Enter>
       </View>

@@ -4,10 +4,10 @@ import React from "react";
 /**
  * The onboarding draft.
  *
- * The quiz runs before sign-in, so every answer is held here on the device
- * and submitted once, at sign-up. Nothing is written server-side for a
- * visitor who never creates an account — there are no anonymous rows to reap
- * and no way to burn quota without an identity.
+ * The quiz runs after sign-in, and every answer is held here on the device
+ * until the user reaches the end, then submitted once. Held locally rather
+ * than written screen by screen so a killed app resumes mid-quiz, and so a
+ * user who abandons halfway leaves nothing half-built on the server.
  */
 
 export type Pressure = "GENTLE" | "FIRM" | "UNBREAKABLE";
@@ -27,8 +27,12 @@ export type OnboardingDraft = {
   remindersEnabled: boolean;
   /** Captured from the device, so day boundaries are right from Day 1. */
   timezone: string;
-  /** Set once the user reaches the sign-in screen. */
-  reachedAuthAt: string | null;
+  /**
+   * Set when the user finishes onboarding. Onboarding runs after sign-in
+   * (D-004, superseded), so this — not reaching a sign-in screen — is what
+   * makes a draft ready to be claimed.
+   */
+  finishedAt: string | null;
 };
 
 const STORAGE_KEY = "miyamoto.onboarding.draft";
@@ -44,7 +48,7 @@ function emptyDraft(): OnboardingDraft {
     eveningReminder: "21:00",
     remindersEnabled: false,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC",
-    reachedAuthAt: null,
+    finishedAt: null,
   };
 }
 
