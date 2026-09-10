@@ -186,6 +186,23 @@ D-007 to D-013.
   local today (D-017), attributed to the thread and Master, and the trailer
   never reaches the device.
 
+## T11b — Chat opens on its history
+
+- [ ] `pending-T11b`
+- **Commit:** `feat(server): return a thread's history` then
+  `feat(native): open a thread on what was already said`
+- **Depends on:** T11
+- **Touches:** `apps/server/src/routes/ai.ts`, `apps/native/app/(app)/chat.tsx`
+- **Note (session 3):** not in the original plan. Mastra owns message
+  content (D-014) and T11 saves every accepted exchange there, but nothing
+  reads it back: `useChat` starts empty on every open, so a user returning
+  to a thread sees a blank screen above the Master's name. The promise of
+  switching Master "without losing the thread" is kept on the server and
+  broken on the screen.
+- **Done when:** an authenticated route returns an owned thread's messages
+  from Mastra, refusing threads the caller does not own, and the chat screen
+  opens a thread with them in place.
+
 ## T12 — Voice evaluation
 
 - [ ] `pending-T12`
