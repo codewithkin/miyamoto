@@ -28,6 +28,11 @@ import { checkReply, compileInstructions, correctionFor, type ReplyCheck } from 
  * released. The cost is latency — the whole letter arrives after it is
  * written rather than as it is — and the "is writing…" state on the device
  * already covers that wait. Recorded as a decision, not an accident.
+ *
+ * An accepted reply also hands over its charge: one thing to do today,
+ * written as a Charge row due on the user's local date (D-003, D-017) and
+ * sent to the device as its own part, so it renders as the card the design
+ * draws under the letter rather than as the letter's last paragraph.
  */
 
 type MessagePart = { type: string; text?: string };
@@ -47,7 +52,8 @@ function latestUserText(messages: { content?: unknown; parts?: MessagePart[] }[]
  *
  * Attempts are generated with memory read-only, so a rejected draft never
  * becomes something the Master "said" earlier in the thread and draws on
- * next time. Only the question and the reply that passed are saved.
+ * next time. Only the question and the reply that passed are saved — with
+ * its charge, so a Master asked tomorrow knows what he handed over today.
  */
 async function persistExchange(args: {
   mastraThreadId: string;
@@ -143,7 +149,7 @@ export function registerAiRoute(app: Hono) {
     const agent = getMasterAgent(thread.master.slug);
     const instructions = compileInstructions(context.master, context.corpus, context.quotations);
 
-    const attempt = async (correction?: string, lenientTrailer = false): Promise<ReplyCheck> => {
+    const attempt = async (correction?: string): Promise<ReplyCheck> => {
       const requestContext = new RequestContext();
       requestContext.setRaw(
         INSTRUCTIONS_KEY,
@@ -159,7 +165,7 @@ export function registerAiRoute(app: Hono) {
         },
         requestContext,
       });
-      return checkReply(result.text, context.corpus, { lenientTrailer });
+      return checkReply(result.text, context.corpus, { isRetry: Boolean(correction) });
     };
 
     let check: ReplyCheck;
@@ -167,7 +173,7 @@ export function registerAiRoute(app: Hono) {
       check = await attempt();
       if (!check.ok) {
         console.warn(`[ai] ${thread.master.slug} draft rejected (${check.reason}); retrying once`);
-        check = await attempt(correctionFor(check.reason), true);
+        check = await attempt(correctionFor(check.reason));
       }
     } catch (e) {
       console.error("[ai] generation failed", e);
@@ -196,7 +202,22 @@ export function registerAiRoute(app: Hono) {
       );
     }
 
-    const answer = check.text;
+    const { text: answer, charge } = check;
+
+    const handed = charge
+      ? await db.charge.create({
+          data: {
+            userId,
+            threadId: thread.id,
+            masterId: thread.masterId,
+            body: charge,
+            // The local date the question was spent against: a Charge is
+            // for today, and today is the user's, not the server's (D-017).
+            dueOn: spent.localDate,
+          },
+          select: { id: true, body: true, dueOn: true, points: true },
+        })
+      : null;
 
     try {
       await persistExchange({
@@ -204,7 +225,7 @@ export function registerAiRoute(app: Hono) {
         userId,
         title: thread.title,
         question,
-        answer,
+        answer: charge ? `${answer}\n\nCharge handed over: ${charge}` : answer,
       });
     } catch (e) {
       // The answer exists and was paid for; losing it from history is worse
@@ -231,6 +252,9 @@ export function registerAiRoute(app: Hono) {
           writer.write({ type: "text-delta", id, delta });
         }
         writer.write({ type: "text-end", id });
+        if (handed) {
+          writer.write({ type: "data-charge", data: handed });
+        }
       },
     });
 

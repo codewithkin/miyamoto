@@ -77,7 +77,9 @@ STRUCTURE — three parts, in order, no headings:
      Two sentences at most.
   3. The charge. Exactly one concrete thing to do TODAY — small enough to
      finish before they sleep, specific enough that they will know whether
-     they did it. Never offer two options.
+     they did it. Never offer two options. Do not write the charge in the
+     letter itself. Write it on its own line, in exactly this form:
+     <<<charge: the one thing to do today>>>
 
 TRUTH — the CORPUS below is the only source of biography available to you.
 You may not describe any event from your life that is not in it. If nothing
@@ -85,14 +87,16 @@ fits, use a PRINCIPLE entry and make no claim about your past. Inventing a
 duel, a letter, a prison year or an experiment you did not have is the worst
 failure available to you here.
 
-CITATION — end every reply with one final line, in exactly this form:
+CITATION — after the charge line, end every reply with one final line, in
+exactly this form:
 <<<cited: ID>>>
 ID is the id of the CORPUS entry your moment came from, without its square
 brackets. If you drew on more than one entry, separate the ids with commas.
-If you told nothing from your life, write <<<cited: none>>>. This line is
-removed before the person reads the reply, so never refer to it, and write
-nothing after it. A reply that tells a moment from your life without citing
-the entry it came from is discarded.
+If you told nothing from your life, write <<<cited: none>>>. Both of these
+lines are removed from the letter before the person reads it — the charge is
+shown to them on its own — so never refer to either, and write nothing after
+the citation. A reply that tells a moment from your life without citing the
+entry it came from is discarded.
 
 QUOTATION — you may quote yourself only from the QUOTATIONS list, word for
 word. Never reconstruct a line from memory, never improve one, and never
@@ -111,8 +115,8 @@ they feel, no "that sounds hard", no therapy vocabulary, no encouragement at
 the end, no exclamation marks. Never mention being an AI, a model or a
 character, and never break voice to explain yourself.
 
-LENGTH — under 180 words, not counting the citation line. You are writing,
-not talking.
+LENGTH — under 180 words, not counting the charge and citation lines. You
+are writing, not talking.
 `.trim();
 
 function corpusBlock(entries: CorpusEntry[]): string {
@@ -183,20 +187,25 @@ ${quotationBlock(quotations)}
 `.trim();
 }
 
-// ── Citation enforcement (D-012) ─────────────────────────────────────────
+// ── The trailer: citation (D-012) and charge (D-002) ─────────────────────
 //
-// The model must name the corpus entry it drew on, and a reply that tells a
-// moment from the Master's life while naming none is rejected. The citation
-// is the mechanism; the life-claim detector below is only the tripwire that
-// decides when a missing citation matters.
+// The model ends every reply with two machine lines the user never sees in
+// the letter: the charge, which is shown to them on its own as a card they
+// can accept, and the citation, which proves where the moment came from.
 //
-// Why a trailer and not structured output: the reply is prose the user reads
-// and the citation is metadata they must never see. A JSON envelope would put
-// the whole letter inside a string and make the model's cadence depend on
-// escaping. One fixed final line is cheap to write, cheap to strip, and
-// impossible to confuse with the reply.
+// The citation is the mechanism; the life-claim detector below is only the
+// tripwire that decides when a missing citation matters.
+//
+// Why fixed lines and not structured output: the letter is prose the user
+// reads. A JSON envelope would put the whole letter inside a string and make
+// the Master's cadence depend on escaping. Two fixed lines are cheap to
+// write, cheap to strip, and impossible to confuse with the letter.
 
-const TRAILER = /<<<\s*cited\s*:\s*([^>]*)>>>/gi;
+const CITED = /<<<\s*cited\s*:\s*([\s\S]*?)>>>/gi;
+const CHARGE = /<<<\s*charge\s*:\s*([\s\S]*?)>>>/gi;
+
+/** A charge is a sentence or two, not a plan. Anything longer is cut. */
+const CHARGE_MAX = 500;
 
 /**
  * The modern bridge (D-011) is a sanctioned first-person past-tense sentence
@@ -214,26 +223,46 @@ const BRIDGE = /\b(?:I|we)\s+had\s+no\s+such\s+thing\b[^.!?]*[.!?]?/gi;
 const LIFE_CLAIM =
   /\bI\s+(?:was|had|did|once|wrote|fought|went|came|lived|taught|made|stood|faced|won|lost|arrived|stirred|broke|spent|learned|chose|refused|told|left|kept|studied|drove|isolated|served|asked|opened|invited|sent|killed|beat|travelled|traveled|worked|received|saw|met|built|carried|walked|trained|rowed|cut|took|gave|found|became|tutored|advised)\b|\bmy\s+(?:exile|duels?|letters?|imprisonment|prison|laboratory|shed|attic|student years|father|mother|brother|sister|wife|husband|son|daughter|teacher|pupil|school|opponents?|enemies)\b/i;
 
-export type ReplyRejection = "EMPTY" | "NO_TRAILER" | "UNKNOWN_CITATION" | "UNCITED_CLAIM";
+export type ReplyRejection =
+  | "EMPTY"
+  | "NO_TRAILER"
+  | "UNKNOWN_CITATION"
+  | "UNCITED_CLAIM"
+  | "NO_CHARGE";
 
 export type ReplyCheck =
-  | { ok: true; text: string; cited: string[] }
-  | { ok: false; reason: ReplyRejection; text: string; cited: string[] };
+  | { ok: true; text: string; cited: string[]; charge: string | null }
+  | { ok: false; reason: ReplyRejection; text: string; cited: string[]; charge: string | null };
 
-/** Splits the reply the user reads from the citation they must not see. */
-export function extractCitation(raw: string): { text: string; cited: string[] | null } {
-  const matches = [...raw.matchAll(TRAILER)];
+/** Splits the letter the user reads from the two lines they must not see in it. */
+export function parseReply(raw: string): {
+  text: string;
+  cited: string[] | null;
+  charge: string | null;
+} {
+  const citations = [...raw.matchAll(CITED)];
+  const charges = [...raw.matchAll(CHARGE)];
+
   // Every trailer is stripped, not only the last: a model that writes two
   // must not leak the first into the letter.
-  const text = raw.replace(TRAILER, "").trim();
-  const last = matches.at(-1);
-  if (!last) return { text, cited: null };
+  const text = raw
+    .replace(CITED, "")
+    .replace(CHARGE, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
-  const cited = (last[1] ?? "")
-    .split(",")
-    .map((id) => id.trim().replace(/^\[/, "").replace(/\]$/, "").trim())
-    .filter((id) => id.length > 0 && id.toLowerCase() !== "none");
-  return { text, cited };
+  const lastCitation = citations.at(-1);
+  const cited = lastCitation
+    ? (lastCitation[1] ?? "")
+        .split(",")
+        .map((id) => id.trim().replace(/^\[/, "").replace(/\]$/, "").trim())
+        .filter((id) => id.length > 0 && id.toLowerCase() !== "none")
+    : null;
+
+  const chargeText = (charges.at(-1)?.[1] ?? "").replace(/\s+/g, " ").trim();
+  const charge = chargeText ? chargeText.slice(0, CHARGE_MAX) : null;
+
+  return { text, cited, charge };
 }
 
 /** Whether the text tells something that happened to the speaker. */
@@ -244,39 +273,48 @@ export function detectsLifeClaim(text: string): boolean {
 /**
  * Accepts or rejects one generated reply against the corpus it was given.
  *
- * `lenientTrailer` is for the retry only: a second draft that still forgets
- * the citation line but tells nothing from the Master's life is safe to
- * deliver. A first draft is never let off, because the retry is cheap and
- * teaches the format on the same request.
+ * `isRetry` relaxes the two format rules for the second draft only, and only
+ * where relaxing them is safe: a draft that forgot the citation line may pass
+ * if it tells nothing from the Master's life, and a draft that forgot the
+ * charge may pass without one. The truth rules are never relaxed. A first
+ * draft is never let off, because the retry is cheap and teaches the format
+ * on the same request.
  */
 export function checkReply(
   raw: string,
   corpus: CorpusEntry[],
-  options: { lenientTrailer?: boolean } = {},
+  options: { isRetry?: boolean } = {},
 ): ReplyCheck {
-  const { text, cited } = extractCitation(raw);
-  if (!text) return { ok: false, reason: "EMPTY", text, cited: cited ?? [] };
+  const { text, cited, charge } = parseReply(raw);
+  const reject = (reason: ReplyRejection): ReplyCheck => ({
+    ok: false,
+    reason,
+    text,
+    cited: cited ?? [],
+    charge,
+  });
+
+  if (!text) return reject("EMPTY");
 
   const claim = detectsLifeClaim(text);
 
-  if (cited === null) {
-    if (options.lenientTrailer && !claim) return { ok: true, text, cited: [] };
-    return { ok: false, reason: "NO_TRAILER", text, cited: [] };
-  }
+  if (cited === null && !(options.isRetry && !claim)) return reject("NO_TRAILER");
 
   const byId = new Map(corpus.map((entry) => [entry.id, entry]));
-  if (cited.some((id) => !byId.has(id))) {
-    return { ok: false, reason: "UNKNOWN_CITATION", text, cited };
-  }
+  const ids = cited ?? [];
+  if (ids.some((id) => !byId.has(id))) return reject("UNKNOWN_CITATION");
 
   // Citing a PRINCIPLE for a story about your life is citing nothing: a
   // principle makes no biographical claim, so it cannot support one.
-  const citesMoment = cited.some((id) => byId.get(id)?.kind === "MOMENT");
-  if (claim && !citesMoment) {
-    return { ok: false, reason: "UNCITED_CLAIM", text, cited };
-  }
+  const citesMoment = ids.some((id) => byId.get(id)?.kind === "MOMENT");
+  if (claim && !citesMoment) return reject("UNCITED_CLAIM");
 
-  return { ok: true, text, cited };
+  // Every answer ends in one thing to do today (D-002). Missing it once is a
+  // format slip worth a retry; missing it twice is not worth refusing an
+  // otherwise truthful letter over.
+  if (!charge && !options.isRetry) return reject("NO_CHARGE");
+
+  return { ok: true, text, cited: ids, charge };
 }
 
 /** What the retry is told about the draft it is replacing. */
@@ -284,12 +322,14 @@ export function correctionFor(reason: ReplyRejection): string {
   const head = "CORRECTION — your previous draft was discarded.";
   switch (reason) {
     case "EMPTY":
-      return `${head} It was empty. Answer the person, then end with the citation line.`;
+      return `${head} It was empty. Answer the person, then end with the charge line and the citation line.`;
     case "NO_TRAILER":
       return `${head} It did not end with the citation line. Write the reply again and end it with <<<cited: ID>>>, or <<<cited: none>>> if you tell nothing from your life.`;
     case "UNKNOWN_CITATION":
       return `${head} It cited an id that is not in your CORPUS. Cite only ids that appear in square brackets in the CORPUS above, or none.`;
     case "UNCITED_CLAIM":
       return `${head} It described something from your life without citing the CORPUS entry it came from. Either tell a MOMENT that is in the CORPUS and cite its id, or speak from a PRINCIPLE and make no claim at all about your past.`;
+    case "NO_CHARGE":
+      return `${head} It gave no charge. Write the reply again, keep the letter free of it, and put exactly one thing to do today on its own line as <<<charge: ...>>>, before the citation line.`;
   }
 }
