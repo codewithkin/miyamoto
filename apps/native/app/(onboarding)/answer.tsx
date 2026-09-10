@@ -3,7 +3,6 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 
 import { Blade } from "@/components/blade";
-import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { BackButton } from "@/components/icon";
@@ -27,8 +26,9 @@ export default function AnswerScreen() {
 
   const answer = draft.seedProblemSlug ? SAMPLE_ANSWERS[draft.seedProblemSlug] : undefined;
 
-  // Typed problems have no authored answer — they need an account, which is
-  // what the sign-in screen exists for.
+  // Typed problems have no authored answer. The claim turns them into the
+  // title of the first thread with the user's Master, so the honest promise
+  // is that it will be waiting in the dojo — they are already signed in.
   if (!answer) {
     return (
       <Screen>
@@ -38,8 +38,8 @@ export default function AnswerScreen() {
           </Enter>
           <Enter preset="rise" delay={200}>
             <Text variant="lead">
-              Your own words deserve a real reply, not a sample. That takes an account — it
-              takes about ninety seconds.
+              Your own words deserve a real reply, not a sample. Three more questions and it
+              will be the first thing waiting in your dojo, ready to ask.
             </Text>
           </Enter>
           <Enter preset="pop" delay={420}>
@@ -123,23 +123,13 @@ export default function AnswerScreen() {
           </View>
         </Enter>
 
-        <Enter preset="fade" delay={460 + paragraphs.length * 380 + 520}>
-          <View style={{ flexDirection: "row", gap: space.base }}>
-            <View style={{ flex: 1 }}>
-              <Button label="I'll do it" variant="confirm" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Button label="Too big" variant="secondary" />
-            </View>
-          </View>
-        </Enter>
       </ScrollView>
 
       {/* The ask, last. */}
       <Enter preset="slideUp" delay={460 + paragraphs.length * 380 + 760}>
         <View style={{ paddingVertical: space.xxl, gap: space.md }}>
           <Text variant="caption" style={{ textAlign: "center" }}>
-            That was 1 of 3 free answers. Keep them by making this yours.
+            That was a sample. Build your dojo and they answer your own words — three a day, free.
           </Text>
           <Button label="Build my dojo" onPress={() => router.push("/(onboarding)/carrying")} />
           <Text variant="caption" style={{ textAlign: "center" }}>
