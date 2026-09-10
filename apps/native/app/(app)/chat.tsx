@@ -16,6 +16,7 @@ import { Animated, Enter, usePulse } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
+import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import {
   green,
@@ -28,7 +29,14 @@ import {
 } from "@/theme/tokens";
 
 /** What the /ai route sends after an accepted letter, as a data-charge part. */
-type HandedCharge = { id: string; body: string; dueOn: string; points: number };
+type HandedCharge = {
+  id: string;
+  body: string;
+  dueOn: string;
+  points: number;
+  /** Present on charges returned with a thread's history. */
+  status?: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED";
+};
 
 function chargeOf(parts: { type: string }[] | undefined): HandedCharge | null {
   const part = (parts ?? []).find((p) => p.type === "data-charge") as
@@ -65,12 +73,48 @@ export default function ChatScreen() {
     [threads.data, threadId],
   );
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: `${env.EXPO_PUBLIC_SERVER_URL}/ai`,
       body: () => ({ threadId: activeThread?.id }),
     }),
   });
+
+  // Open the thread on what was already said (T11b). Mastra holds every
+  // accepted exchange; without this each visit started on a blank screen,
+  // and a Master switched in mid-thread appeared to have been handed nothing.
+  // Loaded once per thread. A history that cannot be reached leaves the
+  // screen as it always was, empty, rather than showing an error for a page
+  // the user did not ask for.
+  const historyFor = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const id = activeThread?.id;
+    if (!id || historyFor.current === id) return;
+    historyFor.current = id;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const cookie = Platform.OS === "web" ? null : await authClient.getCookie();
+        const res = await fetch(
+          `${env.EXPO_PUBLIC_SERVER_URL}/ai/history?threadId=${encodeURIComponent(id)}`,
+          {
+            credentials: Platform.OS === "web" ? "include" : "omit",
+            headers: cookie ? { Cookie: cookie } : {},
+          },
+        );
+        if (!res.ok) return;
+        const body = (await res.json()) as { messages: typeof messages };
+        if (!cancelled) setMessages(body.messages);
+      } catch {
+        // Unreachable history is an empty screen, which is what it was before.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeThread?.id, setMessages]);
 
   const busy = status === "submitted" || status === "streaming";
   const typing = usePulse(busy);
@@ -341,8 +385,10 @@ export default function ChatScreen() {
  */
 function ChargeCard({ charge }: { charge: HandedCharge }) {
   const qc = useQueryClient();
+  // A charge returned with history arrives in the state the user left it, so
+  // an old letter does not offer to be accepted a second time.
   const [state, setState] = React.useState<"PENDING" | "ACCEPTED" | "LATER" | "COMPLETED">(
-    "PENDING",
+    charge.status === "COMPLETED" ? "COMPLETED" : charge.status === "ACCEPTED" ? "ACCEPTED" : "PENDING",
   );
   const respond = useMutation(
     trpc.chat.respondToCharge.mutationOptions({ onSuccess: () => void qc.invalidateQueries() }),
