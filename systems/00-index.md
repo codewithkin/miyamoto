@@ -13,6 +13,7 @@ something *looks*, the design file wins. Where they disagree about a
 | `02-data-layer.md` | The Prisma/Mastra split, day boundaries, the free counter |
 | `03-design-system.md` | Tokens, blade marks, motion, type |
 | `04-masters.md` | The Master template and the truthfulness guardrails |
+| `06-auth.md` | Google sign-in end to end, and why it fails on phones |
 | `05-tone.md` | How the *app* speaks — distinct from how a Master speaks |
 | `09-decisions.md` | Numbered decision log. Cite by number in code. |
 
