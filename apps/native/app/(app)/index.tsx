@@ -193,7 +193,7 @@ export default function PathHomeScreen() {
         ) : null}
       </View>
 
-      <CoachMarks />
+      <CoachMarks from={d?.master?.name} />
     </Screen>
   );
 }

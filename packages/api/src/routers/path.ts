@@ -27,7 +27,10 @@ export const pathRouter = router({
 
     const [progress, onboarding, profile] = await Promise.all([
       db.pathProgress.findUnique({ where: { userId } }),
-      db.onboardingProfile.findUnique({ where: { userId } }),
+      db.onboardingProfile.findUnique({
+        where: { userId },
+        include: { firstMaster: { select: { slug: true, name: true, title: true } } },
+      }),
       db.profile.findUnique({ where: { userId } }),
     ]);
 
@@ -48,6 +51,9 @@ export const pathRouter = router({
       day,
       trial: day?.trials[0] ?? null,
       pressure,
+      // Who the onboarding quiz put in charge of this user. Null until the
+      // draft is claimed, which the home screen reads as "not yet yours".
+      master: onboarding?.firstMaster ?? null,
       currentDay,
       streak: progress?.streakCount ?? 0,
       longestStreak: progress?.longestStreak ?? 0,
