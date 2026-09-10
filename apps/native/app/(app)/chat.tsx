@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport } from "ai";
 import { env } from "@miyamoto/env/native";
 import React from "react";
@@ -11,13 +11,14 @@ import {
   View,
 } from "react-native";
 
-import { Blade } from "@/components/blade";
+import { Blade, BladeTick } from "@/components/blade";
 import { Animated, Enter, usePulse } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { trpc } from "@/utils/trpc";
 import {
+  green,
   indigo,
   ink,
   radius,
@@ -25,6 +26,16 @@ import {
   space,
   text as textColor,
 } from "@/theme/tokens";
+
+/** What the /ai route sends after an accepted letter, as a data-charge part. */
+type HandedCharge = { id: string; body: string; dueOn: string; points: number };
+
+function chargeOf(parts: { type: string }[] | undefined): HandedCharge | null {
+  const part = (parts ?? []).find((p) => p.type === "data-charge") as
+    | { type: string; data?: HandedCharge }
+    | undefined;
+  return part?.data ?? null;
+}
 
 /**
  * 15 · Chat with a Master.
@@ -158,6 +169,7 @@ export default function ChatScreen() {
               .filter((p) => p.type === "text")
               .map((p) => ("text" in p ? p.text : ""))
               .join("");
+            const charge = isUser ? null : chargeOf(message.parts);
 
             return (
               <Enter
@@ -181,8 +193,9 @@ export default function ChatScreen() {
                   </View>
                 ) : (
                   // A Master's words get no bubble — a letter has no bubble.
-                  <View style={{ maxWidth: "94%", gap: space.sm }}>
+                  <View style={{ maxWidth: "94%", gap: space.base }}>
                     <Text variant="voice">{body}</Text>
+                    {charge ? <ChargeCard charge={charge} /> : null}
                   </View>
                 )}
               </Enter>
@@ -310,5 +323,97 @@ export default function ChatScreen() {
       <AttachSheet visible={showAttach} onClose={() => setShowAttach(false)} />
       <OutOfAnswersSheet visible={showOutOf} onClose={() => setShowOutOf(false)} />
     </Screen>
+  );
+}
+
+/**
+ * The charge a Master hands over at the end of a letter (D-003).
+ *
+ * Screen 14 draws this card under the reply, labelled "Your trial". It says
+ * "Your charge" here: a Trial is an authored Path day and a Charge is what a
+ * Master hands you in chat, and the two must never share a name, because
+ * they do not share a streak. Registered as an exception to the design.
+ *
+ * The design shows only the card as it arrives — Accept or Later. What
+ * happens after is not drawn, so it is kept to the least that makes a charge
+ * completable from where it was given: accepted, then done, which is the
+ * only path by which chat moves the Bushido score.
+ */
+function ChargeCard({ charge }: { charge: HandedCharge }) {
+  const qc = useQueryClient();
+  const [state, setState] = React.useState<"PENDING" | "ACCEPTED" | "LATER" | "COMPLETED">(
+    "PENDING",
+  );
+  const respond = useMutation(
+    trpc.chat.respondToCharge.mutationOptions({ onSuccess: () => void qc.invalidateQueries() }),
+  );
+
+  function answer(status: "ACCEPTED" | "COMPLETED") {
+    respond.mutate(
+      { chargeId: charge.id, status },
+      { onSuccess: () => setState(status) },
+    );
+  }
+
+  return (
+    <View
+      style={{
+        padding: space.xl,
+        borderRadius: radius.card,
+        backgroundColor: ink.surface,
+        borderWidth: 1,
+        borderColor: state === "COMPLETED" ? green.base : indigo.base,
+        gap: space.base,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+        <Blade state={state === "COMPLETED" ? "complete" : "active"} length={12} />
+        <Text variant="eyebrow" style={{ flex: 1 }}>
+          Your charge
+        </Text>
+        <Text variant="caption">Today</Text>
+      </View>
+
+      <Text variant="voice" style={{ fontSize: size.lead }}>
+        {charge.body}
+      </Text>
+
+      {state === "PENDING" ? (
+        <View style={{ flexDirection: "row", gap: space.md }}>
+          <View style={{ flex: 1 }}>
+            <Button
+              label={respond.isPending ? "Accepting…" : "Accept"}
+              disabled={respond.isPending}
+              onPress={() => answer("ACCEPTED")}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button label="Later" variant="secondary" onPress={() => setState("LATER")} />
+          </View>
+        </View>
+      ) : null}
+
+      {state === "LATER" ? (
+        <Text variant="caption">Left for later. It is still due today.</Text>
+      ) : null}
+
+      {state === "ACCEPTED" ? (
+        <Button
+          label={respond.isPending ? "Marking…" : "Mark done"}
+          variant="confirm"
+          disabled={respond.isPending}
+          onPress={() => answer("COMPLETED")}
+        />
+      ) : null}
+
+      {state === "COMPLETED" ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+          <BladeTick done />
+          <Text variant="label" color={green.fg}>
+            Done. +{charge.points} Bushido
+          </Text>
+        </View>
+      ) : null}
+    </View>
   );
 }
