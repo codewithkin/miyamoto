@@ -73,6 +73,38 @@ export const pathRouter = router({
   }),
 
   /** The four acts, with how far through each the user is. */
+  /**
+   * The first days of the Path at a given pressure — what onboarding's
+   * "Your first week" screen shows, and the Day 1 that payoff and the
+   * reminder preview quote.
+   *
+   * The pressure is an input, not read from the account: during onboarding
+   * the draft has not been claimed yet, so the server doesn't know it.
+   * Content only — no user data is read, so it's the same for everyone who
+   * picks the same pressure.
+   */
+  preview: protectedProcedure
+    .input(
+      z.object({
+        pressure: z.enum(["GENTLE", "FIRM", "UNBREAKABLE"]),
+        days: z.number().int().min(1).max(30).default(7),
+      }),
+    )
+    .query(async ({ input }) => {
+      const days = await db.pathDay.findMany({
+        where: { dayNumber: { lte: input.days } },
+        orderBy: { dayNumber: "asc" },
+        include: { trials: { where: { pressure: input.pressure }, select: { body: true } } },
+      });
+      return days.map((d) => ({
+        dayNumber: d.dayNumber,
+        act: d.act,
+        title: d.title,
+        brief: d.brief,
+        trial: d.trials[0]?.body ?? null,
+      }));
+    }),
+
   acts: protectedProcedure.query(async ({ ctx }) => {
     const progress = await db.pathProgress.findUnique({
       where: { userId: ctx.session.user.id },
