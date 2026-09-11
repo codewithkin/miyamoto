@@ -147,10 +147,16 @@ export function createAuth() {
       updateAge: DAY_SECONDS,
     },
 
-    // The design promises "no passwords or emailed links". Leaving this on
-    // would leave a credential endpoint live that no screen ever uses.
+    // Email and password, for accounts the server seeds, and nobody else
+    // (plan 14). Google Play's review needs a username and password that
+    // opens the whole app, and its reviewers can't sign in with Google
+    // accounts of their own, so the Play reviewer account
+    // (apps/server/src/reviewer.ts) signs in this way. Sign-up stays off:
+    // everyone else signs in with Google (D-039), and this endpoint can't
+    // create an account.
     emailAndPassword: {
-      enabled: false,
+      enabled: true,
+      disableSignUp: true,
     },
 
     socialProviders: socialProviders(),
