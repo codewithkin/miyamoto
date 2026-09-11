@@ -75,6 +75,10 @@ export default function AppLayout() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: ink.base },
+        // While typing, the space is the screen's (plan 16). If Android ever
+        // resizes the window for the keyboard, the tab bar would otherwise
+        // ride up on it and take 64 points from the conversation.
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: ink.base,
           borderTopColor: ink.border,
