@@ -30,7 +30,12 @@ import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon, IconBadge } from "@/components/icon";
 import { describeChatError } from "@/lib/chat-errors";
-import { letterArrived, useLettersReady } from "@/lib/letters";
+import { letterArrived, registerForLetters, useLettersReady } from "@/lib/letters";
+import {
+  hasReminderPermission,
+  notificationsRefused,
+  requestReminderPermission,
+} from "@/lib/notifications";
 import { answeredIn, mergeHistory } from "@/lib/chat-history";
 import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
 import { track } from "@/lib/telemetry";
@@ -478,6 +483,10 @@ export default function ChatScreen() {
             />
           ) : null}
 
+          {waitingForLetter && activeThread ? (
+            <LetterNotifyOffer masterName={activeThread.master.name} />
+          ) : null}
+
           {/* An error with no message of theirs to hang it on. */}
           {error && lastMessage?.role !== "user" ? (
             <SendFailed text={errorView?.text ?? ""} />
@@ -632,6 +641,82 @@ export default function ChatScreen() {
  * completable from where it was given: accepted, then done, which is the
  * only path by which chat moves the Bushido score.
  */
+/**
+ * While a letter is being written: the moment to ask about notifications
+ * (plan 13). The person is waiting on something specific, so the prompt
+ * has an obvious reason behind it, unlike one raised at launch.
+ *
+ * Shown only when notifications aren't on and were never refused. A refusal
+ * is respected for good (lib/notifications): this row doesn't return, and
+ * the OS prompt is never raised again.
+ */
+function LetterNotifyOffer({ masterName }: { masterName: string }) {
+  const [state, setState] = React.useState<"checking" | "offer" | "asking" | "hidden">("checking");
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [on, refused] = await Promise.all([hasReminderPermission(), notificationsRefused()]);
+      if (!cancelled) setState(on || refused || Platform.OS !== "android" ? "hidden" : "offer");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (state === "hidden" || state === "checking") return null;
+
+  async function ask() {
+    setState("asking");
+    const outcome = await requestReminderPermission();
+    if (outcome === "granted") void registerForLetters();
+    setState("hidden");
+  }
+
+  return (
+    <Enter
+      preset="fade"
+      delay={600}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: space.base,
+        marginLeft: 28 + space.sm,
+        padding: space.base,
+        borderRadius: radius.card,
+        backgroundColor: ink.surface,
+        borderWidth: 1,
+        borderColor: ink.border,
+      }}
+    >
+      <Icon name="notifications-outline" size={18} color={indigo.light} />
+      <Text variant="caption" style={{ flex: 1 }}>
+        Leave if you like. Get a notification when {masterName}&apos;s letter arrives.
+      </Text>
+      <Touchable
+        feel="chip"
+        disabled={state === "asking"}
+        onPress={() => void ask()}
+        accessibilityLabel="Tell me when it arrives"
+        style={{
+          paddingHorizontal: space.md,
+          paddingVertical: space.xs,
+          borderRadius: radius.pill,
+          backgroundColor: indigo.base,
+        }}
+      >
+        {state === "asking" ? (
+          <ActivityIndicator size="small" color={textColor.primary} />
+        ) : (
+          <Text variant="caption" color={textColor.primary}>
+            Tell me
+          </Text>
+        )}
+      </Touchable>
+    </Enter>
+  );
+}
+
 /** Under a message that didn't go through: what happened, and Retry where it can help. */
 function SendFailed({ text, onRetry }: { text: string; onRetry?: () => void }) {
   return (
