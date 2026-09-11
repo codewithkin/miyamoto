@@ -7,6 +7,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+import { ensureReviewerAccount } from "./reviewer";
 import { registerAiRoute } from "./routes/ai";
 import { registerRevenueCatWebhook } from "./routes/revenuecat";
 
@@ -41,5 +42,9 @@ registerRevenueCatWebhook(app);
 app.get("/", (c) => {
   return c.text("OK");
 });
+
+// Every start: the Play reviewer account, if its variables are set (plan 14).
+// Not awaited, so a slow database never delays the server answering.
+void ensureReviewerAccount();
 
 export default app;

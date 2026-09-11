@@ -68,6 +68,19 @@ export const env = createEnv({
     // in its dashboard. Optional so the server boots without it; the webhook
     // answers 503 until it is present rather than accepting unsigned events.
     REVENUECAT_WEBHOOK_AUTH: z.string().min(16).optional(),
+
+    // The Google Play reviewer account (plan 14). With both set, every start
+    // makes sure it exists, has this password and is Pro; without them,
+    // nothing is seeded. Held only in the host's environment, never in the
+    // repo: they're the same values typed into Play Console's "Sign in
+    // details".
+    REVIEWER_EMAIL: z.email().optional(),
+    REVIEWER_PASSWORD: z.string().min(8).optional(),
+    REVIEWER_NAME: z.string().min(1).optional(),
+
+    // Expo's push service. Only needed if "enhanced push security" is turned
+    // on for the project in Expo's dashboard; pushes go out without it.
+    EXPO_ACCESS_TOKEN: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
