@@ -1,6 +1,6 @@
 # 17 — A smaller upload, a smaller app, and a production build that starts
 
-**Status: in flight (session 8).**
+**Status: built (session 8), except S5.** S5 waits on the owner's yes to install `fonttools`. The rule is D-059.
 
 The owner's report (session 8): `eas build --profile production` compressed
 96 MB of project and stalled uploading it. They asked for the archive and
@@ -19,7 +19,7 @@ the environment check throws before the first screen.
 
 ## S1 — `.easignore`
 
-- [ ] `pending-S1`
+- [x] `587c977`
 - **Commit:** `build: upload only what the Android build needs`
 - **Touches:** `.easignore` (new, repo root)
 - **Done when:** the root rules plus the nested ones, and the website's and
@@ -30,7 +30,7 @@ the environment check throws before the first screen.
 
 ## S2 — The production build knows its server
 
-- [ ] `pending-S2`
+- [x] `860cc05`
 - **Commit:** `build: give preview and production builds the server URL`
 - **Touches:** `apps/native/eas.json`
 - **Done when:** `EXPO_PUBLIC_SERVER_URL` is set in the preview and
@@ -39,7 +39,7 @@ the environment check throws before the first screen.
 
 ## S3 — Remove what the app doesn't use
 
-- [ ] `pending-S3`
+- [x] `21a698b`
 - **Commit:** `build(native): remove unused dependencies`
 - **Touches:** `apps/native/package.json`, `pnpm-lock.yaml`, `app.json`,
   `app/_layout.tsx`, `global.css`
@@ -55,7 +55,7 @@ the environment check throws before the first screen.
 
 ## S4 — Shrink the release build
 
-- [ ] `pending-S4`
+- [x] `04f64f2`
 - **Commit:** `build(native): minify and shrink resources in release builds`
 - **Touches:** `apps/native/app.json` (`expo-build-properties`)
 - **Done when:** `enableMinifyInReleaseBuilds` (R8) and
@@ -73,7 +73,7 @@ the environment check throws before the first screen.
 
 ## S6 — Docs
 
-- [ ] `pending-S6`
+- [x] this commit
 - **Commit:** `docs: record what the build uploads and ships`
 - **Touches:** `systems/12-deploys.md`, `systems/09-decisions.md`,
   `progress/00-START-HERE.md`

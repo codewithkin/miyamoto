@@ -265,6 +265,34 @@ The server's environment on Coolify needs everything in
 `apps/server/.env.example`, plus `REVIEWER_EMAIL` and `REVIEWER_PASSWORD`
 for Play review (`systems/06-auth.md`).
 
+## The Android app on EAS (D-059)
+
+`eas build` runs from `apps/native`, but it uploads the whole monorepo,
+because pnpm installs the workspace. What goes up is decided by the root
+**`.easignore`**, which replaces every `.gitignore` for EAS. Without it,
+EAS applied only the root `.gitignore` and uploaded the nested-ignored
+build output: `apps/web/.next` alone is 167 MB. The upload is about 6 MB
+now.
+
+When adding a file type that must never leave the machine (a key, an env
+file), add it to `.easignore` as well as `.gitignore`. To check what would
+go up:
+
+```bash
+# from the repo root: every file the rules keep, with the total
+GIT_INDEX_FILE=$(mktemp -u) git ls-files --others --exclude-from=.easignore
+```
+
+Builds get their environment from `apps/native/eas.json`: preview and
+production set `EXPO_PUBLIC_SERVER_URL`. `.env` is never uploaded, and the
+app's environment check throws on launch without it.
+
+Release builds (preview, production) run R8 and resource shrinking
+(`expo-build-properties` in `app.json`). If a release build crashes on
+launch naming a missing class and a development build doesn't, R8 removed
+something a library loads by reflection. Add a keep rule through
+`expo-build-properties` `extraProguardRules`.
+
 ## The marketing site (`apps/web`) on Vercel
 
 Deployed from Vercel's Next.js template, not Docker. The `output:

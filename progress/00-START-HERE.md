@@ -33,6 +33,12 @@ used to open RevenueCat's paywall on top of ours (D-053). **Plan 13**
   other Masters are Pro only (D-056).
 - There are two retention nudges, no more (D-057).
 
+**Plan 17** (built, except the font subset): the EAS upload is about 6 MB
+(it was 96 MB compressed, mostly the website's build cache). A production
+build would have crashed on launch without `EXPO_PUBLIC_SERVER_URL`, and
+now gets it from `eas.json`. Four unused native modules and heroui-native
+are gone, and release builds are shrunk by R8 (D-059).
+
 **Plan 16** (built): the keyboard no longer crowds the chat. The composer
 rides on the keyboard, the latest message stays in view, and fields on
 scrolling screens and sheets rise above it (D-058).

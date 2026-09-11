@@ -546,3 +546,15 @@ screen (the owner's report, session 8). The rules:
 - Sheets are edge-to-edge Modals inside the same `KeyboardAvoidingView`.
 - The tab bar hides while typing.
 A new screen with a field uses one of these. Plan 16.
+
+**D-059 — EAS uploads what `.easignore` allows, and release builds are
+shrunk.**
+EAS archived this monorepo by copying the folder with only the root
+`.gitignore`, so the website's 167 MB `.next` cache and other ignored
+build output went up with every Android build (96 MB compressed). The
+root `.easignore` now decides, and it must repeat every secret the
+`.gitignore` files keep out. Preview and production get
+`EXPO_PUBLIC_SERVER_URL` from `eas.json`, because `.env` is never uploaded
+and a build without it crashes at its environment check. Native modules
+the app doesn't call are removed (every one ships in every install).
+Release builds run R8 and resource shrinking. Plan 17.
