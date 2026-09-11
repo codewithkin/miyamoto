@@ -4,10 +4,14 @@ import React from "react";
 /**
  * The onboarding draft.
  *
- * The quiz runs after sign-in, and every answer is held here on the device
- * until the user reaches the end, then submitted once. Held locally rather
- * than written screen by screen so a killed app resumes mid-quiz, and so a
- * user who abandons halfway leaves nothing half-built on the server.
+ * Onboarding is one question now (D-048), and the problem screen claims the
+ * account itself. What's held here is the sample they picked, so a killed
+ * app reopens on it, and the defaults the claim sends: Firm pressure, the
+ * reminder times, this phone's timezone.
+ *
+ * The other fields belong to the quiz this replaced. They stay because a
+ * phone that finished that quiz offline may still hold an unclaimed draft,
+ * and lib/claim-draft.tsx sends it whole.
  */
 
 export type Pressure = "GENTLE" | "FIRM" | "UNBREAKABLE";
@@ -57,7 +61,6 @@ type Store = {
   /** False until the persisted draft has been read back. */
   hydrated: boolean;
   set: (patch: Partial<OnboardingDraft>) => void;
-  toggleWound: (slug: string) => void;
   reset: () => void;
 };
 
@@ -106,20 +109,6 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     [persist],
   );
 
-  const toggleWound = React.useCallback(
-    (slug: string) => {
-      setDraft((prev) => {
-        const wounds = prev.wounds.includes(slug)
-          ? prev.wounds.filter((w) => w !== slug)
-          : [...prev.wounds, slug];
-        const next = { ...prev, wounds };
-        persist(next);
-        return next;
-      });
-    },
-    [persist],
-  );
-
   const reset = React.useCallback(() => {
     const next = emptyDraft();
     setDraft(next);
@@ -127,8 +116,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const value = React.useMemo<Store>(
-    () => ({ draft, hydrated, set, toggleWound, reset }),
-    [draft, hydrated, set, toggleWound, reset],
+    () => ({ draft, hydrated, set, reset }),
+    [draft, hydrated, set, reset],
   );
 
   return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;

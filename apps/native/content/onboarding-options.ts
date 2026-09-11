@@ -1,31 +1,18 @@
 /**
- * The choices offered during onboarding.
+ * The Master roster, compiled into the app.
  *
- * Kept here rather than fetched, because the quiz runs before sign-in and
- * must work with no session and no network. These slugs are the contract
- * with the seeded `wound` and `master` tables — the draft stores slugs, and
- * the server resolves them to rows when the account is created.
+ * Kept here rather than fetched, so the welcome screen and the first
+ * question can show faces with no session and no network. These slugs are
+ * the contract with the seeded `master` table: the claim sends a slug, and
+ * the server resolves it to a row when the account is created.
  *
  * Only active Masters appear here. Mandela is withdrawn (D-006); the server
  * would refuse his slug, and a Master the app cannot deliver has no place
  * on a screen that promises who you will meet.
+ *
+ * The quiz's wound and pressure choices lived here too, until onboarding
+ * became one question (D-048).
  */
-
-export type WoundOption = {
-  slug: string;
-  label: string;
-  /** Masters whose corpus covers this wound, used for the nudge on 04. */
-  masters: string[];
-};
-
-export const WOUNDS: WoundOption[] = [
-  { slug: "fear-of-person", label: "Fear of a person", masters: ["musashi", "seneca"] },
-  { slug: "procrastination", label: "Procrastination", masters: ["curie", "musashi"] },
-  { slug: "career-stall", label: "Career stall", masters: ["musashi", "sun-tzu"] },
-  { slug: "betrayal", label: "Betrayal", masters: ["seneca", "sun-tzu"] },
-  { slug: "anxiety", label: "Anxiety", masters: ["seneca", "curie"] },
-  { slug: "no-discipline", label: "No discipline", masters: ["curie", "musashi"] },
-];
 
 export type MasterOption = {
   slug: string;
@@ -101,21 +88,5 @@ export const UNLOCK_WAITS = (() => {
   if (days.length <= 1) return days.length ? `Day ${days[0]}` : "";
   return `Day ${days.slice(0, -1).join(", ")} and ${days[days.length - 1]}`;
 })();
-
-export type PressureOption = {
-  value: "GENTLE" | "FIRM" | "UNBREAKABLE";
-  label: string;
-  detail: string;
-};
-
-export const PRESSURES: PressureOption[] = [
-  { value: "GENTLE", label: "Gentle", detail: "One small trial a day" },
-  { value: "FIRM", label: "Firm", detail: "A real trial daily, cold showers included" },
-  {
-    value: "UNBREAKABLE",
-    label: "Unbreakable",
-    detail: "Two trials, no-complaint days, public stakes",
-  },
-];
 
 export const REMINDER_TIMES = ["06:00", "07:30", "21:00"];
