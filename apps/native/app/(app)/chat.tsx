@@ -18,8 +18,8 @@ import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon } from "@/components/icon";
-import { authClient } from "@/lib/auth-client";
 import { describeChatError } from "@/lib/chat-errors";
+import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
 import { track } from "@/lib/telemetry";
 import { trpc } from "@/utils/trpc";
 import {
@@ -81,6 +81,9 @@ export default function ChatScreen() {
   const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: `${env.EXPO_PUBLIC_SERVER_URL}/ai`,
+      // Carries the session and streams the letter (D-047). Without it the
+      // transport used plain fetch, sent no cookie, and every send was 401.
+      fetch: streamingServerFetch,
       body: () => ({ threadId: activeThread?.id }),
     }),
     // The counter moves on every send — spent, or refunded when the server
@@ -105,13 +108,8 @@ export default function ChatScreen() {
 
     (async () => {
       try {
-        const cookie = Platform.OS === "web" ? null : await authClient.getCookie();
-        const res = await fetch(
+        const res = await serverFetch(
           `${env.EXPO_PUBLIC_SERVER_URL}/ai/history?threadId=${encodeURIComponent(id)}`,
-          {
-            credentials: Platform.OS === "web" ? "include" : "omit",
-            headers: cookie ? { Cookie: cookie } : {},
-          },
         );
         if (!res.ok) return;
         const body = (await res.json()) as { messages: typeof messages };
