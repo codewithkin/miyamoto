@@ -17,7 +17,7 @@ and with the policy, and rejects listings where they disagree.
 | Question | Answer |
 |---|---|
 | Does your app collect or share any of the required user data types? | **Yes** |
-| Is all of the user data collected by your app encrypted in transit? | **Yes.** The API, TelemetryDeck, RevenueCat and AdMob are all HTTPS/TLS. |
+| Is all of the user data collected by your app encrypted in transit? | **Yes.** The API, TelemetryDeck, RevenueCat, AdMob and Expo's push service are all HTTPS/TLS. |
 | Do you provide a way for users to request that their data is deleted? | **Yes.** In the app (Settings -> Delete my account) and on the web at https://miyamoto.app/delete-account |
 
 ## Data types
@@ -37,7 +37,7 @@ data **is** shared.
 | App activity -> **Other user-generated content** | Yes | No | Required | App functionality | Onboarding answers, trials and charges accepted |
 | App activity -> **App interactions** | Yes | **Yes** | Optional for the ad part; required for analytics | Analytics; Advertising or marketing; Fraud prevention, security, and compliance | TelemetryDeck: six anonymous events (see `systems/10-analytics.md`). AdMob: taps and views on a rewarded ad the user chose to watch. |
 | Financial info -> **Purchase history** | Yes | No | Optional (only if they buy) | App functionality | Subscription state from Google Play via RevenueCat |
-| Device or other IDs -> **Device or other IDs** | Yes | **Yes** | Optional for the ad part; required for analytics | Analytics; Advertising or marketing; Fraud prevention, security, and compliance | TelemetryDeck: a random per-install id, hashed on the phone. AdMob: the Android advertising ID and app set ID. |
+| Device or other IDs -> **Device or other IDs** | Yes | **Yes** | Optional for the ad and notification parts; required for analytics | App functionality; Analytics; Advertising or marketing; Fraud prevention, security, and compliance | TelemetryDeck: a random per-install id, hashed on the phone. AdMob: the Android advertising ID and app set ID. Notifications (plan 13): the Expo push token (an FCM registration), only if notifications are allowed, stored so a letter finished after the app was closed can reach the phone; deleted on sign-out or account deletion. Expo and Firebase are service providers, so the token isn't "shared". |
 | Location -> **Approximate location** | Yes | **Yes** | Optional (only when watching an ad) | Advertising or marketing; Fraud prevention, security, and compliance | AdMob collects the IP address, "which may be used to estimate the general location of a device" (Google's own disclosure). We never derive location ourselves. |
 | App info and performance -> **Diagnostics** | Yes | **Yes** | Optional (only when watching an ad) | Analytics; Fraud prevention, security, and compliance | AdMob's performance data about the SDK. We run no crash reporter. |
 
@@ -79,3 +79,6 @@ Also:
   decision, not an edit.
 - A new analytics signal carries anything a user typed -> it must not
   (D-041).
+- A push notification starts carrying more than a Master's name and the
+  opening of their own letter -> revisit Messages (it would then be sent
+  through Expo and Google, not only stored by us).
