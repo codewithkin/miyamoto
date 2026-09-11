@@ -2,7 +2,6 @@ import "@/polyfills";
 import "@/global.css";
 import { focusManager, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { HeroUINativeProvider } from "heroui-native";
 import React from "react";
 import { AppState, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -90,13 +89,11 @@ export default function Layout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <KeyboardProvider>
             <AppThemeProvider>
-              <HeroUINativeProvider>
-                <PurchasesProvider>
-                  <OnboardingProvider>
-                    <StackLayout />
-                  </OnboardingProvider>
-                </PurchasesProvider>
-              </HeroUINativeProvider>
+              <PurchasesProvider>
+                <OnboardingProvider>
+                  <StackLayout />
+                </OnboardingProvider>
+              </PurchasesProvider>
             </AppThemeProvider>
           </KeyboardProvider>
         </GestureHandlerRootView>

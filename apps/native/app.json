@@ -18,10 +18,9 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.miyamoto",
-      "permissions": [
+      "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ]
     },
@@ -64,13 +63,8 @@
         "expo-image-picker",
         {
           "photosPermission": "Miyamoto uses your photos only when you attach evidence to a Master.",
-          "cameraPermission": "Miyamoto uses the camera only when you photograph evidence for a Master."
-        }
-      ],
-      [
-        "expo-audio",
-        {
-          "microphonePermission": "Miyamoto uses the microphone only when you record a voice note for a Master."
+          "cameraPermission": "Miyamoto uses the camera only when you photograph evidence for a Master.",
+          "microphonePermission": false
         }
       ],
       [
