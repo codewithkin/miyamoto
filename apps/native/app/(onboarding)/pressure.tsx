@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
-import { BladeTick } from "@/components/blade";
+import { BladeRail, BladeTick } from "@/components/blade";
 import { OnboardingHeader } from "@/components/onboarding-header";
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
@@ -23,7 +23,16 @@ import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tok
  * overflowed its flex container, which is how the time row ended up painted
  * over the "Unbreakable" card (the chips themselves were also collapsing to
  * zero width; that was Touchable, fixed in A1).
+ *
+ * Each intensity is drawn as one, two or three blades — the brand's own
+ * progress language — so the step up reads before the words do (D-045).
+ * Firm is marked as the recommendation. It used to say "most people start
+ * at Firm", a claim about users the app does not have yet.
  */
+
+/** How many blades each pressure fills, out of three. */
+const LEVEL: Record<string, number> = { GENTLE: 1, FIRM: 2, UNBREAKABLE: 3 };
+const RECOMMENDED = "FIRM";
 
 /** What each push time means, so "21:00" is not a riddle. */
 const TIME_NAMES: Record<string, string> = {
@@ -46,7 +55,7 @@ export default function PressureScreen() {
             <Text variant="display">How hard should this be?</Text>
           </Enter>
           <Enter preset="rise" delay={300}>
-            <Text variant="lead">You can change it any day. Most people start at Firm.</Text>
+            <Text variant="lead">You can change it any day. Firm is the one to start with.</Text>
           </Enter>
         </View>
 
@@ -72,10 +81,40 @@ export default function PressureScreen() {
                     borderColor: picked ? indigo.base : ink.border,
                   }}
                 >
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <Text variant="title" style={{ fontSize: size.lead }}>
-                      {option.label}
-                    </Text>
+                  <View style={{ flex: 1, gap: space.sm }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+                      <Text variant="title" style={{ fontSize: size.lead }}>
+                        {option.label}
+                      </Text>
+                      {option.value === RECOMMENDED ? (
+                        <View
+                          style={{
+                            paddingVertical: 2,
+                            paddingHorizontal: space.sm,
+                            borderRadius: radius.pill,
+                            borderWidth: 1,
+                            borderColor: indigo.base,
+                          }}
+                        >
+                          <Text variant="eyebrow" color={indigo.light}>
+                            Recommended
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                    {/* Intensity, drawn: one, two or three of three. */}
+                    <View
+                      style={{ width: 84 }}
+                      accessibilityLabel={`Intensity ${LEVEL[option.value] ?? 1} of 3`}
+                    >
+                      <BladeRail
+                        count={3}
+                        progress={LEVEL[option.value] ?? 1}
+                        thickness={5}
+                        step={0}
+                        delay={0}
+                      />
+                    </View>
                     <Text variant="caption" color={picked ? textColor.body : undefined}>
                       {option.detail}
                     </Text>
