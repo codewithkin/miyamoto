@@ -4,10 +4,10 @@ import { DefaultChatTransport } from "ai";
 import { env } from "@miyamoto/env/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
+import { KeyboardAvoidingView, useKeyboardState } from "react-native-keyboard-controller";
 import {
   ActivityIndicator,
   AppState,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   TextInput,
@@ -271,6 +271,13 @@ export default function ChatScreen() {
   // letter writing itself out), but only while the person is at the bottom.
   // Someone who scrolled up to reread isn't pulled away from it.
   const atBottom = React.useRef(true);
+  // The same rule when the keyboard opens and the conversation shrinks
+  // (plan 16): at the latest message, it stays in view, the way a
+  // messaging app keeps the last bubble just above the composer.
+  const viewportHeight = React.useRef(0);
+  // While typing, the space above the composer is the conversation's. The
+  // free-questions line comes back when the keyboard goes.
+  const typing = useKeyboardState((state) => state.isVisible);
 
   // A message handed over by the screen that opened this one: onboarding's
   // one question arrives here as `?prefill=` (D-048). It goes in the
@@ -370,13 +377,22 @@ export default function ChatScreen() {
         </View>
       </Enter>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      {/* The composer rides on the keyboard and the conversation takes what's
+          left (plan 16). keyboard-controller's view, not React Native's:
+          Android draws edge-to-edge and doesn't resize the window for the
+          keyboard, and React Native's did nothing there at all. With
+          automaticOffset it measures where it really sits on screen, so the
+          header above and the tab bar below need no hand-set offsets. */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" automaticOffset>
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
+          onLayout={(e) => {
+            const height = e.nativeEvent.layout.height;
+            const shrank = height < viewportHeight.current;
+            viewportHeight.current = height;
+            if (shrank && atBottom.current) scrollRef.current?.scrollToEnd({ animated: false });
+          }}
           contentContainerStyle={{ padding: space.xl, gap: space.base }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -594,7 +610,7 @@ export default function ChatScreen() {
             </View>
           )}
 
-          {usage.data && !usage.data.isPro ? (
+          {usage.data && !usage.data.isPro && !typing ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
               <Text variant="caption" style={{ flex: 1 }}>
                 {usage.data.remaining} of {usage.data.limit} free questions left today
