@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
+  AppState,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,6 +22,7 @@ import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { describeChatError } from "@/lib/chat-errors";
+import { mergeHistory } from "@/lib/chat-history";
 import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
 import { track } from "@/lib/telemetry";
 import { trpc } from "@/utils/trpc";
@@ -99,33 +101,90 @@ export default function ChatScreen() {
   // Open the thread on what was already said (T11b). Mastra holds every
   // accepted exchange; without this each visit started on a blank screen,
   // and a Master switched in mid-thread appeared to have been handed nothing.
-  // Loaded once per thread. A history that cannot be reached leaves the
-  // screen as it always was, empty, rather than showing an error for a page
-  // the user did not ask for.
+  // A history that cannot be reached leaves the screen as it is, rather than
+  // showing an error for a page the user did not ask for.
+  //
+  // History is merged, never simply applied (lib/chat-history). It used to
+  // replace the messages whenever it arrived, and it can arrive seconds after
+  // the person has already sent: the empty history of a new thread then
+  // wiped out their first message. History that lands while a question is in
+  // flight waits until the chat is idle, so it never lands mid-stream.
+  const statusRef = React.useRef(status);
+  statusRef.current = status;
+  const messagesRef = React.useRef(messages);
+  messagesRef.current = messages;
+  const activeIdRef = React.useRef<string | undefined>(undefined);
+  activeIdRef.current = activeThread?.id;
+  /** The thread the messages on screen belong to. */
+  const messagesFor = React.useRef<string | null>(null);
+  const pendingHistory = React.useRef<{ threadId: string; messages: typeof messages } | null>(null);
+
+  const applyHistory = React.useCallback(
+    (threadId: string, history: typeof messages) => {
+      if (statusRef.current === "submitted" || statusRef.current === "streaming") {
+        pendingHistory.current = { threadId, messages: history };
+        return;
+      }
+      const sameThread = messagesFor.current === threadId;
+      messagesFor.current = threadId;
+      setMessages((current) => (sameThread ? mergeHistory(history, current) : history));
+    },
+    [setMessages],
+  );
+
+  const loadHistory = React.useCallback(
+    async (threadId: string) => {
+      try {
+        const res = await serverFetch(
+          `${env.EXPO_PUBLIC_SERVER_URL}/ai/history?threadId=${encodeURIComponent(threadId)}`,
+        );
+        if (!res.ok) return;
+        const body = (await res.json()) as { messages: typeof messages };
+        // The person may have opened another thread while this was loading.
+        if (activeIdRef.current === threadId) applyHistory(threadId, body.messages);
+      } catch {
+        // Unreachable history leaves the screen as it is.
+      }
+    },
+    [applyHistory],
+  );
+
   const historyFor = React.useRef<string | null>(null);
   React.useEffect(() => {
     const id = activeThread?.id;
     if (!id || historyFor.current === id) return;
     historyFor.current = id;
-    let cancelled = false;
+    // A different thread: clear the last one's messages now, rather than
+    // showing them under this thread's Master until its history arrives.
+    if (messagesFor.current && messagesFor.current !== id) {
+      messagesFor.current = id;
+      setMessages([]);
+    }
+    void loadHistory(id);
+  }, [activeThread?.id, loadHistory, setMessages]);
 
-    (async () => {
-      try {
-        const res = await serverFetch(
-          `${env.EXPO_PUBLIC_SERVER_URL}/ai/history?threadId=${encodeURIComponent(id)}`,
-        );
-        if (!res.ok) return;
-        const body = (await res.json()) as { messages: typeof messages };
-        if (!cancelled) setMessages(body.messages);
-      } catch {
-        // Unreachable history is an empty screen, which is what it was before.
-      }
-    })();
+  // History that arrived mid-send, applied once the letter is in.
+  React.useEffect(() => {
+    if (status === "submitted" || status === "streaming") return;
+    const pending = pendingHistory.current;
+    if (!pending) return;
+    pendingHistory.current = null;
+    if (activeIdRef.current === pending.threadId) applyHistory(pending.threadId, pending.messages);
+  }, [status, applyHistory]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [activeThread?.id, setMessages]);
+  // Back from the background with the letter still owed: the phone may have
+  // lost the connection while the server finished and saved it. Reload, and
+  // the merge brings it in.
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") return;
+      const id = activeIdRef.current;
+      const last = messagesRef.current[messagesRef.current.length - 1];
+      const waiting = statusRef.current === "submitted" || statusRef.current === "streaming";
+      if (id && last?.role === "user" && !waiting) void loadHistory(id);
+    });
+    return () => subscription.remove();
+  }, [loadHistory]);
 
   // What a failed send says, in a sentence rather than the server's JSON.
   const errorView = error ? describeChatError(error.message) : null;
@@ -183,6 +242,7 @@ export default function ChatScreen() {
   function send() {
     const value = input.trim();
     if (!value || !canSend) return;
+    if (activeThread) messagesFor.current = activeThread.id;
     sendMessage({ text: value });
     // "2 of 3 left" moves on the tap rather than after the letter (D-049).
     // Only the count: whether they can still ask is the server's call, and
