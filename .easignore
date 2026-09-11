@@ -1,0 +1,65 @@
+# What EAS Build leaves out of the upload (plan 17).
+#
+# EAS archives this monorepo by copying the folder and, without this file,
+# applying only the ROOT .gitignore. The nested ones (apps/web, apps/native,
+# apps/server, packages/*) aren't read, so their build output went up with
+# every Android build: apps/web/.next alone is 167 MB. With this file present,
+# EAS ignores .gitignore entirely and uses only these rules. Anything the
+# .gitignore files keep out must also be listed here, secrets above all.
+#
+# What must stay: every workspace package's source and package.json,
+# pnpm-lock.yaml, pnpm-workspace.yaml and .npmrc. EAS runs `pnpm install` on the
+# whole workspace, and packages/db's postinstall generates its client from
+# prisma/.
+
+# ── Secrets, never uploaded ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# ── Dependencies and caches (EAS installs its own) ─────────────────────
+node_modules/
+.pnp
+.pnp.js
+.turbo/
+.cache/
+.eslintcache
+*.tsbuildinfo
+*.log
+
+# ── Build output, from every app and package ───────────────────────────
+dist/
+build/
+out/
+.next/
+.expo/
+web-build/
+coverage/
+.nyc_output/
+.vercel/
+.alchemy/
+.wrangler/
+.open-next/
+packages/db/prisma/generated/
+apps/server/server
+
+# ── The native projects: EAS generates them from app.json (prebuild) ───
+apps/native/android/
+apps/native/ios/
+apps/native/.kotlin/
+
+# ── Not needed to build the app ────────────────────────────────────────
+designs/
+plans/
+systems/
+progress/
+.claude/
+*.tgz
+tmp/
+temp/
