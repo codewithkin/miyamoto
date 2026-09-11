@@ -209,8 +209,8 @@ export default function PayoffScreen() {
       <View style={{ paddingVertical: space.xxl }}>
         <Enter preset="fade" delay={480}>
           <Button
-            label="See who's already inside"
-            onPress={() => router.push("/(onboarding)/proof")}
+            label="See your first week"
+            onPress={() => router.push("/(onboarding)/first-week")}
           />
         </Enter>
       </View>
