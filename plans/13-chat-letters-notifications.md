@@ -47,6 +47,11 @@ works.
   visit that the history doesn't already hold (matched by role and text).
   Returning to the app with a letter still missing reloads history.
 
+**Note (session 8):** A2 and A3 land as one commit. The typing indicator is
+a Master bubble and the reveal lives in the letter bubble, so they share
+one new file. Split, A2 would carry A3's code unused, or A3 would rewrite
+what A2 just added.
+
 ## A2 — Bubbles
 
 - [ ] `pending-A2`
