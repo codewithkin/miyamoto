@@ -1,6 +1,6 @@
 # 11 — "Your first week" replaces the proof screen
 
-**Status: in flight (session 7).**
+**Status: built (session 7).** Not yet seen on a device. The rule is D-046.
 
 The owner's decision (session 7): the proof screen after "Your dojo is
 ready" was built from figures with nothing behind them — "10,431 people are
@@ -18,7 +18,7 @@ get, and the new week screen would contradict it one screen later.
 
 ## A1 — `path.preview`
 
-- [ ] `pending-A1`
+- [x] `ba88b88`
 - **Commit:** `feat(api): preview the first days of the Path at a pressure`
 - **Touches:** `packages/api/src/routers/path.ts`
 - **Done when:** a signed-in caller can ask for Days 1–N (default 7, at most
@@ -31,7 +31,7 @@ get, and the new week screen would contradict it one screen later.
 
 ## B1 — The screen
 
-- [ ] `pending-B1`
+- [x] `da4248a`
 - **Commit:** `feat(native): replace the proof screen with the person's first week`
 - **Touches:** `app/(onboarding)/proof.tsx` → `app/(onboarding)/first-week.tsx`,
   `app/(onboarding)/payoff.tsx` (its button), `lib/use-first-week.ts` (new)
@@ -42,7 +42,7 @@ get, and the new week screen would contradict it one screen later.
 
 ## B2 — One Day 1 everywhere
 
-- [ ] `pending-B2`
+- [x] `61b83a4`
 - **Commit:** `fix(native): show the Day 1 trial they'll actually get`
 - **Touches:** `app/(onboarding)/payoff.tsx`, `app/(onboarding)/reminders.tsx`
 - **Done when:** payoff's Day 1 card and the morning reminder preview both
@@ -58,7 +58,7 @@ at Firm pressure". The seeded Path has 30 trials at every pressure, one per
 day (checked against the database): pressure changes how hard each day is,
 not how many days there are.
 
-- [ ] `pending-B3`
+- [x] `273e56a`
 - **Commit:** `fix(native): count the Path's real thirty days`
 - **Touches:** `app/(onboarding)/payoff.tsx`, `app/(onboarding)/forging.tsx` (copy only)
 - **Done when:** both say 30. Forging's two theatrical claims ("Matched 3
@@ -70,7 +70,7 @@ not how many days there are.
 
 ## C1
 
-- [ ] `pending-C1`
+- [x] this commit
 - **Commit:** `docs: record the first-week screen and the rule behind it`
 - **Done when:** a decision records that onboarding shows only true things,
   with previews drawn from real content. START-HERE's open item on figures

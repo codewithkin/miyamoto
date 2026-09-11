@@ -376,3 +376,22 @@ What made it work, and so what a new screen is held to:
 The exception is lists whose platform convention is plain, such as Settings:
 a nav-bar title and grouped rows are correct there, and a hero would be
 decoration. See `plans/08-visual-craft.md`.
+
+**D-046 — Onboarding shows only true things.**
+No invented user counts, ratings, testimonials or completion rates, and no
+claims of personalisation the app doesn't do. Numbers and previews come
+from real content. The owner chose this for the proof screen (session 7).
+It claimed "10,431 people are on a trial right now" and "4.8 from 2,140
+ratings" and quoted two named users, all with nothing behind them. It is
+now "Your first week": Days 1–7 at the chosen pressure, from the seeded Path
+via `path.preview`. Applying the rule surfaced the same fault elsewhere,
+now fixed:
+- Payoff showed the Firm Day 1 trial to everyone.
+- Payoff's caption said it was "chosen from your wounds" when the Path is
+  authored.
+- Payoff and forging counted 10 or 16 trials when every pressure has 30.
+- Forging "matched wounds to Act I".
+- The quiz said "most people pick three" and "most people start at Firm".
+Still pending the owner: payoff's "finish 2.4× more often" comparison, and
+the named quotes on the offer and paywall (open item 4 in START-HERE).
+Pre-launch, those are the owner's call; before launch, they are this rule's.

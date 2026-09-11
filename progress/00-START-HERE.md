@@ -28,8 +28,11 @@ Masters, chat's empty state; Settings reviewed and left as is. The rules a
 new screen is held to are D-045. **Plan 10** (built) held onboarding to the
 same bar: one step header, whose-answer faces on the sample problems, a
 sample charge drawn like chat's, a face on the carrying nudge, welcome's
-ink Musashi on 3/4, and pressure shown as intensity. The proof screen is
-untouched and waiting on the owner (open item 4).
+ink Musashi on 3/4, and pressure shown as intensity. **Plan 11** (built)
+replaced the proof screen, at the owner's decision, with "Your first week":
+Days 1–7 at the chosen pressure, from the real Path (D-046). Payoff, forging
+and the reminder preview now quote the same real Day 1 and the Path's real
+thirty days.
 
 **Session 5** (plan 07, done): welcome *is* the sign-in screen now, with
 one "Continue with Google" button and no `/sign-in` route (D-040). It was
@@ -106,6 +109,7 @@ and its markup. The markup is the only place the real hex values live.
 | Mandela appears throughout | Withdrawn from the app | D-006. Estate enforces personality rights. |
 | Offer and paywall: "Day 7, 14 and 21" | "Day 7 and 21", derived from the Master list | D-006, D-033. Day 14 was Mandela's unlock and is now empty. |
 | Screen 14's chat card: "Your trial" | "Your charge" | D-035. A Trial and a Charge must never share a name. |
+| Screen 09, social proof: a user count, a rating, two testimonials | "Your first week": Days 1–7 at the chosen pressure, from the seeded Path | D-046. Every figure on the original had nothing behind it. |
 
 ---
 
@@ -268,20 +272,13 @@ notes do not survive a clone.
 3. **A device pass** — 05 T04. Now covers far more than it did: sign-in, the
    gate, the reworked onboarding, the claim, the permission prompt, three
    kinds of notification, the charge card, history.
-4. **Figures the app cannot back.** "Your dojo is ready" says Firm-pressure
-   users "finish 2.4× more often", with bars at 18% and 43%. The offer and
-   paywall quote named users ("Aisha", "Tomás"). The **proof screen**
-   (`app/(onboarding)/proof.tsx`) is built entirely from them: "10,431
-   people are on a trial right now", "+10k", "4.8 from 2,140 ratings", and
-   two named testimonials. All of it is design copy with no data behind it.
-   That is legal exposure once the app is live (fake reviews and user counts
-   are the specific thing consumer-protection rules target), so it is the
-   owner's call: replace with real numbers after launch, or cut. The
-   recommended replacement for proof, raised in session 7, is "Your first
-   week": Days 1–7 at the pressure they chose, from the seeded Path. That is
-   real content, true today, and it previews what they're committing to.
-   Session 7 removed the two smaller claims in the quiz ("most people pick
-   three", "most people start at Firm").
+4. **Two figures the app cannot back, still.** "Your dojo is ready" says
+   Firm-pressure users "finish 2.4× more often", with bars at 18% and 43%;
+   the offer and paywall quote named users ("Aisha", "Tomás"). Design copy
+   with no data behind it, and legal exposure once the app is live, so it's
+   the owner's call before launch (D-046). The proof screen, built entirely
+   from such figures, was replaced in session 7 (plan 11), and the smaller
+   untrue claims in the quiz, payoff and forging are fixed.
 5. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
    128px, so both go soft above about 64pt. The Musashi portraits, the
    welcome hero and the icon are *Vagabond* artwork. **The owner has chosen
