@@ -1,12 +1,26 @@
 import type { AppRouter } from "@miyamoto/api/routers/index";
 import { env } from "@miyamoto/env/native";
-import { QueryClient } from "@tanstack/react-query";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import { createTRPCClient, httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
-import { serverFetch } from "@/lib/server-fetch";
+import { serverFetch, sessionRefused } from "@/lib/server-fetch";
 
-export const queryClient = new QueryClient();
+/**
+ * A procedure refused the session. serverFetch sees most of these as a 401,
+ * but a batch that mixes a refused call with public ones comes back 207, so
+ * each failed call is checked here too. sessionRefused dedupes the two.
+ */
+function onError(error: unknown) {
+  if (error instanceof TRPCClientError && error.data?.code === "UNAUTHORIZED") {
+    sessionRefused();
+  }
+}
+
+export const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError }),
+  mutationCache: new MutationCache({ onError }),
+});
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [

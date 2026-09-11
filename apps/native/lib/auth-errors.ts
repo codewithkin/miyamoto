@@ -13,6 +13,7 @@ export type SignInFailure =
   | "declined"
   | "expired"
   | "not-saved"
+  | "signed-out"
   | "cancelled-or-other";
 
 /**
@@ -54,6 +55,10 @@ export function failureFromCallbackCode(code: string): SignInFailure {
     // server did not recognise it once stored.
     case "session_not_saved":
       return "not-saved";
+    // Raised here too, by lib/server-fetch.ts: the server refused a session
+    // the app was using, and Better Auth confirmed it's gone.
+    case "session_ended":
+      return "signed-out";
     default:
       return "cancelled-or-other";
   }
@@ -65,5 +70,6 @@ export const SIGN_IN_SENTENCE: Record<SignInFailure, string> = {
   declined: "Google didn't share your account, so nothing was signed in. Try again when you're ready.",
   expired: "That sign-in went stale before it finished. Try once more — it only takes a moment.",
   "not-saved": "Google signed you in, but the session didn't save on this phone. Try once more.",
+  "signed-out": "You were signed out. Sign in to carry on.",
   "cancelled-or-other": "That didn't go through. Try again.",
 };
