@@ -22,11 +22,12 @@ import { ink, indigo, radius, size, space, text as textColor } from "@/theme/tok
  *
  * Sign-in, then "what's sitting on your chest?", then a real conversation
  * with a real Master, the problem already in the composer. Pressing the
- * button claims the account with defaults the person can change later
- * (Firm pressure, reminders off, this phone's timezone) and opens the thread
- * the claim creates. The quiz that used to follow (wounds, Master, pressure,
- * the forge, the first week, reminders, the offer) is gone at the owner's
- * decision. Everything it set has a default or a place in Settings.
+ * button claims the account and opens the thread the claim creates. The
+ * quiz that used to follow (wounds, Master, pressure, the forge, the first
+ * week, reminders, the offer) is gone at the owner's decision, and what it
+ * set is now a default: reminders off (Settings turns them on), this
+ * phone's timezone, and Firm pressure. Firm is the level the quiz
+ * recommended, and nothing in the app changes it yet.
  *
  * Every row goes to the one Master a new account has: the first free Master
  * available on Day 1. The rows used to show Seneca and Curie against some
