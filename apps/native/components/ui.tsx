@@ -2,13 +2,13 @@ import React from "react";
 import {
   ActivityIndicator,
   type PressableProps,
-  ScrollView,
   Text as RNText,
   type TextProps as RNTextProps,
   View,
   type ViewProps,
   type ViewStyle,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Touchable, type PressFeel } from "@/components/touchable";
@@ -145,13 +145,20 @@ export function Screen({ scroll = false, pad = space.xl, style, children, ...res
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: ink.base }}>
       {scroll ? (
-        <ScrollView
+        // Keyboard-aware (plan 16): a focused field scrolls up to sit
+        // above the keyboard with room to spare, so the first question's
+        // own-words field keeps its button in reach, and the same goes for
+        // every scrolling screen with a field. On Android the keyboard
+        // covers the window rather than resizing it (edge-to-edge), so a
+        // plain ScrollView never learned it was there.
+        <KeyboardAwareScrollView
+          bottomOffset={space.screen * 3}
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {body}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       ) : (
         body
       )}
