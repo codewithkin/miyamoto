@@ -529,3 +529,20 @@ Both are about something the person already started, both are sent only
 while true, and both replace rather than stack. Anything added to this list
 needs a reason as good as those two, and the owner asked for "enough, not
 overdone". Plan 13.
+
+**D-058 — The keyboard is handled by keyboard-controller, never React
+Native's own views.**
+Android draws edge-to-edge (Expo 57), and with keyboard-controller's
+`KeyboardProvider` mounted the window isn't resized for the keyboard: it
+covers whatever is there. React Native's `KeyboardAvoidingView` was set
+for iOS only in the chat, so on Android the keyboard took most of the
+screen (the owner's report, session 8). The rules:
+- A screen with a composer at the bottom uses keyboard-controller's
+  `KeyboardAvoidingView` (`behavior="padding"`, `automaticOffset`). The chat
+  keeps the latest message in view as the keyboard opens and hides its
+  free-questions line while typing, as a messaging app would.
+- `<Screen scroll>` is keyboard-controller's `KeyboardAwareScrollView`, so a
+  focused field on any scrolling screen rises above the keyboard.
+- Sheets are edge-to-edge Modals inside the same `KeyboardAvoidingView`.
+- The tab bar hides while typing.
+A new screen with a field uses one of these. Plan 16.

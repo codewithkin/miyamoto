@@ -1,6 +1,6 @@
 # 16 — The keyboard never crowds the screen
 
-**Status: in flight (session 8).**
+**Status: built (session 8).** Not yet seen on a device. The rule is D-058.
 
 The owner's report (session 8): with the keyboard open, the chat screen is
 mostly keyboard, and it should behave the way WhatsApp's does. The
@@ -19,7 +19,7 @@ components are built for exactly this, and they're already installed
 
 ## K1 — The chat, like a messaging app
 
-- [ ] `pending-K1`
+- [x] `2fe0fc8`
 - **Commit:** `fix(native): keep the chat's composer on the keyboard and the latest message in view`
 - **Touches:** `app/(app)/chat.tsx`
 - **Done when:** the chat uses keyboard-controller's `KeyboardAvoidingView`
@@ -32,7 +32,7 @@ components are built for exactly this, and they're already installed
 
 ## K2 — No tab bar while typing
 
-- [ ] `pending-K2`
+- [x] `98d3aaa`
 - **Commit:** `fix(native): hide the tab bar while the keyboard is open`
 - **Touches:** `app/(app)/_layout.tsx`
 - **Done when:** `tabBarHideOnKeyboard`. If Android ever resizes the window,
@@ -41,7 +41,7 @@ components are built for exactly this, and they're already installed
 
 ## K3 — Every scrolling screen keeps the focused field in view
 
-- [ ] `pending-K3`
+- [x] `601a116`
 - **Commit:** `fix(native): scroll the focused field above the keyboard on every scrolling screen`
 - **Touches:** `components/ui.tsx` (`Screen scroll`)
 - **Done when:** `<Screen scroll>` uses keyboard-controller's
@@ -51,7 +51,7 @@ components are built for exactly this, and they're already installed
 
 ## K4 — Sheets rise with the keyboard
 
-- [ ] `pending-K4`
+- [x] `8d61afb`
 - **Commit:** `fix(native): lift sheets above the keyboard`
 - **Touches:** `components/sheet.tsx`
 - **Done when:** a sheet with a field (email sign-in) sits on the keyboard
@@ -60,6 +60,6 @@ components are built for exactly this, and they're already installed
 
 ## K5 — Docs
 
-- [ ] `pending-K5`
+- [x] this commit
 - **Commit:** `docs: record how the app handles the keyboard`
 - **Touches:** `systems/09-decisions.md` (D-058), `progress/00-START-HERE.md`

@@ -33,6 +33,10 @@ used to open RevenueCat's paywall on top of ours (D-053). **Plan 13**
   other Masters are Pro only (D-056).
 - There are two retention nudges, no more (D-057).
 
+**Plan 16** (built): the keyboard no longer crowds the chat. The composer
+rides on the keyboard, the latest message stays in view, and fields on
+scrolling screens and sheets rise above it (D-058).
+
 **Session 8** (plan 12, built). The owner signed in on a phone and landed in
 the right place, so the round trip works. Sending a chat message then came
 back `POST /ai 401`: the chat transport was the one request that didn't
@@ -260,6 +264,9 @@ Nothing is uncommitted. The tree is clean.
 - **Never loosen `checkReply`** to make refusals stop. Refusals are the
   system working; fix the corpus or the correction text.
 - **PowerShell 5.1 has no `&&`.** Use `;` or separate commands.
+- **Keyboard handling is keyboard-controller's**, never React Native's
+  `KeyboardAvoidingView` (D-058). On Android the keyboard covers the window
+  rather than resizing it, and React Native's view does nothing about that.
 - **Every request to the server goes through `lib/server-fetch.ts`** (D-047).
   `pnpm check-types` fails otherwise. Don't silence the check; route the
   request.
