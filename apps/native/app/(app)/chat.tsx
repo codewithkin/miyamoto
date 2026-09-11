@@ -2,6 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport } from "ai";
 import { env } from "@miyamoto/env/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   KeyboardAvoidingView,
@@ -62,6 +63,7 @@ function chargeOf(parts: { type: string }[] | undefined): HandedCharge | null {
  * letter rather than a messaging app.
  */
 export default function ChatScreen() {
+  const router = useRouter();
   const [input, setInput] = React.useState("");
   const [threadId] = React.useState<string | null>(null);
   const [showSwitch, setShowSwitch] = React.useState(false);
@@ -138,6 +140,19 @@ export default function ChatScreen() {
   React.useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages.length, busy]);
+
+  // A message handed over by the screen that opened this one: onboarding's
+  // one question arrives here as `?prefill=` (D-048). It goes in the
+  // composer, unsent, for the same reason as the seed below. It's read once
+  // and the param cleared, so text they've deleted doesn't come back on the
+  // next render. It also beats the thread-title seed, which is cut to 120
+  // characters, so a long problem arrives whole.
+  const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  React.useEffect(() => {
+    if (!prefill) return;
+    setInput(prefill);
+    router.setParams({ prefill: undefined });
+  }, [prefill, router]);
 
   // The onboarding claim opens the first thread titled with the problem the
   // user brought. Until anything has been sent on it — the AI route moves
