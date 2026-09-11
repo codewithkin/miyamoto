@@ -229,3 +229,28 @@ with none configured — skips rather than fails) would make every deploy
 apply pending migrations on its own. That's a deliberate step to take
 once, not a default this session picked silently: it changes production
 data on every push from then on. See `progress/00-START-HERE.md`.
+
+## The marketing site (`apps/web`) on Vercel
+
+Deployed from Vercel's Next.js template, not Docker. The `output:
+"standalone"` switch in `next.config.ts` is off there (D-020).
+
+**The build doesn't type-check (D-050).** The site's only link to the
+backend is `import type { AppRouter }` in `src/utils/trpc.ts`. It's erased
+before anything runs, but type-checking it pulls in `packages/api` and then
+`packages/db`, whose Prisma client is generated code that isn't in git and
+isn't produced by the web build. With a restored build cache, `pnpm install`
+reports "Already up to date" and no postinstall runs. The build failed on
+files the site never ships:
+
+```
+packages/db/src/index.ts: Cannot find module '../prisma/generated/client'
+packages/api/src/routers/*.ts: Parameter 'x' implicitly has an 'any' type
+```
+
+The implicit-any errors are the same failure: with the client missing,
+`db` has no type, so every callback on its results is untyped.
+`typescript.ignoreBuildErrors` skips the check; `next build` prints
+"Skipping validation of types". The site's own types are checked by `pnpm
+check-types`. Don't fix this by generating the Prisma client in the web
+build: the site never touches the database.

@@ -7,11 +7,22 @@ their own voice. This file is self-contained.
 > Read `progress/AGENT-PROCESS.md` for *how* work is done here.
 > This file is *what* to build next.
 
-**Last updated:** session 7 (2026-09-10).
+**Last updated:** session 8 (2026-09-11).
 
 ---
 
 ## ⚠️ Read this first
+
+**Session 8** (plan 12, built). The owner signed in on a phone and landed in
+the right place, so the round trip works. Sending a chat message then came
+back `POST /ai 401`: the chat transport was the one request that didn't
+carry the session. Every request now goes through `lib/server-fetch.ts`,
+and `pnpm check-types` fails on one that doesn't (D-047). **Onboarding is
+now one question** (D-048): sign in, say what's troubling you, and land in
+the real chat with Musashi and the problem in the composer. The nine quiz
+screens after it are deleted. Buttons show their work, and predictable
+results appear on the tap (D-049). The marketing site's Vercel build no
+longer type-checks the database package it never touches (D-050).
 
 **Sessions 6–7.** The server now runs on **Render**
 (`https://miyamoto-server.onrender.com`). Vercel's separate type-check broke
@@ -52,13 +63,14 @@ face.
    now set** in `apps/server/.env`, so this is finally unblocked — 01 T12 is
    the next task. Citation enforcement, the charge, refunds and history have
    only ever seen fixture replies. The first real reply may not follow the
-   trailer format at all.
-2. **Nobody has finished signing in on a phone yet.** The Google client and
-   the HTTPS server (Render) exist, and the owner has reached Google's
-   callback from a development build — but the session never made it back
-   into the app. Plan 09 fixes that return trip; it has not yet been seen
-   working on the device. `systems/06-auth.md` has the flow and the
-   troubleshooting table.
+   trailer format at all. The owner's first attempt (session 8) never
+   reached the model: it was the 401 fixed in `3bb051d`. The next send
+   from the phone is the first real one, and the first to stream through
+   `expo/fetch`.
+2. **Sign-in works on a phone (session 8).** The owner signed in on a
+   development build and landed in the right place. Not yet seen: still
+   signed in after a restart, and the new "You were signed out" path.
+   `systems/06-auth.md` has the flow and the troubleshooting table.
 3. **Nothing has run on a device.** Every screen in plans 06 and 07 was
    typechecked and bundled (`expo export`), never seen. No signal has
    reached TelemetryDeck yet. The signal body and hash were checked
@@ -100,16 +112,17 @@ and its markup. The markup is the only place the real hex values live.
 
 | Design says | We do | Why |
 |---|---|---|
-| Screen 01 "Try it — no account" and "I already have one" | Welcome's one button is "Continue with Google"; the quiz runs after it | D-004, D-038, D-040. Nothing works without an account, so the old promise was untrue. The sample answers still give the aha with no model call. |
+| Screen 01 "Try it — no account" and "I already have one" | Welcome's one button is "Continue with Google"; one question runs after it, then the real chat | D-004, D-038, D-040, D-048. Nothing works without an account, so the old promise was untrue. |
+| Screens 02–12, the onboarding quiz | One screen: what's troubling you, then the chat with it in the composer | D-048. The owner's call: a real conversation with a real Master straight away. |
 | Screen 01's layout | A full-bleed ink hero, the four faces, one white Google pill | D-040. Redesigned at the owner's request after a reference app. |
 | Sign-in offers Apple and Google | Google only; Apple commented out | D-039. |
-| The design's entry choreography | Restrained everywhere except forging, the offer and the paywall | D-036. The owner's call: serious, not showy. |
+| The design's entry choreography | Restrained everywhere except the paywall | D-036. The owner's call: serious, not showy. Forging and the offer, the other two exceptions, were removed with the quiz (D-048). |
 | Selection shown with blade marks | A green tick in a circle; an empty ring when not chosen | D-037. |
 | Screen 05 is a Master picker | It is a ladder; Musashi is claimed automatically | D-005. Only Musashi is unlocked at Day 1. |
 | Mandela appears throughout | Withdrawn from the app | D-006. Estate enforces personality rights. |
 | Offer and paywall: "Day 7, 14 and 21" | "Day 7 and 21", derived from the Master list | D-006, D-033. Day 14 was Mandela's unlock and is now empty. |
 | Screen 14's chat card: "Your trial" | "Your charge" | D-035. A Trial and a Charge must never share a name. |
-| Screen 09, social proof: a user count, a rating, two testimonials | "Your first week": Days 1–7 at the chosen pressure, from the seeded Path | D-046. Every figure on the original had nothing behind it. |
+| Screen 09, social proof: a user count, a rating, two testimonials | Removed. It became "Your first week" (D-046), then went with the quiz (D-048) | Every figure on the original had nothing behind it. |
 
 ---
 
@@ -159,10 +172,12 @@ Nothing is uncommitted. The tree is clean.
 
 | Area | State | What "built" means here |
 |---|---|---|
-| Onboarding, 12 screens | **Built, auth-first** | Welcome (which is sign-in, D-040) in `(auth)`, the quiz in `(onboarding)` after sign-in (D-038). Never run on a device. |
+| Onboarding, 2 screens | **Built, auth-first** | Welcome (which is sign-in, D-040) in `(auth)`, then one question in `(onboarding)/problem.tsx`, which claims the account and opens the chat (D-048). Sign-in seen on a phone; the question not yet. |
 | Analytics | **Built**, never seen to send | TelemetryDeck through `track()`; four funnel steps plus sign-in failures (D-041, `systems/10-analytics.md`). |
-| Onboarding persistence | **Built** | Claimed from the app shell once the offer screen marks the draft `finishedAt`; retried until confirmed; idempotent on the server (D-034). |
-| Session routing | **Built** | One gate, `app/(app)/_layout.tsx`: no session → `/welcome`; new account → the quiz; otherwise the app. |
+| Onboarding persistence | **Built** | The problem screen claims directly and says so if it fails. `useClaimDraft` in the app shell still sends a draft an older build finished offline. Idempotent on the server (D-034). |
+| Session routing | **Built** | One gate, `app/(app)/_layout.tsx`: no session → `/welcome`; new account → the first question; otherwise the app. A refused session goes back to welcome with the reason (D-047). |
+| Requests to the server | **Built** | All through `lib/server-fetch.ts`, enforced by `pnpm check-types` (D-047). |
+| Feedback | **Built** | `<Button loading>`, row spinners, optimistic trial, charge, Master, reminders and counter (D-049). |
 | Google sign-in | **Built**, never completed | Needs the owner's OAuth client and an HTTPS server URL — `systems/06-auth.md`. |
 | App shell, 8 screens + 3 overlays | **Built** | Path, Adversity, Chat, You, story, Masters, paywall, sheets. |
 | Design system | **Built** | Tokens; blade marks for progress; restrained motion with an `expressive` opt-in (D-036); `BladeTick` for selection (D-037); Ionicons through `components/icon.tsx`; Master portraits through `components/master-avatar.tsx`. |
@@ -224,6 +239,14 @@ Nothing is uncommitted. The tree is clean.
 - **Never loosen `checkReply`** to make refusals stop. Refusals are the
   system working; fix the corpus or the correction text.
 - **PowerShell 5.1 has no `&&`.** Use `;` or separate commands.
+- **Every request to the server goes through `lib/server-fetch.ts`** (D-047).
+  `pnpm check-types` fails otherwise. Don't silence the check; route the
+  request.
+- **Checking a bundle for a string:** Hermes stores any string with a
+  non-ASCII character (an ellipsis, a curly quote) as UTF-16, so a plain
+  `grep` reports it missing. Search for the UTF-16LE bytes too.
+- **`npx expo export` can segfault as it exits,** sometimes before the
+  bundle is written. If the `.hbc` is missing, run it again.
 
 ---
 
@@ -263,45 +286,51 @@ notes do not survive a clone.
 
 1. **The voice evaluation** — 01 T12. The first real reply, and the only
    check on D-013. The key is set; nothing blocks it.
-2. **Google sign-in on a device** — the OAuth client and the HTTPS server
-   (Render) exist now, and plan 09 fixes the return trip. What remains is
-   the owner signing in on a development build: landing inside the app,
-   signed in, and still signed in after a restart. If Render's logs still
-   show `Rate limiting could not determine a client IP` after deploying
-   `67bebf9`, set `trustedProxies` (`systems/06-auth.md`).
-3. **A device pass** — 05 T04. Now covers far more than it did: sign-in, the
-   gate, the reworked onboarding, the claim, the permission prompt, three
-   kinds of notification, the charge card, history.
-4. **Two figures the app cannot back, still.** "Your dojo is ready" says
-   Firm-pressure users "finish 2.4× more often", with bars at 18% and 43%;
-   the offer and paywall quote named users ("Aisha", "Tomás"). Design copy
-   with no data behind it, and legal exposure once the app is live, so it's
-   the owner's call before launch (D-046). The proof screen, built entirely
-   from such figures, was replaced in session 7 (plan 11), and the smaller
-   untrue claims in the quiz, payoff and forging are fixed.
-5. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
+2. **The first chat on a device** — sign-in works on the owner's phone
+   (session 8) and lands in the right place. What remains: the first
+   message reaching the model now that it carries the session (`3bb051d`),
+   the letter streaming in, and still being signed in after a restart. The
+   Render log the owner shared in session 8 had no `Rate limiting could not
+   determine a client IP` line. If it ever appears, set `trustedProxies`
+   (`systems/06-auth.md`).
+3. **A device pass** — 05 T04. Now covers far more than it did: the gate,
+   the one-question onboarding and its claim, loading states and the
+   optimistic updates, the permission prompt, three kinds of notification,
+   the charge card, history.
+4. **One figure the app cannot back, still.** The paywall quotes a named
+   user ("Tomás, finished the 30 days"), design copy with no one behind it.
+   It's legal exposure once the app is live, so it's the owner's call before
+   launch (D-046). The rest (payoff's "2.4× more often", the offer's
+   "Aisha", the proof screen) went with the quiz in session 8 (D-048).
+5. **Pressure can't be changed.** Since onboarding became one question
+   (D-048), every new account is Firm, and no screen or procedure changes
+   it. If the owner wants the choice back, it's small: `account.setPressure`
+   (it updates `onboardingProfile.pressure`, and the Path already reads it)
+   plus a three-option row in Settings.
+6. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
    128px, so both go soft above about 64pt. The Musashi portraits, the
    welcome hero and the icon are *Vagabond* artwork. **The owner has chosen
    to keep it for now (session 5).** Do not replace it unasked, and do not
    raise it again as new; it stays tracked under 05 T01.
-6. **A finished but unclaimed draft is per device, not per account.** If
-   one person finishes onboarding offline, signs out, and someone else
-   signs in on that phone before the claim lands, the second account gets
-   the first person's answers. That is rare, and the fix is small: store
-   the user id in the draft and drop it on mismatch. It is not built.
-7. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
+7. **A finished but unclaimed draft is per device, not per account.**
+   Mostly moot since session 8: the problem screen claims directly and
+   never leaves a finished draft behind. Only a draft an older build
+   finished offline can still reach another account on the same phone. The
+   fix is still small (store the user id in the draft, drop it on
+   mismatch) and still not built.
+8. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
    true ("Day 7 and 21"), but the Path's pacing is the owner's call — move
    Curie to 14, add a Master, or leave the gap.
-8. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
+9. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
    Owner's call to commission.
-9. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
+10. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
    and secret, then a sandbox pass.
-10. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
-11. **Mandela on the marketing site** — owner said later, separately.
-12. **Enter the Data safety form in Play Console.** The answers are in
+11. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
+12. **Mandela on the marketing site** — owner said later, separately.
+13. **Enter the Data safety form in Play Console.** The answers are in
     `systems/11-play-data-safety.md`, and the privacy policy already
     matches them. Only the owner can submit the form.
-13. **Schema changes still don't reach production by deploying** — but
+14. **Schema changes still don't reach production by deploying** — but
     production is now migrated and seeded (session 7), so this is ready to
     wire up whenever the owner decides to. Nothing runs `prisma migrate
     deploy` on build; `postinstall` only regenerates the client. What
@@ -321,9 +350,10 @@ notes do not survive a clone.
 A Google OAuth client and an HTTPS server address (blocks sign-in on a
 phone), `SMTP_*`, RevenueCat keys, `REVENUECAT_WEBHOOK_AUTH` and the
 dashboard webhook, an original app icon, larger Curie and Sun Tzu portraits,
-a device with an EAS development build, a decision about Day 14, and a
-decision about the payoff figures and testimonials, and the Data safety
-form entered in Play Console (answers ready). Apple sign-in is off, so
+a device with an EAS development build, a decision about Day 14, a
+decision about the paywall's "Tomás" quote, whether pressure should be
+choosable again, and the Data safety form entered in Play Console (answers
+ready). Apple sign-in is off, so
 Apple credentials are no longer needed.
 
 ---

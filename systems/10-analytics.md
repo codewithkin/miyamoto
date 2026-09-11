@@ -5,7 +5,7 @@ questions, which are also the funnel:
 
 ```
 Welcome.shown  ->  Auth.signInCompleted  ->  Onboarding.completed  ->  Chat.messageSent
- saw the app        got in                   finished the quiz          asked a Master
+ saw the app        got in                   said what's wrong          asked a Master
 ```
 
 Dashboard: organisation *Manasseh Technologies*, app *Miyamoto - Meet the
@@ -41,7 +41,7 @@ Masters*, App ID `5D5EE985-6FCF-4D10-B283-AC4F7F7F5A08`.
 | `Auth.signInStarted` | `lib/use-google-sign-in.ts`, on tap | `provider` |
 | `Auth.signInCompleted` | once per sign-in, when a session the server recognises exists — from `lib/use-google-sign-in.ts` (`via: "browser"`, the Expo plugin stored it) or `lib/auth-redirect.ts` (`via: "link"`, the link back from Google did: a cold start, or Android's browser promise giving up first — D-044). Whichever confirms first clears the pending marker, so it never fires twice | `provider`, `via` |
 | `Auth.signInFailed` | the hook, on an error before the browser opened (no `via`) or when the browser closed with no session and no link (`cancelled-or-other`, `via: "browser"` — someone backing out of Google); `lib/auth-redirect.ts` on an `error=` link back from Google (`via: "link"`) | `provider`, `reason`: `provider-off` \| `network` \| `declined` \| `expired` \| `not-saved` \| `cancelled-or-other`; `via` |
-| `Onboarding.completed` | `app/(onboarding)/offer.tsx` `finish()`, once | `outcome`: `purchased` \| `declined` \| `started-free` \| `skipped`; `plan`: `LIFETIME` \| `MONTHLY` \| `none`; `pressure`; `wounds` (count); `master` (slug) |
+| `Onboarding.completed` | `app/(onboarding)/problem.tsx` `begin()`, once the claim succeeds (D-048) | `outcome`: `picked` (a sample) \| `typed` \| `skipped`; `master` (slug). Until session 8 it fired from the offer screen with `purchased` \| `declined` \| `started-free` \| `skipped`, `plan`, `pressure` and `wounds`; that screen is gone |
 | `Chat.messageSent` | `app/(app)/chat.tsx` `send()` | `master` (slug), `firstInThread` |
 
 Every signal also carries TelemetryDeck's default parameters, so its
@@ -66,7 +66,8 @@ The drop between steps 1 and 2 is the welcome screen's job. The drop between
 
 Useful single insights:
 
-- **Offer conversion:** `Onboarding.completed`, broken down by `outcome`.
+- **How people start:** `Onboarding.completed`, broken down by `outcome`.
+  Picked versus typed says whether the four samples are doing the work.
 - **Sign-in health:** `Auth.signInFailed`, broken down by `reason`.
 - **Who people talk to:** `Chat.messageSent`, broken down by `master`.
 

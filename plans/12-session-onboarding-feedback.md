@@ -1,6 +1,20 @@
 # 12 — The session on every request, onboarding in one question, buttons that show their work
 
-**Status: in flight (session 7).**
+**Status: built (session 8).** Not yet seen on a device. The rules are
+D-047 (the session), D-048 (onboarding) and D-049 (feedback).
+
+**Note (session 8):** three things landed that the todos below didn't name,
+each in the commit whose area it belongs to:
+- `530c87a`: B2's header comment said everything the quiz set "has a place
+  in Settings". Pressure doesn't: nothing changes it after the claim. Its
+  own commit, since B2 was already committed.
+- C2: opening a conversation from the Masters or a story refetches the
+  thread list before going to the chat. The chat opens on the newest
+  thread and its tab stays mounted, so it used to show the previous
+  conversation.
+- C4: the query cache is dropped when the signed-in account changes. A
+  30-second staleTime would otherwise have let a second account on the
+  same phone be gated on the first one's cached onboarding status.
 
 Three requests from the owner, in the order they're built.
 
@@ -24,7 +38,7 @@ Three requests from the owner, in the order they're built.
 
 ## A1 — One way to call our server
 
-- [ ] `pending-A1`
+- [x] `3bb051d`
 - **Commit:** `fix(native): send the session with every request to the server`
 - **Touches:** `lib/server-fetch.ts` (new), `utils/trpc.ts`, `app/(app)/chat.tsx`
 - **Done when:** `serverFetch` attaches the stored session cookie on native
@@ -33,7 +47,7 @@ Three requests from the owner, in the order they're built.
 
 ## A2 — A refused session sends you to sign in, once, with a reason
 
-- [ ] `pending-A2`
+- [x] `7c341df`
 - **Commit:** `feat(native): send a signed-out session back to welcome, with the reason`
 - **Touches:** `lib/server-fetch.ts`, `utils/trpc.ts`, `lib/auth-errors.ts`
 - **Done when:** a 401 from `/ai` or `UNAUTHORIZED` from tRPC asks Better
@@ -44,7 +58,7 @@ Three requests from the owner, in the order they're built.
 
 ## A3 — The rule can't quietly break again
 
-- [ ] `pending-A3`
+- [x] `d5552ed`
 - **Commit:** `chore(native): fail check-types when a request skips serverFetch`
 - **Touches:** `scripts/check-server-fetch.mjs` (new), `package.json`
 - **Done when:** `pnpm check-types` in apps/native fails on a bare `fetch(`
@@ -55,7 +69,7 @@ Three requests from the owner, in the order they're built.
 
 ## B1 — Chat takes a message to put in the composer
 
-- [ ] `pending-B1`
+- [x] `fbcf427`
 - **Commit:** `feat(native): let chat open with a message ready to send`
 - **Touches:** `app/(app)/chat.tsx`
 - **Done when:** `/(app)/chat?prefill=…` opens with that text in the
@@ -66,7 +80,7 @@ Three requests from the owner, in the order they're built.
 
 ## B2 — The problem screen is the whole of onboarding
 
-- [ ] `pending-B2`
+- [x] `4c462a7`
 - **Commit:** `feat(native): go from the first question straight into a real chat`
 - **Touches:** `app/(onboarding)/problem.tsx`
 - **Done when:** picking or typing a problem and pressing the button claims
@@ -81,7 +95,7 @@ Three requests from the owner, in the order they're built.
 
 ## B3 — Remove the steps after it
 
-- [ ] `pending-B3`
+- [x] `3270817`
 - **Commit:** `refactor(native): remove the onboarding steps after the first question`
 - **Touches:** deletes `app/(onboarding)/{answer,carrying,master,pressure,forging,payoff,first-week,reminders,offer}.tsx`,
   `components/onboarding-header.tsx`, `lib/use-first-week.ts`,
@@ -93,7 +107,7 @@ Three requests from the owner, in the order they're built.
 
 ## C1 — Button has a loading state, and disabled looks disabled
 
-- [ ] `pending-C1`
+- [x] `a11aba2`
 - **Commit:** `feat(native): give Button a loading state and an unmistakable disabled one`
 - **Touches:** `components/ui.tsx`, `components/touchable.tsx`
 - **Done when:** `<Button loading>` shows a spinner in the variant's colour
@@ -104,7 +118,7 @@ Three requests from the owner, in the order they're built.
 
 ## C2 — Every server action shows it is waiting
 
-- [ ] `pending-C2`
+- [x] `ce53bf8`
 - **Commit:** `feat(native): show every server action in progress and block double taps`
 - **Touches:** every screen with a mutation or a store call: path, chat
   (charge card, send), masters, story, switch sheet, settings, delete
@@ -115,7 +129,7 @@ Three requests from the owner, in the order they're built.
 
 ## C3 — Optimistic where the answer is predictable
 
-- [ ] `pending-C3`
+- [x] `938a307`
 - **Commit:** `feat(native): show predictable results at once and roll back on refusal`
 - **Touches:** `app/(app)/index.tsx`, `app/(app)/chat.tsx`,
   `components/overlays.tsx`, `app/settings.tsx`
@@ -126,7 +140,7 @@ Three requests from the owner, in the order they're built.
 
 ## C4 — The query client behaves on a phone
 
-- [ ] `pending-C4`
+- [x] `81c0b8b`
 - **Commit:** `feat(native): refetch on return to the app, and never retry a refusal`
 - **Touches:** `utils/trpc.ts`, `app/_layout.tsx`
 - **Done when:** queries are fresh for 30 seconds (no refetch storm on
@@ -137,8 +151,10 @@ Three requests from the owner, in the order they're built.
 
 ## D1 — Docs
 
-- [ ] `pending-D1`
+- [x] this commit
 - **Commit:** `docs: record the session rule, one-question onboarding and loading states`
-- **Touches:** `systems/09-decisions.md` (D-047..D-049), `systems/06-auth.md`,
+- **Touches:** `systems/09-decisions.md` (D-047..D-050, D-050 being the web
+  build fixed in `acda324` just before this plan), `systems/06-auth.md`,
+  `systems/10-analytics.md` (Onboarding.completed's new payload),
   `systems/12-deploys.md` (the web build), `plans/00-roadmap.md`,
   `progress/00-START-HERE.md`

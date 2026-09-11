@@ -395,3 +395,60 @@ now fixed:
 Still pending the owner: payoff's "finish 2.4× more often" comparison, and
 the named quotes on the offer and paywall (open item 4 in START-HERE).
 Pre-launch, those are the owner's call; before launch, they are this rule's.
+**Note (session 8):** payoff, the offer and "Your first week" were removed
+with the rest of the quiz (D-048). Of the figures above, only the paywall's
+"Tomás" quote remains.
+
+## Requests, onboarding and feedback (session 8)
+
+**D-047 — Every request to the server goes through `serverFetch`.**
+On native the session is a cookie the app attaches by hand, so it's
+attached in exactly one place: `apps/native/lib/server-fetch.ts`. tRPC,
+chat history and the chat transport all call it, and the transport uses its
+streaming variant on `expo/fetch`, because React Native's own `fetch` can't
+stream a response. The failure this prevents: the chat transport built its
+own request without the cookie, and the first message after sign-in came
+back `POST /ai 401` while every tRPC screen worked. `pnpm check-types` in
+apps/native runs `scripts/check-server-fetch.mjs`, which fails on a bare
+`fetch(` anywhere else, and on a `DefaultChatTransport` without our fetch.
+A 401, or a tRPC `UNAUTHORIZED`, asks Better Auth whether the session is
+still live. If it's gone, the app goes to welcome with "You were signed out.
+Sign in to carry on." See `systems/06-auth.md`.
+
+**D-048 — Onboarding is one question, then the real chat.**
+The owner's call (session 8): sign in, say what's troubling you (pick one of
+four or type it), and land in a real conversation with a real Master, the
+problem in the composer, unsent (D-018 still holds). The problem screen
+claims the account itself, with Musashi, Firm pressure, reminders off and
+this phone's timezone, then replaces to the chat. Everything after it is
+gone: the sample answer, wounds, the Master and pressure choices, forging,
+payoff, the first week, reminders and the offer. This supersedes the quiz
+half of D-038; sign-in first still stands. Every row goes to Musashi,
+because he's the only Master a new account has (Seneca arrives on Day 7,
+Curie on Day 21), and a face promising Seneca would be untrue in a real
+chat (D-046). What the quiz set is now a default. Reminders start off and
+Settings turns them on. Pressure is Firm, and **nothing in the app changes
+it yet** (open item in START-HERE).
+
+**D-049 — Buttons show their work.**
+Anything that waits on the server or the store is visibly waiting:
+`<Button loading>` keeps the variant's colour, swaps the icon for a
+spinner, shows a working label and ignores presses. A row that starts a
+request shows the spinner on that row and dims its siblings. A disabled
+Button is drawn in ink with faint text, never as a translucent copy of
+itself. Where the server's answer is predictable, the screen shows it on
+the tap and puts the previous state back if the server refuses, with a line
+saying so: completing today's trial, a charge, switching Master, a
+reminder time, and the free-question count. Only what's predictable is
+predicted. Streak and score, and whether you can still ask, stay the
+server's. Queries are fresh for 30 seconds, refetch when the app returns to
+the foreground, never retry a 4xx, and are dropped when the signed-in
+account changes.
+
+**D-050 — The marketing site's build doesn't type-check.**
+`apps/web`'s one link to the backend is `import type { AppRouter }`. To
+type-check it, tsc follows it into `packages/api` and `packages/db`, whose
+generated Prisma client the Vercel web build never produces. So
+`next.config.ts` sets `typescript.ignoreBuildErrors`. The site's types are
+still checked by `pnpm check-types` wherever the client exists. See
+`systems/12-deploys.md`.

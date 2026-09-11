@@ -55,6 +55,28 @@ Two things about that return trip are not obvious and were each a bug:
 A successful sign-in lasts 60 days, refreshed at most daily while the app is
 in use.
 
+### After sign-in: every request carries the session (D-047)
+
+There's no cookie jar on native. The Expo plugin keeps the session in
+SecureStore, and each request to the server has to carry it as a Cookie
+header. `apps/native/lib/server-fetch.ts` is the only place that happens:
+
+- `serverFetch`: tRPC's link and chat history.
+- `streamingServerFetch`: the chat transport. It runs on `expo/fetch`,
+  because React Native's own `fetch` has no readable body to stream from.
+
+Never call `fetch(` directly, and never build a `DefaultChatTransport`
+without `fetch: streamingServerFetch`. `pnpm check-types` fails on both.
+The one time a request skipped this, the chat's first message came back
+`POST /ai 401 1ms` while every other screen worked.
+
+When the server refuses a session (a 401, or tRPC `UNAUTHORIZED`),
+`sessionRefused()` asks Better Auth whether it's still live. Live, or
+unreachable: nothing moves. Gone (expired, revoked, the account deleted
+elsewhere): the app goes to welcome, which says "You were signed out. Sign
+in to carry on." When the signed-in account changes, the query cache is
+dropped, so one account never sees another's data.
+
 The piece that breaks on real devices is the second redirect. **Google sends
 the phone's browser to whatever `BETTER_AUTH_URL` says.** If that is
 `localhost`, the phone goes to itself. If it is plain `http` on a LAN
@@ -199,6 +221,8 @@ default scopes, publishing is immediate.
 | After choosing an account: the dev launcher, then welcome, still signed out | The app was relaunched mid-sign-in and the session in the link was never stored (fixed, D-044) | If it recurs, check `app/+native-intent.tsx` is in the bundle and the pending marker was set — it only honours a sign-in started in the last ten minutes |
 | Stuck inside the sign-in browser on a page reading "OK" | A failed callback redirected to the API's `/` (fixed: `onAPIError.errorURL`) | If it recurs, the server is running code from before `67bebf9` — redeploy |
 | "That sign-in went stale before it finished." | A Google page from an earlier attempt was submitted again after its one-time state was used (`state_mismatch`) | Just try again — it starts a fresh state |
+| Chat says "Sign in again to ask" right after signing in; Render logs `POST /ai 401 1ms` | A request built without `serverFetch`, so no cookie (fixed, `3bb051d`) | `pnpm check-types` in apps/native names the file; route it through `lib/server-fetch.ts` |
+| Welcome: "You were signed out. Sign in to carry on." | The server refused the session and Better Auth confirmed it's gone: expired, signed out elsewhere, or the account deleted | Sign in again. If it happens straight after signing in, the cookie isn't reaching the server; check the row above |
 | Render log: `Rate limiting could not determine a client IP` | Neither `true-client-ip` nor `cf-connecting-ip` reached the server, and `x-forwarded-for` has several hops, which Better Auth won't trust on its own | Set `advanced.ipAddress.trustedProxies` in `packages/auth/src/index.ts` to the host's proxy ranges |
 
 ---
@@ -224,6 +248,8 @@ default scopes, publishing is immediate.
 | `packages/auth/src/index.ts` | Provider registration, `select_account`, the boot readiness report |
 | `packages/env/src/server.ts` | The env schema |
 | `apps/native/lib/auth-client.ts` | Better Auth client with the Expo plugin |
+| `apps/native/lib/server-fetch.ts` | The one place a request gets the session; what a refused session does |
+| `apps/native/scripts/check-server-fetch.mjs` | Fails `check-types` on a request that skips it |
 | `apps/native/app/(auth)/welcome.tsx` | The screen: the only thing a signed-out person sees |
 | `apps/native/lib/use-google-sign-in.ts` | Running the sign-in, and the error-to-sentence mapping |
 | `apps/native/app/(app)/_layout.tsx` | The gate that decides where a new session goes |
