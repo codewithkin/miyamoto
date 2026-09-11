@@ -262,7 +262,8 @@ Google Play reviews the app signed in, with details from Play Console ->
 App content -> **Sign in details**. Its reviewers can't create accounts or
 use their own Google accounts, so the server keeps one for them:
 
-1. Pick an email you control and a password of at least 8 characters.
+1. Pick an email you control and any password. It's kept simple on purpose:
+   there are no length or strength rules on it.
 2. Set `REVIEWER_EMAIL` and `REVIEWER_PASSWORD` (and optionally
    `REVIEWER_NAME`) in the server's environment on Coolify. Never in the
    repo.

@@ -74,9 +74,14 @@ export const env = createEnv({
     // nothing is seeded. Held only in the host's environment, never in the
     // repo: they're the same values typed into Play Console's "Sign in
     // details".
-    REVIEWER_EMAIL: z.email().optional(),
-    REVIEWER_PASSWORD: z.string().min(8).optional(),
-    REVIEWER_NAME: z.string().min(1).optional(),
+    //
+    // Deliberately unchecked: no format, no length, no strength. The owner
+    // wants the reviewer password simple, and this schema runs at startup,
+    // so a rule here once stopped the whole server over a short reviewer
+    // password. Nothing about the reviewer may ever stop the server.
+    REVIEWER_EMAIL: z.string().optional(),
+    REVIEWER_PASSWORD: z.string().optional(),
+    REVIEWER_NAME: z.string().optional(),
 
     // Expo's push service. Only needed if "enhanced push security" is turned
     // on for the project in Expo's dashboard; pushes go out without it.
