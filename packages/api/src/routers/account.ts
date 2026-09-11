@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
+import { isExpoPushToken } from "../lib/push";
 import { isPro } from "../lib/usage";
 
 /**
@@ -97,10 +98,52 @@ export const accountRouter = router({
    * store rather than here, so the export names the threads and says
    * plainly that their contents are not included yet.
    */
+  /**
+   * This install's Expo push token, so a letter finished after the app was
+   * closed can still reach it (plan 13). A token names a device, not a
+   * person: a second account signing in on the same phone takes the row
+   * over. Never throws. Before the database has the table (not yet
+   * migrated), it reports registered: false and the app carries on.
+   */
+  registerPushToken: protectedProcedure
+    .input(
+      z.object({
+        token: z.string().min(1).max(512).refine(isExpoPushToken, "Not an Expo push token"),
+        platform: z.enum(["android", "ios"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await db.pushToken.upsert({
+          where: { token: input.token },
+          create: { userId: ctx.session.user.id, token: input.token, platform: input.platform },
+          update: { userId: ctx.session.user.id, platform: input.platform },
+        });
+        return { registered: true };
+      } catch (e) {
+        console.warn("[push] could not register a token", e);
+        return { registered: false };
+      }
+    }),
+
+  /** Signing out: this install stops receiving the account's letters. */
+  unregisterPushToken: protectedProcedure
+    .input(z.object({ token: z.string().min(1).max(512) }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await db.pushToken.deleteMany({
+          where: { token: input.token, userId: ctx.session.user.id },
+        });
+      } catch (e) {
+        console.warn("[push] could not remove a token", e);
+      }
+      return { ok: true };
+    }),
+
   exportData: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const [profile, onboarding, progress, completions, charges, threads, code, usage] =
+    const [profile, onboarding, progress, completions, charges, threads, code, usage, devices] =
       await Promise.all([
         db.profile.findUnique({ where: { userId } }),
         db.onboardingProfile.findUnique({ where: { userId }, include: { wounds: true } }),
@@ -110,6 +153,11 @@ export const accountRouter = router({
         db.thread.findMany({ where: { userId }, include: { master: { select: { slug: true } } } }),
         db.personalCode.findUnique({ where: { userId } }),
         db.dailyUsage.findMany({ where: { userId } }),
+        // The installs that receive letters. Read defensively, like every
+        // push path: an unmigrated database has no table.
+        db.pushToken
+          .findMany({ where: { userId }, select: { platform: true, createdAt: true, updatedAt: true } })
+          .catch(() => []),
       ]);
 
     return {
@@ -133,6 +181,7 @@ export const accountRouter = router({
       })),
       personalCode: code,
       dailyUsage: usage,
+      notificationDevices: devices,
       notes: [
         "Message contents are stored separately and are not included in this export yet.",
         "Purchase receipts are held by Apple or Google, not by us.",

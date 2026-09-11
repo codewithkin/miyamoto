@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
 import { localDate, msUntilLocalMidnight } from "../lib/day";
+import { confirmDelivery } from "../lib/deliveries";
 import { getUsage, grantBonusQuestion, isPro } from "../lib/usage";
 
 /**
@@ -43,6 +44,17 @@ export const chatRouter = router({
       throw e;
     }
   }),
+
+  /**
+   * The phone got the latest letter on this thread (plan 13). A letter that
+   * isn't confirmed within seconds of being sent is pushed instead, since
+   * the person has probably left the app (lib/deliveries).
+   */
+  replyReceived: protectedProcedure
+    .input(z.object({ threadId: z.string().min(1) }))
+    .mutation(({ ctx, input }) => ({
+      confirmed: confirmDelivery(ctx.session.user.id, input.threadId),
+    })),
 
   threads: protectedProcedure.query(({ ctx }) =>
     db.thread.findMany({
