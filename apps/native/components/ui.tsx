@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ActivityIndicator,
   type PressableProps,
   ScrollView,
   Text as RNText,
@@ -198,6 +199,28 @@ const BUTTON: Record<ButtonVariant, { container: ViewStyle; color: string }> = {
   },
 };
 
+/**
+ * How every variant looks when it can't be pressed: drawn in ink with faint
+ * text, not as a faded copy of itself. A translucent indigo button still
+ * reads as the thing to press, which is exactly what it isn't.
+ */
+const DISABLED: Record<ButtonVariant, { container: ViewStyle; color: string }> = {
+  primary: {
+    container: { backgroundColor: ink.high, borderWidth: 1, borderColor: ink.border },
+    color: textColor.faintest,
+  },
+  secondary: {
+    container: { backgroundColor: "transparent", borderColor: ink.border },
+    color: textColor.faintest,
+  },
+  ghost: { container: {}, color: textColor.faintest },
+  confirm: {
+    container: { backgroundColor: ink.high, borderWidth: 1, borderColor: ink.border },
+    color: textColor.faintest,
+  },
+  danger: { container: {}, color: textColor.faintest },
+};
+
 export type ButtonProps = Omit<PressableProps, "children" | "style"> & {
   style?: ViewStyle;
   label: string;
@@ -205,6 +228,14 @@ export type ButtonProps = Omit<PressableProps, "children" | "style"> & {
   /** Rendered to the left of the label. */
   icon?: React.ReactNode;
   full?: boolean;
+  /**
+   * The action is waiting on the server (D-049). The button keeps its colour,
+   * so it's clear which action is under way, swaps its icon for a spinner,
+   * and ignores presses until it finishes, so a second tap can't send twice.
+   */
+  loading?: boolean;
+  /** The label while loading: "Accepting…" rather than "Accept". */
+  loadingLabel?: string;
 };
 
 export function Button({
@@ -213,10 +244,19 @@ export function Button({
   icon,
   full = true,
   disabled,
+  loading = false,
+  loadingLabel,
   style,
+  accessibilityState,
   ...rest
 }: ButtonProps) {
-  const spec = BUTTON[variant];
+  // Loading wins over disabled: a button that's working is drawn as the
+  // action it's doing, not as one that can't be done.
+  const inert = Boolean(disabled) && !loading;
+  const color = inert ? DISABLED[variant].color : BUTTON[variant].color;
+  const container = inert
+    ? { ...BUTTON[variant].container, ...DISABLED[variant].container }
+    : BUTTON[variant].container;
   // The press feel is derived from the variant, so confirming a trial feels
   // heavier than opening a row and backing out gives the warning pattern.
   const feel: PressFeel =
@@ -231,8 +271,10 @@ export function Button({
   return (
     <Touchable
       accessibilityRole="button"
+      accessibilityState={{ ...accessibilityState, disabled: inert || loading, busy: loading }}
       feel={feel}
-      disabled={disabled}
+      disabled={inert || loading}
+      dimWhenDisabled={false}
       style={[
         {
           flexDirection: "row",
@@ -243,20 +285,20 @@ export function Button({
           paddingHorizontal: space.section,
           alignSelf: full ? "stretch" : "flex-start",
         },
-        spec.container,
+        container,
         style as ViewStyle,
       ]}
       {...rest}
     >
-      {icon}
+      {loading ? <ActivityIndicator size="small" color={color} /> : icon}
       <Text
         style={{
           fontFamily: font.sansBold,
           fontSize: variant === "ghost" ? size.body : size.bodyLg,
-          color: spec.color,
+          color,
         }}
       >
-        {label}
+        {loading ? (loadingLabel ?? label) : label}
       </Text>
     </Touchable>
   );

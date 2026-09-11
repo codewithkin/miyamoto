@@ -81,6 +81,12 @@ const FEEL: Record<
 export type TouchableProps = Omit<PressableProps, "style"> & {
   feel?: PressFeel;
   style?: ViewStyle | ViewStyle[];
+  /**
+   * Fade to 45% while disabled. On by default; Button turns it off because
+   * it draws its own disabled look in ink, which reads more clearly than a
+   * translucent version of the enabled one.
+   */
+  dimWhenDisabled?: boolean;
   children?: React.ReactNode;
 };
 
@@ -91,6 +97,8 @@ export function Touchable({
   onPressOut,
   onPress,
   disabled,
+  dimWhenDisabled = true,
+  accessibilityState,
   children,
   ...rest
 }: TouchableProps) {
@@ -98,15 +106,23 @@ export function Touchable({
   const opacity = useSharedValue<number>(1);
   const spec = feel === "none" ? null : FEEL[feel];
 
+  // The disabled dim is part of the animated style. It used to be a plain
+  // style after it, and lost to it: a control disabled by its own press
+  // (tap, then wait on the server) animates its opacity back to 1 on release,
+  // and that write lands after React has applied the 0.45. So the button you
+  // had just pressed sat at full strength, looking pressable, while it
+  // waited.
+  const dim = Boolean(disabled) && dimWhenDisabled;
   const animated = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    opacity: opacity.value * (dim ? 0.45 : 1),
   }));
 
   return (
     <AnimatedPressable
       disabled={disabled}
-      style={[style, animated, disabled ? { opacity: 0.45 } : null]}
+      accessibilityState={{ disabled: Boolean(disabled), ...accessibilityState }}
+      style={[style, animated]}
       onPressIn={(e) => {
         if (spec && !disabled) {
           scale.value = withSpring(spec.scale, spring.snappy);
