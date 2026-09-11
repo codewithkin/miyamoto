@@ -191,9 +191,11 @@ export default function DeleteAccountScreen() {
             ) : null}
 
             <Button
-              label={del.isPending ? "Deleting…" : "Delete my account"}
+              label="Delete my account"
+              loading={del.isPending}
+              loadingLabel="Deleting…"
               variant="danger"
-              disabled={!matches || del.isPending}
+              disabled={!matches}
               onPress={() => del.mutate({ confirmEmail: typed })}
               style={{
                 backgroundColor: matches ? "#5C2E28" : "transparent",
@@ -203,7 +205,12 @@ export default function DeleteAccountScreen() {
               }}
             />
 
-            <Button label="Keep my account" variant="ghost" onPress={() => router.back()} />
+            <Button
+              label="Keep my account"
+              variant="ghost"
+              disabled={del.isPending}
+              onPress={() => router.back()}
+            />
           </View>
         </Enter>
       </View>

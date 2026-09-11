@@ -5,6 +5,7 @@ import { env } from "@miyamoto/env/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -415,10 +416,22 @@ export default function ChatScreen() {
                   borderRadius: radius.pill,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: canSend ? indigo.base : ink.high,
+                  backgroundColor: canSend || status === "submitted" ? indigo.base : ink.high,
                 }}
+                dimWhenDisabled={false}
               >
-                <Icon name="arrow-up" size={22} color={canSend ? textColor.primary : textColor.faintest} />
+                {/* While the question is on its way, the button that sent it
+                    says so. The Master's "is writing" line takes over once
+                    the letter starts to arrive. */}
+                {status === "submitted" ? (
+                  <ActivityIndicator size="small" color={textColor.primary} />
+                ) : (
+                  <Icon
+                    name="arrow-up"
+                    size={22}
+                    color={canSend ? textColor.primary : textColor.faintest}
+                  />
+                )}
               </Touchable>
             </View>
           )}
@@ -508,13 +521,19 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
         <View style={{ flexDirection: "row", gap: space.md }}>
           <View style={{ flex: 1 }}>
             <Button
-              label={respond.isPending ? "Accepting…" : "Accept"}
-              disabled={respond.isPending}
+              label="Accept"
+              loading={respond.isPending}
+              loadingLabel="Accepting…"
               onPress={() => answer("ACCEPTED")}
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Button label="Later" variant="secondary" onPress={() => setState("LATER")} />
+            <Button
+              label="Later"
+              variant="secondary"
+              disabled={respond.isPending}
+              onPress={() => setState("LATER")}
+            />
           </View>
         </View>
       ) : null}
@@ -525,9 +544,10 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
 
       {state === "ACCEPTED" ? (
         <Button
-          label={respond.isPending ? "Marking…" : "Mark done"}
+          label="Mark done"
           variant="confirm"
-          disabled={respond.isPending}
+          loading={respond.isPending}
+          loadingLabel="Marking…"
           onPress={() => answer("COMPLETED")}
         />
       ) : null}

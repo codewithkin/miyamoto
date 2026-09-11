@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { Enter, Stagger } from "@/components/motion";
 import { Touchable } from "@/components/touchable";
@@ -95,6 +95,8 @@ export default function SettingsScreen() {
                 <Touchable
                   key={t}
                   feel="chip"
+                  disabled={setReminders.isPending}
+                  dimWhenDisabled={setReminders.variables?.morning !== t}
                   onPress={() => void remindAt(t)}
                   style={{
                     flex: 1,
@@ -106,9 +108,13 @@ export default function SettingsScreen() {
                     borderColor: ink.border,
                   }}
                 >
-                  <Text variant="label" style={{ fontSize: size.body }}>
-                    {t}
-                  </Text>
+                  {setReminders.isPending && setReminders.variables?.morning === t ? (
+                    <ActivityIndicator size="small" color={textColor.body} />
+                  ) : (
+                    <Text variant="label" style={{ fontSize: size.body }}>
+                      {t}
+                    </Text>
+                  )}
                 </Touchable>
               ))}
             </View>
@@ -119,6 +125,7 @@ export default function SettingsScreen() {
             ) : null}
             <Touchable
               feel="row"
+              disabled={setReminders.isPending}
               onPress={() => setReminders.mutate({ enabled: false })}
               style={{ paddingTop: space.base }}
             >
@@ -134,9 +141,10 @@ export default function SettingsScreen() {
           <Group title="Purchases">
             <LinkRow
               label={restoring ? "Checking…" : "Restore purchase"}
+              loading={restoring}
               onPress={async () => {
                 setRestoring(true);
-                await restore();
+                await restore().catch(() => false);
                 setRestoring(false);
                 void qc.invalidateQueries();
               }}
@@ -227,11 +235,23 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
+function LinkRow({
+  label,
+  onPress,
+  loading = false,
+}: {
+  label: string;
+  onPress: () => void;
+  /** Waiting on the store or the server: a spinner for the chevron, presses ignored. */
+  loading?: boolean;
+}) {
   return (
     <Touchable
       feel="row"
       onPress={onPress}
+      disabled={loading}
+      dimWhenDisabled={false}
+      accessibilityState={{ busy: loading }}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -242,7 +262,11 @@ function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
       <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
         {label}
       </Text>
-      <Chevron color={indigo.light} />
+      {loading ? (
+        <ActivityIndicator size="small" color={indigo.light} />
+      ) : (
+        <Chevron color={indigo.light} />
+      )}
     </Touchable>
   );
 }

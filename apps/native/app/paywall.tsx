@@ -35,8 +35,9 @@ function PaywallScreenBody() {
   const [busy, setBusy] = React.useState<"buy" | "restore" | null>(null);
 
   async function run(kind: "buy" | "restore") {
+    if (busy) return;
     setBusy(kind);
-    const ok = kind === "buy" ? await buy() : await restore();
+    const ok = await (kind === "buy" ? buy() : restore()).catch(() => false);
     setBusy(null);
     if (ok) {
       void qc.invalidateQueries();
@@ -124,22 +125,20 @@ function PaywallScreenBody() {
       <View style={{ paddingVertical: space.xxl, gap: space.md }}>
         <Enter preset="pop" delay={1420}>
           <Button
-            label={
-              isPro
-                ? "You already have Pro"
-                : busy === "buy"
-                  ? "Opening…"
-                  : "Start 3 days free"
-            }
-            disabled={isPro || busy !== null}
+            label={isPro ? "You already have Pro" : "Start 3 days free"}
+            loading={busy === "buy"}
+            loadingLabel="Opening the store…"
+            disabled={isPro || busy === "restore"}
             onPress={() => void run("buy")}
           />
         </Enter>
         <Enter preset="fade" delay={1560}>
           <Button
-            label={busy === "restore" ? "Checking…" : "Restore purchase"}
+            label="Restore purchase"
             variant="ghost"
-            disabled={busy !== null}
+            loading={busy === "restore"}
+            loadingLabel="Checking…"
+            disabled={busy === "buy"}
             onPress={() => void run("restore")}
           />
         </Enter>

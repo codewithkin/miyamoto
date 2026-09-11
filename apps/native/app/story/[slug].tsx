@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
@@ -23,11 +23,17 @@ import { gold, ink, radius, size, space, text as textColor } from "@/theme/token
 export default function StoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
+  const qc = useQueryClient();
 
   const story = useQuery(trpc.library.story.queryOptions({ slug: slug! }));
+  // Refetch the thread list before opening the chat, which opens on the
+  // newest thread; see masters.tsx.
   const createThread = useMutation(
     trpc.chat.createThread.mutationOptions({
-      onSuccess: () => router.push("/(app)/chat"),
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: trpc.chat.threads.queryKey() });
+        router.push("/(app)/chat");
+      },
     }),
   );
 
@@ -129,10 +135,9 @@ export default function StoryScreen() {
 
               <Enter preset="pop" delay={1600}>
                 <Button
-                  label={
-                    createThread.isPending ? "Opening…" : `Ask ${s.master.name} about this`
-                  }
-                  disabled={createThread.isPending}
+                  label={`Ask ${s.master.name} about this`}
+                  loading={createThread.isPending}
+                  loadingLabel="Opening…"
                   onPress={() =>
                     createThread.mutate({
                       masterSlug: s.master.slug,
@@ -141,6 +146,11 @@ export default function StoryScreen() {
                     })
                   }
                 />
+                {createThread.isError ? (
+                  <Text variant="caption" color="#E0483B" style={{ marginTop: space.sm }}>
+                    That conversation didn&apos;t open. Try again.
+                  </Text>
+                ) : null}
               </Enter>
             </>
           )}

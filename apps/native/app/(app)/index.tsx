@@ -140,9 +140,11 @@ export default function PathHomeScreen() {
               />
             ) : (
               <Button
-                label={complete.isPending ? "Marking…" : "Mark complete"}
+                label="Mark complete"
                 variant="confirm"
-                disabled={complete.isPending || !d?.trial}
+                loading={complete.isPending}
+                loadingLabel="Marking…"
+                disabled={!d?.trial}
                 onPress={() => complete.mutate({})}
               />
             )}

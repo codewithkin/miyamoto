@@ -149,6 +149,9 @@ export default function WelcomeScreen() {
             accessibilityLabel="Continue with Google"
             accessibilityState={{ busy: busy !== null, disabled: busy !== null }}
             disabled={busy !== null}
+            // It shows its own spinner while Google opens. Fading it too
+            // would make the one action look unavailable, not under way.
+            dimWhenDisabled={false}
             onPress={startSignIn}
             style={{
               height: 58,

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
@@ -14,6 +14,29 @@ import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 import { MASTER_COUNT } from "@/content/onboarding-options";
+
+/**
+ * Buying Pro from a sheet: shows the store opening on the button that opened
+ * it, and closes the sheet once Pro has actually landed.
+ */
+function useBuyPro(onBought: () => void) {
+  const qc = useQueryClient();
+  const { buy } = usePurchases();
+  const [buying, setBuying] = React.useState(false);
+
+  async function run() {
+    if (buying) return;
+    setBuying(true);
+    const bought = await buy().catch(() => false);
+    setBuying(false);
+    if (bought) {
+      void qc.invalidateQueries();
+      onBought();
+    }
+  }
+
+  return { buying, buyPro: () => void run() };
+}
 
 /**
  * 21 · Switch Master.
@@ -35,7 +58,7 @@ export function SwitchMasterSheet({
   currentSlug?: string;
 }) {
   const qc = useQueryClient();
-  const { buy } = usePurchases();
+  const { buying, buyPro } = useBuyPro(onClose);
   const masters = useQuery(trpc.library.masters.queryOptions());
 
   const switchTo = useMutation(
@@ -57,11 +80,15 @@ export function SwitchMasterSheet({
       <Stagger initialDelay={120} step={80} style={{ gap: space.md }}>
         {(masters.data ?? []).map((m) => {
           const speaking = m.slug === currentSlug;
+          // The row that was pressed shows the switch under way; the rest
+          // wait, dimmed, until it lands.
+          const switching = switchTo.isPending && switchTo.variables?.masterSlug === m.slug;
           return (
             <Enter key={m.id} preset="slideLeft">
               <Touchable
                 feel={m.available && !speaking ? "row" : "danger"}
                 disabled={speaking || switchTo.isPending}
+                dimWhenDisabled={!switching && !speaking}
                 onPress={() => {
                   if (!m.available) return;
                   if (threadId) switchTo.mutate({ threadId, masterSlug: m.slug });
@@ -113,7 +140,11 @@ export function SwitchMasterSheet({
                         ? "Pro"
                         : `Day ${m.unlockDay}`}
                 </Text>
-                {m.available && !speaking ? <Chevron /> : null}
+                {switching ? (
+                  <ActivityIndicator size="small" color={indigo.light} />
+                ) : m.available && !speaking ? (
+                  <Chevron />
+                ) : null}
               </Touchable>
             </Enter>
           );
@@ -133,12 +164,10 @@ export function SwitchMasterSheet({
       <Button
         label="See Pro"
         variant="secondary"
-        onPress={async () => {
-          if (await buy()) {
-            void qc.invalidateQueries();
-            onClose();
-          }
-        }}
+        loading={buying}
+        loadingLabel="Opening the store…"
+        disabled={switchTo.isPending}
+        onPress={buyPro}
       />
     </Sheet>
   );
@@ -264,7 +293,7 @@ export function OutOfAnswersSheet({
   onClose: () => void;
 }) {
   const qc = useQueryClient();
-  const { buy } = usePurchases();
+  const { buying, buyPro } = useBuyPro(onClose);
   const [watching, setWatching] = React.useState(false);
   const [adFailed, setAdFailed] = React.useState(false);
 
@@ -296,22 +325,20 @@ export function OutOfAnswersSheet({
       <Enter preset="pop" delay={140}>
         <Button
           label="See Pro"
-          onPress={async () => {
-            if (await buy()) {
-              void qc.invalidateQueries();
-              onClose();
-            }
-          }}
+          loading={buying}
+          loadingLabel="Opening the store…"
+          disabled={watching || grant.isPending}
+          onPress={buyPro}
         />
       </Enter>
 
       <Enter preset="fade" delay={280}>
         <Button
-          label={
-            watching ? "Loading the ad…" : grant.isPending ? "Granting…" : "Watch an ad for +1"
-          }
+          label="Watch an ad for +1"
           variant="secondary"
-          disabled={watching || grant.isPending}
+          loading={watching || grant.isPending}
+          loadingLabel={watching ? "Loading the ad…" : "Adding your question…"}
+          disabled={buying}
           onPress={() => void watchAd()}
         />
       </Enter>

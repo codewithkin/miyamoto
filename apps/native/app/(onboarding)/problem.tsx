@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { TextInput, View } from "react-native";
+import { ActivityIndicator, TextInput, View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
 import { Enter, Stagger } from "@/components/motion";
@@ -65,6 +65,8 @@ export default function ProblemScreen() {
   const wroteOwn = typed.trim().length > 0;
   const problem = wroteOwn ? typed.trim() : (selected?.label ?? null);
   const busy = claim.isPending;
+  // Which control started the claim, so the spinner shows on that one.
+  const skipping = busy && claim.variables?.seedProblem === null;
 
   function choose(slug: string, label: string) {
     set({ seedProblemSlug: slug, seedProblem: label });
@@ -143,9 +145,13 @@ export default function ProblemScreen() {
             onPress={() => void begin(null)}
             accessibilityLabel="Skip to the chat"
           >
-            <Text variant="label" color={textColor.muted}>
-              Skip
-            </Text>
+            {skipping ? (
+              <ActivityIndicator size="small" color={textColor.muted} />
+            ) : (
+              <Text variant="label" color={textColor.muted}>
+                Skip
+              </Text>
+            )}
           </Touchable>
         </View>
       </Enter>
@@ -250,9 +256,11 @@ export default function ProblemScreen() {
         ) : null}
         <Enter preset="pop" delay={1000}>
           <Button
-            label={busy ? "Opening your chat…" : `Ask ${FIRST_MASTER.name}`}
+            label={`Ask ${FIRST_MASTER.name}`}
+            loading={busy && !skipping}
+            loadingLabel="Opening your chat…"
             icon={<MasterAvatar slug={FIRST_MASTER.slug} name={FIRST_MASTER.name} size={26} />}
-            disabled={!problem || busy}
+            disabled={!problem || skipping}
             onPress={() => void begin(problem)}
           />
         </Enter>

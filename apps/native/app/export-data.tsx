@@ -134,14 +134,9 @@ export default function ExportDataScreen() {
         <Enter preset="pop" delay={960}>
           <View style={{ gap: space.md }}>
             <Button
-              label={
-                status === "working"
-                  ? "Assembling…"
-                  : status === "done"
-                    ? "Export again"
-                    : "Export my data"
-              }
-              disabled={status === "working"}
+              label={status === "done" ? "Export again" : "Export my data"}
+              loading={status === "working"}
+              loadingLabel="Assembling…"
               onPress={() => void run()}
             />
             {status === "failed" ? (

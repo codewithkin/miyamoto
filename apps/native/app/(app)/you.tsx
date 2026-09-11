@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { Chevron, IconBadge, type IconName } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
@@ -31,6 +31,7 @@ export default function YouScreen() {
   const today = useQuery(trpc.path.today.queryOptions());
   const code = useQuery(trpc.path.code.queryOptions());
   const usage = useQuery(trpc.chat.usage.queryOptions());
+  const [signingOut, setSigningOut] = React.useState(false);
 
   const d = today.data;
   const daysToCode = Math.max(0, 29 - (d?.currentDay ?? 1));
@@ -155,8 +156,14 @@ export default function YouScreen() {
             <Row
               icon="log-out-outline"
               label="Sign out"
+              loading={signingOut}
               onPress={async () => {
-                await authClient.signOut();
+                if (signingOut) return;
+                setSigningOut(true);
+                // Signed out on this phone even if the server can't be
+                // reached: the plugin clears the stored session either way.
+                await authClient.signOut().catch(() => {});
+                setSigningOut(false);
                 router.replace("/");
               }}
             />
@@ -205,16 +212,22 @@ function Row({
   label,
   accent,
   onPress,
+  loading = false,
 }: {
   icon: IconName;
   label: string;
   accent?: boolean;
   onPress: () => void;
+  /** Waiting on the server: a spinner for the chevron, presses ignored. */
+  loading?: boolean;
 }) {
   return (
     <Touchable
       feel="row"
       onPress={onPress}
+      disabled={loading}
+      dimWhenDisabled={false}
+      accessibilityState={{ busy: loading }}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -230,7 +243,9 @@ function Row({
       <Text variant="label" style={{ flex: 1, fontSize: size.body }}>
         {label}
       </Text>
-      {accent ? (
+      {loading ? (
+        <ActivityIndicator size="small" color={indigo.light} />
+      ) : accent ? (
         <Text variant="eyebrow" color={gold.base}>
           Upgrade
         </Text>

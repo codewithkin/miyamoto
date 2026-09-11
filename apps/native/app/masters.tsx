@@ -1,7 +1,7 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
@@ -26,9 +26,18 @@ import { MASTERS } from "@/content/onboarding-options";
  */
 export default function MastersScreen() {
   const router = useRouter();
+  const qc = useQueryClient();
   const masters = useQuery(trpc.library.masters.queryOptions());
+  // The chat opens on the newest thread, and the chat tab stays mounted, so
+  // the thread list is refetched before going there. Without that, the chat
+  // showed whichever conversation it had open before.
   const createThread = useMutation(
-    trpc.chat.createThread.mutationOptions({ onSuccess: () => router.push("/(app)/chat") }),
+    trpc.chat.createThread.mutationOptions({
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: trpc.chat.threads.queryKey() });
+        router.push("/(app)/chat");
+      },
+    }),
   );
 
   const list = masters.data ?? [];
@@ -67,11 +76,14 @@ export default function MastersScreen() {
           {list.map((m) => {
             const isProLocked = !m.available && m.lockReason === "PRO";
             const isDayLocked = !m.available && m.lockReason !== "PRO";
+            const opening = createThread.isPending && createThread.variables?.masterSlug === m.slug;
             return (
               <Enter key={m.id} preset="swing">
                 <Touchable
                   feel={m.available ? "row" : "danger"}
                   disabled={createThread.isPending}
+                  dimWhenDisabled={!opening}
+                  accessibilityState={{ busy: opening }}
                   onPress={() => {
                     if (m.available) createThread.mutate({ masterSlug: m.slug });
                   }}
@@ -112,12 +124,18 @@ export default function MastersScreen() {
                         {m.title} · {m.tone}
                       </Text>
                     </View>
-                    <Text
-                      variant="eyebrow"
-                      color={m.available ? indigo.light : isProLocked ? gold.base : textColor.faintest}
-                    >
-                      {m.available ? "Speak" : isProLocked ? "Pro" : `Day ${m.unlockDay}`}
-                    </Text>
+                    {opening ? (
+                      <ActivityIndicator size="small" color={indigo.light} />
+                    ) : (
+                      <Text
+                        variant="eyebrow"
+                        color={
+                          m.available ? indigo.light : isProLocked ? gold.base : textColor.faintest
+                        }
+                      >
+                        {m.available ? "Speak" : isProLocked ? "Pro" : `Day ${m.unlockDay}`}
+                      </Text>
+                    )}
                   </View>
                   <Text
                     variant="caption"
@@ -132,6 +150,14 @@ export default function MastersScreen() {
             );
           })}
         </Stagger>
+
+        {createThread.isError ? (
+          <Enter preset="slideLeft">
+            <Text variant="caption" color="#E0483B">
+              That conversation didn&apos;t open. Try again.
+            </Text>
+          </Enter>
+        ) : null}
       </View>
     </Screen>
   );
