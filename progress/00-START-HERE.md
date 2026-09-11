@@ -13,6 +13,15 @@ their own voice. This file is self-contained.
 
 ## ⚠️ Read this first
 
+**Session 8, later** (plan 14, built). The server and its database moved
+to **Coolify**. The container now migrates and seeds its own database on
+every start (D-051), which settles the old "wire `migrate deploy` in"
+item. Email sign-in exists for seeded accounts only, and the server keeps
+a Pro reviewer account for Play review from `REVIEWER_EMAIL` and
+`REVIEWER_PASSWORD` (D-052). What to type into Play Console is in
+`systems/06-auth.md`. Plan 13 (chat bubbles, letters that find you, ads for
+questions) is part-built: A and B are done, C onward is not.
+
 **Session 8** (plan 12, built). The owner signed in on a phone and landed in
 the right place, so the round trip works. Sending a chat message then came
 back `POST /ai 401`: the chat transport was the one request that didn't
@@ -330,20 +339,12 @@ notes do not survive a clone.
 13. **Enter the Data safety form in Play Console.** The answers are in
     `systems/11-play-data-safety.md`, and the privacy policy already
     matches them. Only the owner can submit the form.
-14. **Schema changes still don't reach production by deploying** — but
-    production is now migrated and seeded (session 7), so this is ready to
-    wire up whenever the owner decides to. Nothing runs `prisma migrate
-    deploy` on build; `postinstall` only regenerates the client. What
-    changed: production's `DATABASE_URL` turned out to point at a leftover,
-    unrelated Prisma Postgres database (`Guardian`, `PaymentOrder`, a
-    `STUDENT_SCHOLAR` plan enum — nothing to do with Miyamoto), not an
-    out-of-sync one — `prisma migrate reset --force` (owner-confirmed) then
-    the seed script gave it the real schema and content, tracked by the
-    same migration dev has. `prisma migrate status` reports clean on both
-    now. See `systems/12-deploys.md`. Wiring `migrate deploy` into the
-    build so future schema changes apply automatically is still a
-    deliberate choice for the owner to make, not a default to pick
-    silently — it means every push touches production data from then on.
+14. **Settled (session 8): schema changes reach production by deploying.**
+    The owner moved the server and database to Coolify, and the container
+    now runs `prisma migrate deploy` and the content seed on every start
+    (D-051, `systems/12-deploys.md`). The first start on the new, empty
+    database creates every table and seeds the content. Watch that first
+    deploy's log for `[boot]` lines.
 
 ## Waiting on the owner
 

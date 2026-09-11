@@ -452,3 +452,26 @@ generated Prisma client the Vercel web build never produces. So
 `next.config.ts` sets `typescript.ignoreBuildErrors`. The site's types are
 still checked by `pnpm check-types` wherever the client exists. See
 `systems/12-deploys.md`.
+
+**D-051 — The server migrates and seeds its own database on every start.**
+The server and its database run on Coolify, and the database is only
+reachable on Coolify's internal network. Migrations are written locally
+(`prisma migrate dev` against the local database) and committed.
+`apps/server/docker-entrypoint.sh` runs `prisma migrate deploy`, which
+applies only what's pending, then the idempotent content seed, then the
+server. A failed migration stops the start; a failed seed is logged and
+the server starts anyway. This settles START-HERE's old open item "wire
+`migrate deploy` into the build". It had been the owner's call because it
+changes production on every push, and the owner made it (session 8).
+Plan 14.
+
+**D-052 — Email and password exist for seeded accounts only.**
+Google Play's review needs a username and password that opens the whole
+app, and its reviewers can't use Google accounts of their own. So email
+sign-in is on with sign-up off: the only accounts that can use it are ones
+the server creates. The Play reviewer account is seeded on every start from
+`REVIEWER_EMAIL` and `REVIEWER_PASSWORD` (host environment only), with a
+verified email and Pro for life, since Play requires access to paid
+content. Welcome keeps Google as its one filled action; "Sign in with
+email" is a quiet link under it. This narrows D-039 (Google only) without
+reversing it: no one can sign up with a password. Plan 14.

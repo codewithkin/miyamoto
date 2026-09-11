@@ -1,6 +1,6 @@
 # 14 — Coolify: migrations on start, and a sign-in for Play's reviewers
 
-**Status: in flight (session 8).** Interleaved with plan 13, whose C2
+**Status: built (session 8).** The image hasn't been built on this machine (no Docker here); the first Coolify deploy is its test. The rules are D-051 and D-052. Interleaved with plan 13, whose C2
 onward waits on this: its push-token table needs migrations to reach
 production, and this plan is how they get there.
 
@@ -26,7 +26,7 @@ The owner's requests, session 8:
 
 ## F1 — Migrate and seed when the container starts
 
-- [ ] `pending-F1`
+- [x] `09d6853`
 - **Commit:** `feat(server): apply migrations and seed the content when the container starts`
 - **Touches:** `apps/server/docker-entrypoint.sh` (new), `apps/server/Dockerfile`
 - **Done when:** the container runs `prisma migrate deploy` (a failure
@@ -39,7 +39,7 @@ The owner's requests, session 8:
 
 ## G1 — Email and password, for seeded accounts only
 
-- [ ] `pending-G1`
+- [x] `ebc0b06`
 - **Commit:** `feat(auth): allow email sign-in for seeded accounts, with sign-up off`
 - **Touches:** `packages/auth/src/index.ts`
 - **Done when:** `/sign-in/email` works for an account that has a
@@ -47,7 +47,7 @@ The owner's requests, session 8:
 
 ## G2 — The reviewer account, on every start
 
-- [ ] `pending-G2`
+- [x] `940b681`
 - **Commit:** `feat(server): keep a Pro reviewer account for Play review`
 - **Touches:** `packages/env/src/server.ts` (`REVIEWER_EMAIL`,
   `REVIEWER_PASSWORD`, `REVIEWER_NAME`), `apps/server/src/reviewer.ts` (new),
@@ -60,7 +60,7 @@ The owner's requests, session 8:
 
 ## G3 — A way in from the welcome screen
 
-- [ ] `pending-G3`
+- [x] `82b7f9f`
 - **Commit:** `feat(native): add email sign-in on welcome for review accounts`
 - **Touches:** `app/(auth)/welcome.tsx`, `components/email-sign-in.tsx` (new)
 - **Done when:** a quiet "Sign in with email" link under the Google
@@ -71,7 +71,7 @@ The owner's requests, session 8:
 
 ## H1 — Docs
 
-- [ ] `pending-H1`
+- [x] this commit
 - **Commit:** `docs: record the Coolify start-up and the review account`
 - **Touches:** `systems/12-deploys.md`, `systems/06-auth.md`,
   `systems/09-decisions.md`, `progress/00-START-HERE.md`

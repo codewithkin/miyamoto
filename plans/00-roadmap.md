@@ -16,6 +16,8 @@ diverge silently.
 | 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
 | 04 | `04-onboarding-claim.md` | **Done** | — |
 | 06 | `06-onboarding-rework.md` | **Built** (session 4), not run on a device | Google OAuth client + an HTTPS server URL; a device |
+| 14 | `14-coolify-and-review-access.md` | **Built** (session 8); the first Coolify deploy is its test | The owner: `REVIEWER_*` on Coolify, Play Console's sign-in details |
+| 13 | `13-chat-letters-notifications.md` | **In flight** (session 8): A, B, C1 built | Firebase for push (C) |
 | 12 | `12-session-onboarding-feedback.md` | **Built** (session 8), not run on a device | A device: the first real reply, the one-question onboarding |
 | 11 | `11-first-week.md` | **Superseded** (session 8): its screens went with the quiz (D-048) | — |
 | 10 | `10-onboarding-craft.md` | **Superseded** in part (session 8): only the problem screen remains (D-048) | — |

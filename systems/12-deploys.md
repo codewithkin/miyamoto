@@ -1,9 +1,11 @@
 # Deploys — Vercel, and its second, hidden type-check
 
-> **As of session 7 the server runs on Render**
-> (`https://miyamoto-server.onrender.com`, started with `bun run
-> dist/index.mjs`). The Vercel sections below record why deploying
-> `apps/server` there failed, and still apply if it ever moves back.
+> **As of session 8 the server and its database run on Coolify**, built from
+> `apps/server/Dockerfile`. The container migrates and seeds its own
+> database on every start (D-051, "Coolify" below). Before that it ran on
+> Render (session 7), and before that on Vercel. The Vercel sections below
+> record why deploying `apps/server` there failed, and still apply if it
+> ever moves back.
 > Render's own notes: the database URL's `sslmode=require` prints a `pg`
 > deprecation warning on every boot; `sslmode=verify-full` means the same
 > thing today and silences it. The client-IP header note is in
@@ -229,6 +231,39 @@ with none configured — skips rather than fails) would make every deploy
 apply pending migrations on its own. That's a deliberate step to take
 once, not a default this session picked silently: it changes production
 data on every push from then on. See `progress/00-START-HERE.md`.
+
+## Coolify: the container migrates and seeds itself (D-051)
+
+The database is reachable only on Coolify's internal network, so nothing
+on a laptop can run migrations against it. The container does it on every
+start, in `apps/server/docker-entrypoint.sh`:
+
+```
+prisma migrate deploy   pending migrations only; a failure stops the start
+content seed            idempotent; a failure is logged, the server starts
+bun dist/index.mjs      the server
+```
+
+Making a schema change is the same as it always was, minus the production
+step:
+
+```bash
+# in packages/db, against the LOCAL database (apps/server/.env)
+npx prisma migrate dev --name <what-changed>
+git add prisma/schema prisma/migrations && git commit
+git push           # Coolify rebuilds; the new container applies it on start
+```
+
+The start log shows `[boot] applying database migrations`, Prisma's
+report, `[boot] seeding content`, then `[boot] starting the server`. A
+container that restarts in a loop right after `applying database
+migrations` has a migration that fails against production: read Prisma's
+error in the log. The Prisma CLI is the version pinned in packages/db, run
+under Bun, since the image has no Node.
+
+The server's environment on Coolify needs everything in
+`apps/server/.env.example`, plus `REVIEWER_EMAIL` and `REVIEWER_PASSWORD`
+for Play review (`systems/06-auth.md`).
 
 ## The marketing site (`apps/web`) on Vercel
 

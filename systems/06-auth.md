@@ -253,3 +253,31 @@ default scopes, publishing is immediate.
 | `apps/native/app/(auth)/welcome.tsx` | The screen: the only thing a signed-out person sees |
 | `apps/native/lib/use-google-sign-in.ts` | Running the sign-in, and the error-to-sentence mapping |
 | `apps/native/app/(app)/_layout.tsx` | The gate that decides where a new session goes |
+| `apps/server/src/reviewer.ts` | The Play reviewer account, kept on every start (D-052) |
+| `apps/native/components/email-sign-in.tsx` | Email sign-in, for seeded accounts |
+
+## The Play reviewer account (D-052)
+
+Google Play reviews the app signed in, with details from Play Console ->
+App content -> **Sign in details**. Its reviewers can't create accounts or
+use their own Google accounts, so the server keeps one for them:
+
+1. Pick an email you control and a password of at least 8 characters.
+2. Set `REVIEWER_EMAIL` and `REVIEWER_PASSWORD` (and optionally
+   `REVIEWER_NAME`) in the server's environment on Coolify. Never in the
+   repo.
+3. Redeploy or restart. The log says `[reviewer] account ready (password
+   set)` the first time, then `[reviewer] account ready` on each start.
+4. In Play Console, enter the same email and password, and for "Any other
+   information required to access your app":
+
+   > On the welcome screen, tap "Sign in with email" (under "Continue with
+   > Google") and enter these details. The account has Pro, so every
+   > Master, story and feature is unlocked, with no purchase needed. After
+   > sign-in, answer or skip the one question to reach the app.
+
+   That's 262 characters of the 500 allowed.
+
+The account is Pro for life and verified. Email sign-up is refused, so no
+one else can create a password account. Changing the password is changing
+the variable and restarting.
