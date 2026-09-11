@@ -165,13 +165,19 @@ export function useOpenLettersFromNotifications(enabled: boolean) {
       if (!response) return;
       const id = response.notification.request.identifier;
       const data = response.notification.request.content.data as { kind?: string } | undefined;
-      if (data?.kind !== "reply" || handled.current === id) return;
+      // Letters, and the two nudges (questions back, a charge still open),
+      // all lead to the chat. Trial reminders open the app on the Path.
+      const toChat = data?.kind === "reply" || data?.kind === "questions" || data?.kind === "charge";
+      if (!toChat || handled.current === id) return;
       handled.current = id;
+      // Cleared once acted on. The last response outlives the launch it
+      // started, and without this every later start would open the chat again.
+      Notifications.clearLastNotificationResponse();
       router.push("/(app)/chat");
     };
 
     // Started from the tap: the response is waiting for us.
-    void Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+    open(Notifications.getLastNotificationResponse());
     const subscription = Notifications.addNotificationResponseReceivedListener(open);
     return () => subscription.remove();
   }, [enabled, router]);

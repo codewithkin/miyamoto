@@ -8,7 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { useClaimDraft } from "@/lib/claim-draft";
 import { useLetterRegistration, useOpenLettersFromNotifications } from "@/lib/letters";
 import { useOnboarding } from "@/lib/onboarding-store";
-import { useReminderSchedule } from "@/lib/use-reminders";
+import { useReminderSchedule, useRetentionNudges } from "@/lib/use-reminders";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
 import { font, size, tracking } from "@/theme/tokens";
 import { trpc } from "@/utils/trpc";
@@ -35,6 +35,8 @@ export default function AppLayout() {
   useClaimDraft();
   // Keeps the two daily reminders in step with the account's settings.
   useReminderSchedule(Boolean(session));
+  // Questions back, and a charge still open: the only two nudges (plan 13).
+  useRetentionNudges(Boolean(session));
   // Letters that find you (plan 13): register this install for pushes, and
   // open the chat from a letter's notification.
   useLetterRegistration(Boolean(session));

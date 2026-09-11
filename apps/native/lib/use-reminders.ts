@@ -2,12 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
 import {
+  CHARGE_OPEN_ID,
+  QUESTIONS_BACK_ID,
   cancelDailyReminders,
+  cancelNudge,
   cancelStreakWarning,
   configureForegroundDisplay,
   scheduleDailyReminders,
+  scheduleNudge,
   scheduleStreakWarning,
 } from "@/lib/notifications";
+import { previewOf } from "@/lib/letters";
 import { streakWarningAt } from "@/lib/streak-warning";
 import { trpc } from "@/utils/trpc";
 
@@ -35,6 +40,64 @@ import { trpc } from "@/utils/trpc";
 /** Screen 10's evening preview, verbatim. The promise is the copy. */
 const EVENING_BODY = "Did you do it? One word is enough.";
 
+
+/**
+ * The two nudges (lib/notifications, plan 13), kept in step with the
+ * server's counter and today's charges. Both read queries the app already
+ * holds, so this adds no requests of its own beyond today's charges.
+ */
+export function useRetentionNudges(enabled: boolean) {
+  const usage = useQuery({ ...trpc.chat.usage.queryOptions(), enabled });
+  const charges = useQuery({ ...trpc.chat.charges.queryOptions(), enabled });
+  const today = useQuery({ ...trpc.path.today.queryOptions(), enabled });
+  const from = today.data?.master?.name ?? "Musashi";
+
+  // Questions back: only for a free account that has run out today. The
+  // reset is the server's midnight in the account's timezone (D-017),
+  // bucketed to ten minutes so a refetch doesn't reschedule. The morning
+  // after, at 08:00, one notification. Pro cancels it.
+  const u = usage.data;
+  const ranOut = Boolean(u && !u.isPro && !u.canAsk);
+  const resetAt = u ? Math.round((Date.now() + u.msUntilReset) / 600_000) * 600_000 : null;
+  React.useEffect(() => {
+    if (!enabled || !u) return;
+    if (u.isPro) {
+      void cancelNudge(QUESTIONS_BACK_ID);
+      return;
+    }
+    // Not out today: leave any pending one alone. Running out earlier and
+    // then watching an ad doesn't make tomorrow's questions less true.
+    if (!ranOut || resetAt == null) return;
+    void scheduleNudge({
+      id: QUESTIONS_BACK_ID,
+      at: new Date(resetAt + 8 * 3_600_000),
+      title: from,
+      body: "Three new questions today. Bring the next one.",
+      kind: "questions",
+    }).catch(() => {});
+  }, [enabled, u?.isPro, ranOut, resetAt, from]);
+
+  // A charge still open at 18:00 on the day it was handed over: one nudge in
+  // its Master's name, with the charge itself. Done, declined, or past
+  // 18:00 cancels it.
+  const open = charges.data?.find((c) => c.status === "PENDING" || c.status === "ACCEPTED");
+  React.useEffect(() => {
+    if (!enabled || !charges.data) return;
+    if (!open) {
+      void cancelNudge(CHARGE_OPEN_ID);
+      return;
+    }
+    const at = new Date();
+    at.setHours(18, 0, 0, 0);
+    void scheduleNudge({
+      id: CHARGE_OPEN_ID,
+      at,
+      title: open.master.name,
+      body: `Still due today: ${previewOf(open.body, 80)}`,
+      kind: "charge",
+    }).catch(() => {});
+  }, [enabled, Boolean(charges.data), open?.id, open?.body, open?.master.name]);
+}
 
 export function useReminderSchedule(enabled: boolean) {
   const account = useQuery({ ...trpc.account.overview.queryOptions(), enabled });

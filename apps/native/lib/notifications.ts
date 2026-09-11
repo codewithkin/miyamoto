@@ -27,10 +27,22 @@ export const LETTERS_CHANNEL = "letters";
 
 export type PermissionOutcome = "granted" | "denied" | "unavailable";
 
-/** Both channels. Creating an existing channel is a no-op, so this is safe to repeat. */
+/**
+ * The two nudges (plan 13): questions back, and a charge still open. Their
+ * own channel, so they can be silenced without losing letters or trial
+ * reminders.
+ */
+export const NUDGES_CHANNEL = "nudges";
+
+/** All three channels. Creating an existing channel is a no-op, so this is safe to repeat. */
 export async function ensureChannels() {
   if (Platform.OS !== "android") return;
   await Promise.all([
+    Notifications.setNotificationChannelAsync(NUDGES_CHANNEL, {
+      name: "Questions and charges",
+      description: "When your questions are back, and when a charge is still open that day.",
+      importance: Notifications.AndroidImportance.DEFAULT,
+    }),
     Notifications.setNotificationChannelAsync(TRIAL_CHANNEL, {
       name: "Trial reminders",
       importance: Notifications.AndroidImportance.HIGH,
@@ -226,6 +238,60 @@ export async function scheduleStreakWarning(args: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: args.at,
       channelId: TRIAL_CHANNEL,
+    },
+  });
+  return true;
+}
+
+// ── The two nudges ───────────────────────────────────────────────────────
+
+/**
+ * Retention, kept to what's worth getting (plan 13, "don't overdo it"). Each
+ * is one fixed slot, so scheduling replaces rather than stacks. Each is sent
+ * only while it's true, and cancelled when it stops being true. Neither is
+ * a "we miss you": both are about something the person already started.
+ *
+ *   - questions-back: a free account that ran out today hears, once, the
+ *     next morning at 08:00, that its three questions are back.
+ *   - charge-open: a charge a Master handed over today that's still open at
+ *     18:00 gets one nudge, in that Master's name.
+ */
+export const QUESTIONS_BACK_ID = "questions-back";
+export const CHARGE_OPEN_ID = "charge-open";
+
+/** Removes a one-off nudge, if it's pending. Safe when it isn't. */
+export async function cancelNudge(id: string): Promise<void> {
+  if (Platform.OS === "web") return;
+  await Notifications.cancelScheduledNotificationAsync(id).catch(() => {});
+}
+
+/**
+ * Schedules a one-off nudge in its slot, replacing whatever was there. A
+ * moment already past, or no permission, schedules nothing.
+ */
+export async function scheduleNudge(args: {
+  id: string;
+  at: Date;
+  title: string;
+  body: string;
+  kind: "questions" | "charge";
+}): Promise<boolean> {
+  if (Platform.OS === "web") return false;
+  if (args.at.getTime() <= Date.now()) {
+    await cancelNudge(args.id);
+    return false;
+  }
+  if (!(await hasReminderPermission())) return false;
+
+  await ensureChannel();
+  await cancelNudge(args.id);
+  await Notifications.scheduleNotificationAsync({
+    identifier: args.id,
+    content: { title: args.title, body: args.body, data: { kind: args.kind } },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: args.at,
+      channelId: NUDGES_CHANNEL,
     },
   });
   return true;
