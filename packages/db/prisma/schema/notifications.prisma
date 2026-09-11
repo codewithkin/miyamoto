@@ -1,0 +1,24 @@
+/// An Expo push token for one install of the app (plan 13).
+///
+/// A Master's letter is written, checked and saved on the server even if the
+/// person closed the app while it was being written. This is how the letter
+/// still reaches them: the server pushes it to every token they hold.
+///
+/// One row per install, keyed by the token itself. A token is a device
+/// identifier, not a person, so when a different account signs in on the
+/// same phone the row moves to them rather than duplicating. Signing out
+/// deletes it. Expo reporting a token dead (the app uninstalled) deletes it
+/// too. Cascades with the user.
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  /// "android" for now: the app ships on Android only (plan 13).
+  platform  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("push_token")
+}

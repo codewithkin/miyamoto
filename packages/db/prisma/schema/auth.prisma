@@ -18,6 +18,7 @@ model User {
   trialCompletions  TrialCompletion[]
   threads           Thread[]
   charges           Charge[]
+  pushTokens        PushToken[]
 
   @@unique([email])
   @@map("user")
