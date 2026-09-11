@@ -7,6 +7,7 @@ import { MasterAvatar } from "@/components/master-avatar";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
+import { useFirstWeek } from "@/lib/use-first-week";
 import { useOnboarding } from "@/lib/onboarding-store";
 import {
   gold,
@@ -31,6 +32,12 @@ import {
  * The screen used to open with a pinwheel, grow two bars from zero on a
  * stagger and flip the Day 1 card over, all before the button arrived at
  * 1.4s. It now settles in four short beats, the last at half a second.
+ *
+ * Day 1 is the real Day 1 at the pressure they chose (plan 11). It used to
+ * be the Firm trial, hardcoded, for everyone — so a Gentle or Unbreakable
+ * user was shown a trial they wouldn't get — and captioned "chosen by
+ * Musashi from your wounds", which it wasn't: the Path is authored, the
+ * same for everyone at a pressure.
  */
 
 function StatCard({
@@ -116,6 +123,9 @@ export default function PayoffScreen() {
   // Everyone but the Master they start with. Was a hardcoded 5 from when
   // Mandela was on the roster (D-006).
   const toEarn = MASTERS.length - 1;
+  // Warmed during forging; the fallback line is only for a failed fetch, and
+  // is true either way.
+  const day1 = useFirstWeek().data?.[0];
 
   return (
     <Screen scroll>
@@ -147,11 +157,11 @@ export default function PayoffScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
               <Icon name="flag" size={16} color={indigo.light} />
               <Text variant="eyebrow" color={indigo.light}>
-                Day 1 · written for you
+                {day1 ? `Day 1 · ${day1.title}` : "Day 1"}
               </Text>
             </View>
             <Text variant="voice" style={{ fontSize: size.title, lineHeight: size.title * 1.4 }}>
-              Name the person you&apos;re avoiding. Out loud, to yourself, before breakfast.
+              {day1?.trial ?? "Your first trial is waiting in your dojo."}
             </Text>
             <View
               style={{
@@ -165,8 +175,8 @@ export default function PayoffScreen() {
             >
               {master ? <MasterAvatar slug={master.slug} name={master.name} size={32} /> : null}
               <Text variant="caption" color={textColor.secondaryDim} style={{ flex: 1 }}>
-                Chosen by {master?.name ?? "your Master"} from your{" "}
-                {draft.wounds.length === 1 ? "wound" : `${draft.wounds.length} wounds`}
+                From {master?.name ?? "your Master"} · {pressure?.label ?? "Firm"} pressure · Day 1
+                of 30
               </Text>
             </View>
           </View>

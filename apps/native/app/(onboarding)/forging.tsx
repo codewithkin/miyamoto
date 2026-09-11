@@ -7,6 +7,7 @@ import { MasterAvatar } from "@/components/master-avatar";
 import { Animated, Enter, MotionTone, useFlicker } from "@/components/motion";
 import { Screen, Text } from "@/components/ui";
 import { MASTERS, PRESSURES } from "@/content/onboarding-options";
+import { useFirstWeek } from "@/lib/use-first-week";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { gold, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -25,6 +26,10 @@ function ForgingScreenBody() {
   const router = useRouter();
   const { draft } = useOnboarding();
   const flame = useFlicker(true);
+  // Fetches the week while the forge plays, so payoff, the first-week
+  // screen and the reminder preview open with the real Day 1 already in
+  // hand (plan 11). No effect on this screen.
+  useFirstWeek();
 
   const master = MASTERS.find((m) => m.slug === draft.firstMaster);
   const pressure = PRESSURES.find((p) => p.value === draft.pressure);

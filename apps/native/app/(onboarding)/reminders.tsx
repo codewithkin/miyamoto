@@ -7,6 +7,7 @@ import { MasterAvatar } from "@/components/master-avatar";
 import { Enter, Stagger } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
 import { MASTERS } from "@/content/onboarding-options";
+import { useFirstWeek } from "@/lib/use-first-week";
 import { requestReminderPermission } from "@/lib/notifications";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
@@ -33,12 +34,16 @@ export default function RemindersScreen() {
   // Day 7 — so the preview promised a message from someone the user could
   // not yet speak to. lib/use-reminders sends from the same Master.
   const master = MASTERS.find((m) => m.slug === draft.firstMaster) ?? MASTERS[0];
+  // Exactly what lib/use-reminders sends at the morning time: "Day N. <the
+  // trial>", with the same fallback. It used to be a paraphrase of the Firm
+  // trial whatever pressure was chosen.
+  const day1Trial = useFirstWeek().data?.[0]?.trial;
 
   const previews = [
     {
       key: "morning",
       time: draft.morningReminder,
-      body: "Day 1. Name the person you're avoiding. Before breakfast.",
+      body: day1Trial ? `Day 1. ${day1Trial}` : "Today's trial is on the Path. Before breakfast.",
     },
     {
       key: "evening",
