@@ -1,6 +1,6 @@
 # 13 — Chat that reads like messages, letters that find you, and more questions for an ad
 
-**Status: in flight (session 8).** Android only for now.
+**Status: built (session 8).** Android only for now. Not yet seen on a device. Push to a closed app waits on the owner's Firebase setup (`systems/13-notifications.md`). The rules are D-054 to D-057.
 
 The owner's requests, session 8:
 
@@ -39,7 +39,7 @@ works.
 
 ## A1 — History never overwrites what was just sent
 
-- [ ] `pending-A1`
+- [x] `1a09e25`
 - **Commit:** `fix(native): keep the first message when history arrives after it`
 - **Touches:** `app/(app)/chat.tsx`
 - **Done when:** history that arrives mid-send waits until the chat is
@@ -54,7 +54,7 @@ what A2 just added.
 
 ## A2 — Bubbles
 
-- [ ] `pending-A2`
+- [x] `925d9ab` (with A3)
 - **Commit:** `feat(native): draw the chat as bubbles, with the charge as its own`
 - **Touches:** `app/(app)/chat.tsx`, `components/chat-bubbles.tsx` (new)
 - **Done when:** the person's messages sit right in a solid indigo bubble.
@@ -65,7 +65,7 @@ what A2 just added.
 
 ## A3 — The letter writes itself out, and the wait looks alive
 
-- [ ] `pending-A3`
+- [x] `925d9ab`
 - **Commit:** `feat(native): write the letter out on arrival, and show the Master typing`
 - **Touches:** `components/chat-bubbles.tsx`, `app/(app)/chat.tsx`
 - **Done when:** a letter that arrives on this visit reveals word by word,
@@ -79,7 +79,7 @@ what A2 just added.
 
 ## B1 — An ad is worth three questions, five times a day
 
-- [ ] `pending-B1`
+- [x] `5403faa`
 - **Commit:** `feat(api): make an ad worth three questions, up to five a day`
 - **Touches:** `packages/api/src/lib/usage.ts`, `packages/api/src/routers/chat.ts`
 - **Done when:** `grantBonus` adds three, refuses a sixth grant in a day,
@@ -89,7 +89,7 @@ what A2 just added.
 
 ## B2 — Running out offers both, everywhere
 
-- [ ] `pending-B2`
+- [x] `7e616b0`
 - **Commit:** `feat(native): offer an ad for three more or Pro wherever questions run out`
 - **Touches:** `components/ui.tsx` (a `pro` variant), `components/overlays.tsx`,
   `app/(app)/chat.tsx`, `app/(app)/you.tsx`
@@ -103,7 +103,7 @@ what A2 just added.
 
 ## C1 — Push tokens
 
-- [ ] `pending-C1`
+- [x] `3557a55`
 - **Commit:** `feat(db): store a push token per install`
 - **Touches:** `packages/db/prisma/schema/notifications.prisma` (new),
   `auth.prisma`, a migration
@@ -113,7 +113,7 @@ what A2 just added.
 
 ## C2 — The server can push, and knows what was delivered
 
-- [ ] `pending-C2`
+- [x] `c9ea392`
 - **Commit:** `feat(api): register push tokens, send pushes, and hear which letters arrived`
 - **Touches:** `packages/api/src/lib/push.ts`, `lib/deliveries.ts` (new),
   `routers/account.ts`, `routers/chat.ts`
@@ -124,7 +124,7 @@ what A2 just added.
 
 ## C3 — `/ai` pushes a letter nobody received
 
-- [ ] `pending-C3`
+- [x] `77d9cc0`
 - **Commit:** `feat(server): push a letter the phone never confirmed`
 - **Touches:** `apps/server/src/routes/ai.ts`
 - **Done when:** after a letter is saved, the server waits up to 30 seconds
@@ -134,7 +134,7 @@ what A2 just added.
 
 ## C4 — The phone's half
 
-- [ ] `pending-C4`
+- [x] `4a35a15`
 - **Commit:** `feat(native): confirm letters, notify from the background, open the chat from a notification`
 - **Touches:** `lib/notifications.ts`, `lib/letters.ts` (new), `app/(app)/_layout.tsx`,
   `app/(app)/chat.tsx`, `app/(app)/you.tsx`, `app.config.js` (new)
@@ -147,7 +147,7 @@ what A2 just added.
 
 ## C5 — Ask at the moment it matters
 
-- [ ] `pending-C5`
+- [x] `0be2524`
 - **Commit:** `feat(native): offer letter notifications while the first letter is on its way`
 - **Touches:** `app/(app)/chat.tsx`
 - **Done when:** while a letter is being written and notifications aren't
@@ -158,7 +158,7 @@ what A2 just added.
 
 ## D1 — Two notifications worth getting
 
-- [ ] `pending-D1`
+- [x] `56f8c29`
 - **Commit:** `feat(native): say when questions are back, and when a charge is still open`
 - **Touches:** `lib/notifications.ts`, `lib/use-reminders.ts`
 - **Done when:** a free user who runs out gets one notification the next
@@ -171,13 +171,13 @@ what A2 just added.
 
 ## E1 — Privacy: push tokens
 
-- [ ] `pending-E1`
+- [x] `587cafc`
 - **Commit:** `docs(web): disclose push tokens in the privacy policy`
 - **Touches:** `apps/web/src/app/privacy/page.tsx`, `systems/11-play-data-safety.md`
 
 ## E2 — Docs
 
-- [ ] `pending-E2`
+- [x] this commit
 - **Commit:** `docs: record bubbles, letters that find you, and ads for questions`
 - **Touches:** `systems/09-decisions.md`, `systems/13-notifications.md` (new),
   `plans/00-roadmap.md`, `progress/00-START-HERE.md`

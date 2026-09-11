@@ -21,8 +21,17 @@ a Pro reviewer account for Play review from `REVIEWER_EMAIL` and
 `REVIEWER_PASSWORD` (D-052). What to type into Play Console is in
 `systems/06-auth.md`. **Plan 15** (built): the app's paywall buys the
 chosen package directly and shows the store's own prices. Pressing buy
-used to open RevenueCat's paywall on top of ours (D-053). Plan 13 (chat
-bubbles, letters that find you, ads for questions) is being finished.
+used to open RevenueCat's paywall on top of ours (D-053). **Plan 13**
+(built):
+- The chat is drawn as bubbles, with the charge as its own, and each
+  letter writes itself out (D-054).
+- The first message no longer vanishes when history lands after it.
+- A letter finished after someone left the app reaches them (D-055).
+  Push to a closed app needs the owner's Firebase setup
+  (`systems/13-notifications.md`).
+- Out of questions offers an ad for three more or Pro, everywhere, and
+  other Masters are Pro only (D-056).
+- There are two retention nudges, no more (D-057).
 
 **Session 8** (plan 12, built). The owner signed in on a phone and landed in
 the right place, so the round trip works. Sending a chat message then came
@@ -133,6 +142,7 @@ and its markup. The markup is the only place the real hex values live.
 | Mandela appears throughout | Withdrawn from the app | D-006. Estate enforces personality rights. |
 | Offer and paywall: "Day 7, 14 and 21" | "Day 7 and 21", derived from the Master list | D-006, D-033. Day 14 was Mandela's unlock and is now empty. |
 | Screen 14's chat card: "Your trial" | "Your charge" | D-035. A Trial and a Charge must never share a name. |
+| Screen 15: a Master's letter set as bare text, the card beneath it | Bubbles: the person right in indigo, the Master left in raised ink with their face, the charge its own bubble | D-054. The owner's call (session 8): it should read as messages. |
 | Screen 09, social proof: a user count, a rating, two testimonials | Removed. It became "Your first week" (D-046), then went with the quiz (D-048) | Every figure on the original had nothing behind it. |
 
 ---
@@ -318,30 +328,39 @@ notes do not survive a clone.
    it. If the owner wants the choice back, it's small: `account.setPressure`
    (it updates `onboardingProfile.pressure`, and the Path already reads it)
    plus a three-option row in Settings.
-6. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
+6. **Firebase, for letters to a closed app.** Push needs a Firebase
+   project, its `google-services.json` in the build, the FCM V1 key in EAS,
+   and a new development build. The steps are in
+   `systems/13-notifications.md`. Until then, letters reach an app in the
+   background but not a closed one.
+7. **Verify rewarded ads on the server.** `chat.grantBonus` takes the
+   phone's word that an ad was watched, which is why ads are capped at five
+   a day (D-056). AdMob's server-side verification callback would let the
+   cap go.
+8. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
    128px, so both go soft above about 64pt. The Musashi portraits, the
    welcome hero and the icon are *Vagabond* artwork. **The owner has chosen
    to keep it for now (session 5).** Do not replace it unasked, and do not
    raise it again as new; it stays tracked under 05 T01.
-7. **A finished but unclaimed draft is per device, not per account.**
+9. **A finished but unclaimed draft is per device, not per account.**
    Mostly moot since session 8: the problem screen claims directly and
    never leaves a finished draft behind. Only a draft an older build
    finished offline can still reach another account on the same phone. The
    fix is still small (store the user id in the draft, drop it on
    mismatch) and still not built.
-8. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
+10. **Day 14 has no Master.** Withdrawing Mandela emptied it. The copy is now
    true ("Day 7 and 21"), but the Path's pacing is the owner's call — move
    Curie to 14, add a Master, or leave the gap.
-9. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
+11. **The app icon** — 05 T01. Currently copyrighted *Vagabond* artwork.
    Owner's call to commission.
-10. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
+12. **RevenueCat** — 03 T01, T03. Keys, dashboard products, the webhook URL
    and secret, then a sandbox pass.
-11. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
-12. **Mandela on the marketing site** — owner said later, separately.
-13. **Enter the Data safety form in Play Console.** The answers are in
+13. **Message bodies in the data export** — unblocked, unplanned, unbuilt.
+14. **Mandela on the marketing site** — owner said later, separately.
+15. **Enter the Data safety form in Play Console.** The answers are in
     `systems/11-play-data-safety.md`, and the privacy policy already
     matches them. Only the owner can submit the form.
-14. **Settled (session 8): schema changes reach production by deploying.**
+16. **Settled (session 8): schema changes reach production by deploying.**
     The owner moved the server and database to Coolify, and the container
     now runs `prisma migrate deploy` and the content seed on every start
     (D-051, `systems/12-deploys.md`). The first start on the new, empty

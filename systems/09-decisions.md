@@ -487,3 +487,45 @@ opened a second one (the owner's report, session 8). Nothing the store
 decides is typed into the app. What a plan costs and whether it has a
 trial come from the product, so the dashboard can change them without a
 release. Plan 15.
+
+**D-054 — The chat is drawn as messages, and a letter writes itself out.**
+The person on the right in solid indigo, the Master on the left in raised
+ink with their face at the foot of the group, and a charge as its own
+bubble under the letter. This replaces "a letter has no bubble": the
+difference of voice (Zen Old Mincho against DM Sans) stays, and the shape
+is the one messaging apps have taught everyone to read. The owner asked
+for it (session 8). A letter that arrives on this visit is revealed word
+by word, five seconds at most. It isn't a token stream and can't be,
+because every letter is checked in full before any of it is sent (D-012).
+History is merged with what's on screen, never simply applied: applying
+it wiped out a first message sent before it arrived. Plan 13.
+
+**D-055 — A letter finished after the person left still reaches them.**
+The server finishes and saves every letter regardless of the connection.
+The phone confirms each letter it receives. One unconfirmed after 30
+seconds, or whose request was already aborted, is pushed (the Master's name
+and the letter's opening). A phone alive in the background shows its own
+notification and confirms. One notification either way, no reply from the
+notification. Push needs Firebase in the build, which is the owner's setup;
+without it only the background half works, and the chat says "you can
+leave" only when a push token is registered. `systems/13-notifications.md`.
+Plan 13.
+
+**D-056 — An ad buys three questions, five times a day; other Masters are
+Pro only.**
+Running out of questions offers two ways on, wherever questions are
+counted: an ad for three more (first, since it's free and the owner wants
+it taken), or Pro in gold. Locked Masters and locked stories go straight
+to the paywall, with no ad route. The cap of five ads a day exists because
+the server takes the phone's word that an ad was watched (no AdMob
+server-side verification yet). Uncapped, a rewritten client would get
+unlimited free model calls. Verify rewards server-side, then raise or drop
+the cap. Plan 13.
+
+**D-057 — Two nudges, and no more.**
+Beyond letters and the reminders the person turns on: questions back (08:00
+the morning after running out) and a charge still open at 18:00 on its day.
+Both are about something the person already started, both are sent only
+while true, and both replace rather than stack. Anything added to this list
+needs a reason as good as those two, and the owner asked for "enough, not
+overdone". Plan 13.
