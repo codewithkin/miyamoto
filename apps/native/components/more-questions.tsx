@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
@@ -6,31 +7,20 @@ import { Icon } from "@/components/icon";
 import { Enter } from "@/components/motion";
 import { Button, Text } from "@/components/ui";
 import { showRewardedAd } from "@/lib/ads";
-import { usePurchases } from "@/lib/purchases";
 import { trpc } from "@/utils/trpc";
 import { ink, red, space, text as textColor } from "@/theme/tokens";
 
 /**
- * Buying Pro from anywhere: shows the store opening on the button that
- * opened it, and reports back once Pro has actually landed.
+ * Going Pro from anywhere means the paywall screen (plan 15). It shows the
+ * store's plans and buys the one chosen, and it's the only place in the app
+ * that starts a purchase. `onLeave` lets a sheet close on the way.
  */
-export function useBuyPro(onBought?: () => void) {
-  const qc = useQueryClient();
-  const { buy } = usePurchases();
-  const [buying, setBuying] = React.useState(false);
-
-  async function run() {
-    if (buying) return;
-    setBuying(true);
-    const bought = await buy().catch(() => false);
-    setBuying(false);
-    if (bought) {
-      void qc.invalidateQueries();
-      onBought?.();
-    }
-  }
-
-  return { buying, buyPro: () => void run() };
+export function useGoPro(onLeave?: () => void) {
+  const router = useRouter();
+  return () => {
+    onLeave?.();
+    router.push("/paywall");
+  };
 }
 
 /**
@@ -50,16 +40,16 @@ export function useBuyPro(onBought?: () => void) {
  */
 export function MoreQuestions({
   onGranted,
-  onBought,
+  onLeave,
 }: {
   /** Called once three more questions have been added. */
   onGranted?: () => void;
-  /** Called once Pro has landed. */
-  onBought?: () => void;
+  /** Called on the way to the paywall, so a sheet can close. */
+  onLeave?: () => void;
 }) {
   const qc = useQueryClient();
   const usage = useQuery(trpc.chat.usage.queryOptions());
-  const { buying, buyPro } = useBuyPro(onBought);
+  const goPro = useGoPro(onLeave);
   const [watching, setWatching] = React.useState(false);
   const [note, setNote] = React.useState<string | null>(null);
 
@@ -108,17 +98,15 @@ export function MoreQuestions({
         }
         loading={watching || grant.isPending}
         loadingLabel={watching ? "Loading the ad…" : "Adding 3 questions…"}
-        disabled={noAds || buying}
+        disabled={noAds}
         onPress={() => void watchAd()}
       />
       <Button
         variant="pro"
         label="Go Pro · unlimited"
         icon={<Icon name="infinite" size={22} color={ink.base} />}
-        loading={buying}
-        loadingLabel="Opening the store…"
         disabled={watching || grant.isPending}
-        onPress={buyPro}
+        onPress={goPro}
       />
       {note ? (
         <Enter preset="slideLeft" style={{ flexDirection: "row", gap: space.sm }}>

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
 
@@ -10,7 +9,7 @@ import { Sheet } from "@/components/sheet";
 import { Touchable } from "@/components/touchable";
 import { Button, Text } from "@/components/ui";
 import { Chevron, Icon, IconBadge } from "@/components/icon";
-import { MoreQuestions, useBuyPro } from "@/components/more-questions";
+import { MoreQuestions, useGoPro } from "@/components/more-questions";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 import { MASTER_COUNT } from "@/content/onboarding-options";
@@ -38,8 +37,7 @@ export function SwitchMasterSheet({
   onRefused?: () => void;
 }) {
   const qc = useQueryClient();
-  const router = useRouter();
-  const { buying, buyPro } = useBuyPro(onClose);
+  const goPro = useGoPro(onClose);
   const masters = useQuery(trpc.library.masters.queryOptions());
 
   // The chat's header changes and the sheet closes on the tap (D-049). If
@@ -106,8 +104,7 @@ export function SwitchMasterSheet({
                   // A locked Master is Pro, straight: no ad route to another
                   // Master (plan 13). The paywall says what Pro includes.
                   if (!m.available) {
-                    onClose();
-                    router.push("/paywall");
+                    goPro();
                     return;
                   }
                   if (threadId) switchTo.mutate({ threadId, masterSlug: m.slug });
@@ -184,10 +181,8 @@ export function SwitchMasterSheet({
         label="Every Master, now · Pro"
         variant="pro"
         icon={<Icon name="diamond" size={20} color={ink.base} />}
-        loading={buying}
-        loadingLabel="Opening the store…"
         disabled={switchTo.isPending}
-        onPress={buyPro}
+        onPress={goPro}
       />
     </Sheet>
   );
@@ -325,7 +320,7 @@ export function OutOfAnswersSheet({
       subtitle={`Watch an ad for three more today. Or step inside, and the Masters answer without counting: all ${MASTER_COUNT}, every story, no ads.`}
     >
       <Enter preset="pop" delay={140}>
-        <MoreQuestions onGranted={onClose} onBought={onClose} />
+        <MoreQuestions onGranted={onClose} onLeave={onClose} />
       </Enter>
 
       <Enter preset="fade" delay={300}>
