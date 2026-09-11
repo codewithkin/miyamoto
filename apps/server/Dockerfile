@@ -91,4 +91,7 @@ WORKDIR /app/apps/server
 
 EXPOSE 3000
 
-CMD ["bun", "dist/index.mjs"]
+# Migrations, then the content seed, then the server: see docker-entrypoint.sh.
+# Run with sh rather than executed directly, so a checkout that lost the file's
+# executable bit still starts.
+CMD ["sh", "/app/apps/server/docker-entrypoint.sh"]
