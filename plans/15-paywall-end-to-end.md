@@ -20,6 +20,11 @@ the owner sent it). Nothing to add.
 
 ## P — Purchases
 
+**Note (session 8):** the order is P3, then P1 and P2 as one commit.
+`buy()` changing to take a package breaks its callers. With P3 done first
+the paywall is the only one left, and P1 without P2 wouldn't compile, so
+they're one todo: the paywall buys the chosen package.
+
 ## P1 — Buy a package, not a paywall
 
 - [ ] `pending-P1`
