@@ -1,6 +1,6 @@
 import db from "@miyamoto/db";
 
-import { FREE_DAILY_QUESTIONS, localDate } from "./day";
+import { FREE_DAILY_QUESTIONS, localDate, MAX_ADS_PER_DAY, QUESTIONS_PER_AD } from "./day";
 
 /**
  * The free counter.
@@ -21,7 +21,18 @@ export type UsageState = {
   remaining: number | null;
   isPro: boolean;
   canAsk: boolean;
+  /** Rewarded ads still worth cashing in today. Always 0 for Pro, who never needs one. */
+  adsLeft: number;
 };
+
+/**
+ * Ads cashed in today, from the bonus they added. Rounded up, because a
+ * grant from before session 8 added one question rather than three, and it
+ * still counts as an ad.
+ */
+function adsUsed(bonus: number): number {
+  return Math.ceil(bonus / QUESTIONS_PER_AD);
+}
 
 async function resolveTimezone(userId: string): Promise<string> {
   const profile = await db.profile.findUnique({
@@ -74,6 +85,7 @@ export async function getUsage(userId: string): Promise<UsageState> {
       remaining: null,
       isPro: true,
       canAsk: true,
+      adsLeft: 0,
     };
   }
 
@@ -88,6 +100,7 @@ export async function getUsage(userId: string): Promise<UsageState> {
     remaining,
     isPro: false,
     canAsk: remaining > 0,
+    adsLeft: Math.max(0, MAX_ADS_PER_DAY - adsUsed(bonus)),
   };
 }
 
@@ -135,15 +148,22 @@ export async function refundQuestion(userId: string, localDate: string): Promise
   });
 }
 
-/** Grants one extra question for today, after an ad is watched. */
+/**
+ * Grants today's extra questions for one watched ad: QUESTIONS_PER_AD of
+ * them, while ads are left today. Throws "NO_ADS_LEFT" past the cap, and for
+ * Pro, who has no counter to add to.
+ */
 export async function grantBonusQuestion(
   userId: string,
 ): Promise<UsageState> {
   const state = await getUsage(userId);
+  if (state.adsLeft <= 0) {
+    throw new Error("NO_ADS_LEFT");
+  }
   await db.dailyUsage.upsert({
     where: { userId_localDate: { userId, localDate: state.localDate } },
-    create: { userId, localDate: state.localDate, bonusQuestions: 1 },
-    update: { bonusQuestions: { increment: 1 } },
+    create: { userId, localDate: state.localDate, bonusQuestions: QUESTIONS_PER_AD },
+    update: { bonusQuestions: { increment: QUESTIONS_PER_AD } },
   });
   return getUsage(userId);
 }

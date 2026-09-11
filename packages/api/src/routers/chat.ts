@@ -28,10 +28,21 @@ export const chatRouter = router({
     };
   }),
 
-  /** Watching an ad buys exactly one more question today. */
-  grantBonus: protectedProcedure.mutation(({ ctx }) =>
-    grantBonusQuestion(ctx.session.user.id),
-  ),
+  /**
+   * Watching an ad buys three more questions today, up to five ads a day
+   * (MAX_ADS_PER_DAY). Past the cap it's refused with NO_ADS_LEFT, and the
+   * phone offers Pro instead.
+   */
+  grantBonus: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      return await grantBonusQuestion(ctx.session.user.id);
+    } catch (e) {
+      if (e instanceof Error && e.message === "NO_ADS_LEFT") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "NO_ADS_LEFT" });
+      }
+      throw e;
+    }
+  }),
 
   threads: protectedProcedure.query(({ ctx }) =>
     db.thread.findMany({

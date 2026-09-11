@@ -89,3 +89,18 @@ export function msUntilLocalMidnight(timezone: string, at: Date = new Date()): n
 
 /** How many questions a free account gets per local day. */
 export const FREE_DAILY_QUESTIONS = 3;
+
+/** What one watched rewarded ad is worth (plan 13: "watch an ad, +3"). */
+export const QUESTIONS_PER_AD = 3;
+
+/**
+ * Rewarded ads a free account can cash in per local day.
+ *
+ * The server can't yet verify an ad was actually watched: AdMob's
+ * server-side verification isn't set up, so `grantBonus` takes the phone's
+ * word. Uncapped, a rewritten client would get unlimited free model calls.
+ * Five ads is fifteen extra questions, six times the free day: plenty for
+ * a real person, and a bounded cost if someone cheats. Raise it or remove
+ * it once rewards are verified server-side.
+ */
+export const MAX_ADS_PER_DAY = 5;
