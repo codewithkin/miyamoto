@@ -16,13 +16,20 @@ import {
 
 import { MasterAvatar } from "@/components/master-avatar";
 import { Blade, BladeTick } from "@/components/blade";
-import { Animated, Enter, usePulse } from "@/components/motion";
+import {
+  LetterBubble,
+  MasterGroup,
+  TypingBubble,
+  UserBubble,
+  masterBubbleStyle,
+} from "@/components/chat-bubbles";
+import { Enter } from "@/components/motion";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { describeChatError } from "@/lib/chat-errors";
-import { mergeHistory } from "@/lib/chat-history";
+import { answeredIn, mergeHistory } from "@/lib/chat-history";
 import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
 import { track } from "@/lib/telemetry";
 import { trpc } from "@/utils/trpc";
@@ -31,6 +38,7 @@ import {
   indigo,
   ink,
   radius,
+  red,
   size,
   space,
   text as textColor,
@@ -83,7 +91,7 @@ export default function ChatScreen() {
     [threads.data, threadId],
   );
 
-  const { messages, sendMessage, status, error, setMessages } = useChat({
+  const { messages, sendMessage, status, error, setMessages, regenerate, clearError } = useChat({
     transport: new DefaultChatTransport({
       api: `${env.EXPO_PUBLIC_SERVER_URL}/ai`,
       // Carries the session and streams the letter (D-047). Without it the
@@ -117,6 +125,12 @@ export default function ChatScreen() {
   activeIdRef.current = activeThread?.id;
   /** The thread the messages on screen belong to. */
   const messagesFor = React.useRef<string | null>(null);
+  /**
+   * Ids that came from saved history. A Master's message not among them
+   * arrived on this visit, and writes itself out; history appears whole.
+   */
+  const fromHistory = React.useRef(new Set<string>());
+  const [revealed, setRevealed] = React.useState<ReadonlySet<string>>(() => new Set());
   const pendingHistory = React.useRef<{ threadId: string; messages: typeof messages } | null>(null);
 
   const applyHistory = React.useCallback(
@@ -127,9 +141,15 @@ export default function ChatScreen() {
       }
       const sameThread = messagesFor.current === threadId;
       messagesFor.current = threadId;
+      for (const m of history) fromHistory.current.add(m.id);
       setMessages((current) => (sameThread ? mergeHistory(history, current) : history));
+      // The send failed on the phone, but the server answered and saved it
+      // anyway (the connection dropped while the app was away). The letter
+      // is here now, so the error isn't true any more.
+      const lastLocal = messagesRef.current[messagesRef.current.length - 1];
+      if (statusRef.current === "error" && answeredIn(history, lastLocal)) clearError();
     },
-    [setMessages],
+    [setMessages, clearError],
   );
 
   const loadHistory = React.useCallback(
@@ -142,12 +162,27 @@ export default function ChatScreen() {
         const body = (await res.json()) as { messages: typeof messages };
         // The person may have opened another thread while this was loading.
         if (activeIdRef.current === threadId) applyHistory(threadId, body.messages);
+        return body.messages;
       } catch {
         // Unreachable history leaves the screen as it is.
       }
+      return null;
     },
     [applyHistory],
   );
+
+  /**
+   * Retry after a failed send, without paying twice. If the server answered
+   * anyway, the history brings the letter in and nothing is resent.
+   */
+  async function retry() {
+    const id = activeThread?.id;
+    const question = messagesRef.current[messagesRef.current.length - 1];
+    const history = id ? await loadHistory(id) : null;
+    if (history && answeredIn(history, question)) return;
+    clearError();
+    void regenerate();
+  }
 
   const historyFor = React.useRef<string | null>(null);
   React.useEffect(() => {
@@ -193,13 +228,22 @@ export default function ChatScreen() {
   }, [errorView?.outOfQuestions]);
 
   const busy = status === "submitted" || status === "streaming";
-  const typing = usePulse(busy);
   const outOfAnswers = usage.data ? !usage.data.canAsk : false;
   const canSend = Boolean(input.trim()) && !busy && !outOfAnswers && Boolean(activeThread);
+  const lastMessage = messages[messages.length - 1];
+  // Dots until the letter's first words are here; the letter takes over then.
+  const waitingForLetter = busy && lastMessage?.role === "user";
 
+  // When the wait began, for the typing bubble's growing line.
+  const [waitingSince, setWaitingSince] = React.useState<number | null>(null);
   React.useEffect(() => {
-    scrollRef.current?.scrollToEnd({ animated: true });
-  }, [messages.length, busy]);
+    setWaitingSince((since) => (waitingForLetter ? (since ?? Date.now()) : null));
+  }, [waitingForLetter]);
+
+  // Follow the conversation down as it grows (a sent message, the dots, a
+  // letter writing itself out), but only while the person is at the bottom.
+  // Someone who scrolled up to reread isn't pulled away from it.
+  const atBottom = React.useRef(true);
 
   // A message handed over by the screen that opened this one: onboarding's
   // one question arrives here as `?prefill=` (D-048). It goes in the
@@ -243,6 +287,7 @@ export default function ChatScreen() {
     const value = input.trim();
     if (!value || !canSend) return;
     if (activeThread) messagesFor.current = activeThread.id;
+    atBottom.current = true;
     sendMessage({ text: value });
     // "2 of 3 left" moves on the tap rather than after the letter (D-049).
     // Only the count: whether they can still ask is the server's call, and
@@ -311,9 +356,18 @@ export default function ChatScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ padding: space.xl, gap: space.xl }}
+          contentContainerStyle={{ padding: space.xl, gap: space.base }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={100}
+          onScroll={(e) => {
+            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+            atBottom.current =
+              contentSize.height - (contentOffset.y + layoutMeasurement.height) < 80;
+          }}
+          onContentSizeChange={() => {
+            if (atBottom.current) scrollRef.current?.scrollToEnd({ animated: true });
+          }}
         >
           {/* A fresh thread opens on the Master, not on one line of body text.
               No pronoun: "He won't comfort you" was wrong for Curie. */}
@@ -355,64 +409,62 @@ export default function ChatScreen() {
             </Enter>
           ) : null}
 
-          {messages.map((message) => {
+          {messages.map((message, index) => {
             const isUser = message.role === "user";
             const body = (message.parts ?? [])
               .filter((p) => p.type === "text")
               .map((p) => ("text" in p ? p.text : ""))
               .join("");
-            const charge = isUser ? null : chargeOf(message.parts);
+            const isLast = index === messages.length - 1;
 
+            if (isUser) {
+              return (
+                <UserBubble key={message.id} text={body}>
+                  {/* A failed send is marked on the message that failed. */}
+                  {isLast && error ? (
+                    <SendFailed
+                      text={errorView?.text ?? ""}
+                      onRetry={errorView?.retryable ? () => void retry() : undefined}
+                    />
+                  ) : null}
+                </UserBubble>
+              );
+            }
+
+            const charge = chargeOf(message.parts);
+            const fresh = !fromHistory.current.has(message.id) && !revealed.has(message.id);
+            // The Master who wrote it isn't recorded per message, so the
+            // thread's current Master speaks for all of them.
             return (
-              <Enter
+              <MasterGroup
                 key={message.id}
-                preset={isUser ? "slideRight" : "rise"}
-                style={{ alignItems: isUser ? "flex-end" : "flex-start" }}
+                slug={activeThread?.master.slug ?? "musashi"}
+                name={activeThread?.master.name ?? "Musashi"}
               >
-                {isUser ? (
-                  <View
-                    style={{
-                      maxWidth: "86%",
-                      backgroundColor: indigo.tint,
-                      borderRadius: radius.sheet,
-                      borderBottomRightRadius: space.sm,
-                      padding: space.xl,
-                    }}
-                  >
-                    <Text variant="label" style={{ fontSize: size.bodyLg }}>
-                      {body}
-                    </Text>
-                  </View>
-                ) : (
-                  // A Master's words get no bubble — a letter has no bubble.
-                  <View style={{ maxWidth: "94%", gap: space.base }}>
-                    <Text variant="voice">{body}</Text>
-                    {charge ? <ChargeCard charge={charge} /> : null}
-                  </View>
-                )}
-              </Enter>
+                <LetterBubble
+                  text={body}
+                  reveal={fresh}
+                  onRevealed={() =>
+                    setRevealed((prev) => (prev.has(message.id) ? prev : new Set(prev).add(message.id)))
+                  }
+                />
+                {charge && !fresh ? <ChargeCard charge={charge} /> : null}
+              </MasterGroup>
             );
           })}
 
-          {busy ? (
-            <Animated.View style={[{ flexDirection: "row", alignItems: "center", gap: space.sm }, typing]}>
-              <MasterAvatar
-                slug={activeThread?.master.slug ?? "musashi"}
-                name={activeThread?.master.name ?? "Musashi"}
-                size={24}
-              />
-              <Text variant="caption">
-                {activeThread?.master.name ?? "Musashi"} is writing…
-              </Text>
-            </Animated.View>
+          {waitingForLetter && activeThread ? (
+            <TypingBubble
+              slug={activeThread.master.slug}
+              name={activeThread.master.name}
+              since={waitingSince ?? Date.now()}
+              canLeave={false}
+            />
           ) : null}
 
-          {error ? (
-            <Enter preset="slideLeft">
-              <Text variant="caption" color="#E0483B">
-                {errorView?.text}
-              </Text>
-            </Enter>
+          {/* An error with no message of theirs to hang it on. */}
+          {error && lastMessage?.role !== "user" ? (
+            <SendFailed text={errorView?.text ?? ""} />
           ) : null}
         </ScrollView>
 
@@ -546,6 +598,52 @@ export default function ChatScreen() {
  * completable from where it was given: accepted, then done, which is the
  * only path by which chat moves the Bushido score.
  */
+/** Under a message that didn't go through: what happened, and Retry where it can help. */
+function SendFailed({ text, onRetry }: { text: string; onRetry?: () => void }) {
+  return (
+    <Enter
+      preset="fade"
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        gap: space.sm,
+        maxWidth: "86%",
+        alignSelf: "flex-end",
+      }}
+    >
+      <Icon name="alert-circle" size={15} color={red.base} />
+      <Text variant="caption" color={textColor.muted} style={{ flexShrink: 1 }}>
+        {text}
+      </Text>
+      {onRetry ? (
+        <Touchable
+          feel="chip"
+          hitSlop={8}
+          onPress={onRetry}
+          accessibilityLabel="Retry"
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+            paddingHorizontal: space.md,
+            paddingVertical: space.xxs,
+            borderRadius: radius.pill,
+            backgroundColor: ink.high,
+            borderWidth: 1,
+            borderColor: ink.border,
+          }}
+        >
+          <Icon name="refresh" size={13} color={indigo.light} />
+          <Text variant="caption" color={indigo.light}>
+            Retry
+          </Text>
+        </Touchable>
+      ) : null}
+    </Enter>
+  );
+}
+
 function ChargeCard({ charge }: { charge: HandedCharge }) {
   const qc = useQueryClient();
   // A charge returned with history arrives in the state the user left it, so
@@ -564,16 +662,19 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
     respond.mutate({ chargeId: charge.id, status }, { onError: () => setState(before) });
   }
 
+  // Its own bubble under the letter (plan 13): something to do, not
+  // something to read, so it gets its own shape. Indigo while open, green
+  // once done (D-045).
   return (
-    <View
-      style={{
-        padding: space.xl,
-        borderRadius: radius.card,
-        backgroundColor: ink.surface,
-        borderWidth: 1,
+    <Enter
+      preset="rise"
+      style={masterBubbleStyle({
+        alignSelf: "stretch",
+        backgroundColor: state === "COMPLETED" ? green.tint : indigo.tint,
+        borderWidth: 1.5,
         borderColor: state === "COMPLETED" ? green.base : indigo.base,
         gap: space.base,
-      }}
+      })}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
         <Blade state={state === "COMPLETED" ? "complete" : "active"} length={12} />
@@ -636,6 +737,6 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
           </Text>
         </View>
       ) : null}
-    </View>
+    </Enter>
   );
 }

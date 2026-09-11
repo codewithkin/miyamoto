@@ -19,6 +19,13 @@ export type ChatErrorView = {
   text: string;
   /** Raise the out-of-answers sheet rather than only printing a line. */
   outOfQuestions: boolean;
+  /**
+   * Sending the same question again could help. True for the failures that
+   * are ours or the network's (the server refunds the question for those),
+   * false where the answer would be the same: out of questions, signed out,
+   * no such thread, a withdrawn Master.
+   */
+  retryable: boolean;
 };
 
 const BY_CODE: Record<string, string> = {
@@ -30,10 +37,12 @@ const BY_CODE: Record<string, string> = {
   EMPTY_QUESTION: "Write the question first.",
 };
 
+const RETRYABLE = new Set(["MODEL_UNAVAILABLE", "UNSUPPORTED_REPLY"]);
+
 const FALLBACK = "That did not go through. Ask again.";
 
 export function describeChatError(raw: string | null | undefined): ChatErrorView {
-  const fallback: ChatErrorView = { text: FALLBACK, outOfQuestions: false };
+  const fallback: ChatErrorView = { text: FALLBACK, outOfQuestions: false, retryable: true };
   if (!raw) return fallback;
 
   let body: unknown;
@@ -47,9 +56,10 @@ export function describeChatError(raw: string | null | undefined): ChatErrorView
   const { error, message } = body as { error?: unknown; message?: unknown };
   const code = typeof error === "string" ? error : "";
   const outOfQuestions = code === "OUT_OF_QUESTIONS";
+  const retryable = RETRYABLE.has(code) || !(code in BY_CODE);
 
   if (typeof message === "string" && message.trim()) {
-    return { text: message.trim(), outOfQuestions };
+    return { text: message.trim(), outOfQuestions, retryable };
   }
-  return { text: BY_CODE[code] ?? FALLBACK, outOfQuestions };
+  return { text: BY_CODE[code] ?? FALLBACK, outOfQuestions, retryable };
 }
