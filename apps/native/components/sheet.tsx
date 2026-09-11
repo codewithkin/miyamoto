@@ -1,5 +1,7 @@
 import React from "react";
 import { Modal, View } from "react-native";
+import { KeyboardAvoidingView, useKeyboardState } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
@@ -12,6 +14,12 @@ import { alpha, ink, radius, space, text as textColor } from "@/theme/tokens";
  * Every overlay in the design is a custom sheet, never a system dialog —
  * an OS alert in the middle of a Master's letter breaks the voice harder
  * than any typography choice could fix.
+ *
+ * A sheet with a field (email sign-in) rises with the keyboard and sits on
+ * it (plan 16). The Modal is drawn edge-to-edge explicitly, so it behaves
+ * the same on every phone: keyboard-controller lifts it, and the sheet pads
+ * itself clear of the navigation bar, a gap it doesn't need while the
+ * keyboard is covering that bar.
  */
 export function Sheet({
   visible,
@@ -26,54 +34,69 @@ export function Sheet({
   subtitle?: string;
   children: React.ReactNode;
 }) {
+  const insets = useSafeAreaInsets();
+  const keyboardOpen = useKeyboardState((state) => state.isVisible);
+
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Touchable feel="row"
-        onPress={onClose}
-        style={{ flex: 1, backgroundColor: alpha.scrim, justifyContent: "flex-end" }}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={{ flex: 1, backgroundColor: alpha.scrim }}
       >
-        {/* Stop taps inside the sheet from dismissing it. */}
-        <Touchable feel="row" onPress={() => {}}>
-          <Enter preset="slideUp">
-            <View
-              style={{
-                backgroundColor: ink.base,
-                borderTopLeftRadius: radius.panel,
-                borderTopRightRadius: radius.panel,
-                borderTopWidth: 1,
-                borderColor: ink.border,
-                padding: space.section,
-                paddingBottom: space.screen * 1.6,
-                gap: space.xl,
-              }}
-            >
-              <View style={{ alignItems: "center" }}>
-                <View
-                  style={{
-                    width: 44,
-                    height: 4,
-                    borderRadius: radius.blade,
-                    backgroundColor: ink.border,
-                  }}
-                />
+        <Touchable feel="row"
+          onPress={onClose}
+          style={{ flex: 1, justifyContent: "flex-end" }}
+        >
+          {/* Stop taps inside the sheet from dismissing it. */}
+          <Touchable feel="row" onPress={() => {}}>
+            <Enter preset="slideUp">
+              <View
+                style={{
+                  backgroundColor: ink.base,
+                  borderTopLeftRadius: radius.panel,
+                  borderTopRightRadius: radius.panel,
+                  borderTopWidth: 1,
+                  borderColor: ink.border,
+                  padding: space.section,
+                  paddingBottom: keyboardOpen ? space.xl : space.screen * 1.6 + insets.bottom,
+                  gap: space.xl,
+                }}
+              >
+                <View style={{ alignItems: "center" }}>
+                  <View
+                    style={{
+                      width: 44,
+                      height: 4,
+                      borderRadius: radius.blade,
+                      backgroundColor: ink.border,
+                    }}
+                  />
+                </View>
+
+                <View style={{ gap: space.xxs }}>
+                  <Text variant="title">{title}</Text>
+                  {subtitle ? <Text variant="caption">{subtitle}</Text> : null}
+                </View>
+
+                {children}
+
+                <Touchable feel="row" onPress={onClose} hitSlop={8} style={{ alignItems: "center" }}>
+                  <Text variant="label" color={textColor.muted}>
+                    Cancel
+                  </Text>
+                </Touchable>
               </View>
-
-              <View style={{ gap: space.xxs }}>
-                <Text variant="title">{title}</Text>
-                {subtitle ? <Text variant="caption">{subtitle}</Text> : null}
-              </View>
-
-              {children}
-
-              <Touchable feel="row" onPress={onClose} hitSlop={8} style={{ alignItems: "center" }}>
-                <Text variant="label" color={textColor.muted}>
-                  Cancel
-                </Text>
-              </Touchable>
-            </View>
-          </Enter>
+            </Enter>
+          </Touchable>
         </Touchable>
-      </Touchable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
