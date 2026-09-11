@@ -10,7 +10,7 @@
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
     "web": "expo start --web",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit && node scripts/check-server-fetch.mjs"
   },
   "dependencies": {
     "@ai-sdk/react": "catalog:",
