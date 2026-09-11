@@ -475,3 +475,15 @@ verified email and Pro for life, since Play requires access to paid
 content. Welcome keeps Google as its one filled action; "Sign in with
 email" is a quiet link under it. This narrows D-039 (Google only) without
 reversing it: no one can sign up with a password. Plan 14.
+
+**D-053 — The app's paywall buys directly; RevenueCat's paywall is never
+shown.**
+`app/paywall.tsx` is the only place a purchase starts. It reads the current
+Offering's packages, shows the store's localised prices, periods and free
+trials, and buys the chosen package with `purchasePackage`. Every Pro
+button in the app leads to it. The failure this prevents: `buy()` used to
+present RevenueCatUI's dashboard paywall, so pressing buy on our paywall
+opened a second one (the owner's report, session 8). Nothing the store
+decides is typed into the app. What a plan costs and whether it has a
+trial come from the product, so the dashboard can change them without a
+release. Plan 15.

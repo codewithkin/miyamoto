@@ -19,8 +19,10 @@ every start (D-051), which settles the old "wire `migrate deploy` in"
 item. Email sign-in exists for seeded accounts only, and the server keeps
 a Pro reviewer account for Play review from `REVIEWER_EMAIL` and
 `REVIEWER_PASSWORD` (D-052). What to type into Play Console is in
-`systems/06-auth.md`. Plan 13 (chat bubbles, letters that find you, ads for
-questions) is part-built: A and B are done, C onward is not.
+`systems/06-auth.md`. **Plan 15** (built): the app's paywall buys the
+chosen package directly and shows the store's own prices. Pressing buy
+used to open RevenueCat's paywall on top of ours (D-053). Plan 13 (chat
+bubbles, letters that find you, ads for questions) is being finished.
 
 **Session 8** (plan 12, built). The owner signed in on a phone and landed in
 the right place, so the round trip works. Sending a chat message then came

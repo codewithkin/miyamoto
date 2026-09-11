@@ -1,7 +1,6 @@
 # 15 — The paywall buys what it shows
 
-**Status: in flight (session 8).** Interleaved with plan 13 (C5 onward
-waits on this).
+**Status: built (session 8).** Not yet seen on a device. The rule is D-053.
 
 The owner's report (session 8): pressing buy on the app's own paywall
 opened a second paywall, RevenueCat's. The cause is `lib/purchases.tsx`:
@@ -27,7 +26,7 @@ they're one todo: the paywall buys the chosen package.
 
 ## P1 — Buy a package, not a paywall
 
-- [ ] `pending-P1`
+- [x] `5eeb636` (with P2)
 - **Commit:** `feat(native): buy the chosen package directly, and read plans from the offering`
 - **Touches:** `lib/purchases.tsx`
 - **Done when:** `usePlans()` reads the current Offering (monthly and
@@ -38,7 +37,7 @@ they're one todo: the paywall buys the chosen package.
 
 ## P2 — The paywall shows the store's plans
 
-- [ ] `pending-P2`
+- [x] `5eeb636`
 - **Commit:** `feat(native): draw the paywall from the store's plans and buy the one chosen`
 - **Touches:** `app/paywall.tsx`
 - **Done when:** plan cards show the store's prices, and "Best value" goes
@@ -50,7 +49,7 @@ they're one todo: the paywall buys the chosen package.
 
 ## P3 — Every "Go Pro" leads to it
 
-- [ ] `pending-P3`
+- [x] `2ba9281`
 - **Commit:** `refactor(native): send every Pro button to the paywall`
 - **Touches:** `components/more-questions.tsx`, `components/overlays.tsx`
 - **Done when:** "Go Pro" in the questions pair and the switch sheet opens
@@ -58,7 +57,7 @@ they're one todo: the paywall buys the chosen package.
 
 ## P4 — Docs
 
-- [ ] `pending-P4`
+- [x] this commit
 - **Commit:** `docs: record the paywall buying directly`
 - **Touches:** `systems/09-decisions.md`, `plans/03-revenuecat.md` (a note),
   `progress/00-START-HERE.md`

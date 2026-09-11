@@ -12,6 +12,16 @@ that purchases are unavailable rather than faking a flow.
 **Blocked on:** RevenueCat API keys and dashboard products. This plan is
 unblocking, not building.
 
+**Note (session 8):** superseded in part by plan 15. The app no longer
+presents RevenueCatUI's paywall anywhere. `app/paywall.tsx` reads the
+current Offering and buys the chosen package with `purchasePackage`
+(D-053). The SDK key is RevenueCat's test key (`test_…`, in
+`lib/purchases.tsx`). The dashboard needs a current Offering whose
+packages (lifetime, monthly, or any others) have products attached to the
+`miyamoto_meet_the_masters_pro` entitlement. The server still learns of Pro
+only through the webhook (`REVENUECAT_WEBHOOK_AUTH`, and the webhook URL
+pointed at the Coolify server).
+
 ## T00 — One definition of Pro
 
 - [x] `2d3459c`
