@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { Image, View } from "react-native";
 
 import { BladeTick } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
@@ -22,7 +22,17 @@ import { gold, indigo, ink, radius, size, space, text as textColor } from "@/the
  *
  * The rows are still rendered from MASTERS, so unlocking someone later is a
  * data change and not a screen rewrite.
+ *
+ * The one you have leads with the same ink portrait welcome opened on
+ * (D-045) — the person who answers first is the person the app introduced
+ * itself with. Only Musashi has that art (designs/make-hero.py); anyone else
+ * in the first slot falls back to the face card.
  */
+
+/** Full-width art, faded into ink.base at the bottom, by Master. */
+const HERO_ART: Record<string, number> = {
+  musashi: require("@/assets/images/hero-musashi.jpg"),
+};
 export default function MasterScreen() {
   const router = useRouter();
   const { draft, set } = useOnboarding();
@@ -50,8 +60,8 @@ export default function MasterScreen() {
           </Enter>
           <Enter preset="rise" delay={300}>
             <Text variant="lead">
-              He writes, he doesn&apos;t talk. The other {inWords(locked.length)} are earned — you meet them as you
-              go.
+              Every answer is a letter. The other {inWords(locked.length)} are earned — you meet
+              them as you go.
             </Text>
           </Enter>
         </View>
@@ -61,31 +71,60 @@ export default function MasterScreen() {
           <Enter preset="swing" delay={460}>
             <View
               style={{
-                padding: space.xl,
-                borderRadius: radius.card,
-                backgroundColor: indigo.tint,
+                borderRadius: radius.panel,
+                overflow: "hidden",
+                backgroundColor: HERO_ART[starter.slug] ? ink.base : indigo.tint,
                 borderWidth: 1.5,
                 borderColor: indigo.base,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: space.xl,
               }}
             >
-              {/* The face of whoever answers first, large — this is who they
-                  will be writing to. */}
-              <MasterAvatar slug={starter.slug} name={starter.name} size={72} active />
-              <View style={{ flex: 1, gap: 3 }}>
-                <Text variant="title" style={{ fontSize: size.subtitle }}>
-                  {starter.name}
-                </Text>
-                <Text variant="caption" color={indigo.light}>
-                  {starter.domains}
-                </Text>
-                <Text variant="caption" color={textColor.muted}>
-                  {starter.manner}
-                </Text>
+              {/* Anchored to the bottom, so the art's baked-in fade to ink
+                  meets the card body exactly where it ends: the crop takes
+                  the top (the hair), never the face or the fade. */}
+              {HERO_ART[starter.slug] ? (
+                <View style={{ height: 280, overflow: "hidden" }}>
+                  <Image
+                    source={HERO_ART[starter.slug]}
+                    resizeMode="cover"
+                    accessibilityIgnoresInvertColors
+                    accessibilityLabel={`${starter.name}, in ink`}
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      width: "100%",
+                      aspectRatio: 1024 / 1014,
+                    }}
+                  />
+                </View>
+              ) : null}
+              <View
+                style={{
+                  padding: space.xl,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: space.xl,
+                }}
+              >
+                {/* Without the art, the face of whoever answers first, large —
+                    this is who they will be writing to. */}
+                {HERO_ART[starter.slug] ? null : (
+                  <MasterAvatar slug={starter.slug} name={starter.name} size={72} active />
+                )}
+                <View style={{ flex: 1, gap: 3 }}>
+                  <Text variant="title" style={{ fontSize: size.subtitle }}>
+                    {starter.name}
+                  </Text>
+                  <Text variant="caption" color={indigo.light}>
+                    {starter.domains}
+                  </Text>
+                  <Text variant="caption" color={textColor.muted}>
+                    {starter.manner}
+                  </Text>
+                </View>
+                <BladeTick done />
               </View>
-              <BladeTick done />
             </View>
           </Enter>
         ) : null}
