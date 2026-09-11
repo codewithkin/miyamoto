@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { Chevron, IconBadge, type IconName } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
+import { MoreQuestions } from "@/components/more-questions";
 import { Touchable } from "@/components/touchable";
 import { Enter, Stagger } from "@/components/motion";
 import { ScreenHero } from "@/components/screen-hero";
@@ -136,6 +137,39 @@ export default function YouScreen() {
             )}
           </View>
         </Enter>
+
+        {/* Today's questions, with the two ways to more (plan 13). Free
+            accounts only: Pro has no counter to show. */}
+        {usage.data && !usage.data.isPro ? (
+          <Enter preset="rise" delay={760}>
+            <View
+              style={{
+                padding: space.xl,
+                borderRadius: radius.card,
+                backgroundColor: ink.surface,
+                borderWidth: 1,
+                borderColor: ink.border,
+                gap: space.base,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+                <IconBadge name="chatbubbles-outline" color={indigo.light} size={30} />
+                <Text variant="eyebrow" style={{ flex: 1 }}>
+                  Today&apos;s questions
+                </Text>
+                <Text variant="numeral" color={indigo.light} style={{ fontSize: size.title }}>
+                  {usage.data.remaining}/{usage.data.limit}
+                </Text>
+              </View>
+              <Text variant="caption">
+                {usage.data.remaining
+                  ? "Watch an ad for three more, or go Pro and stop counting."
+                  : "None left today. Watch an ad for three more, or go Pro and stop counting."}
+              </Text>
+              <MoreQuestions />
+            </View>
+          </Enter>
+        ) : null}
 
         <Stagger initialDelay={900} step={80} style={{ gap: space.md }}>
           <Enter preset="slideLeft">

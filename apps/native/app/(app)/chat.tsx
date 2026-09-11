@@ -24,10 +24,11 @@ import {
   masterBubbleStyle,
 } from "@/components/chat-bubbles";
 import { Enter } from "@/components/motion";
+import { MoreQuestions } from "@/components/more-questions";
 import { AttachSheet, OutOfAnswersSheet, SwitchMasterSheet } from "@/components/overlays";
 import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
-import { Icon } from "@/components/icon";
+import { Icon, IconBadge } from "@/components/icon";
 import { describeChatError } from "@/lib/chat-errors";
 import { answeredIn, mergeHistory } from "@/lib/chat-history";
 import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
@@ -222,10 +223,9 @@ export default function ChatScreen() {
   }, [loadHistory]);
 
   // What a failed send says, in a sentence rather than the server's JSON.
+  // Running out isn't raised as a sheet any more: the composer turns into
+  // the two ways to more questions, in place, under the last letter.
   const errorView = error ? describeChatError(error.message) : null;
-  React.useEffect(() => {
-    if (errorView?.outOfQuestions) setShowOutOf(true);
-  }, [errorView?.outOfQuestions]);
 
   const busy = status === "submitted" || status === "streaming";
   const outOfAnswers = usage.data ? !usage.data.canAsk : false;
@@ -276,12 +276,6 @@ export default function ChatScreen() {
       setInput((current) => current || t.title!);
     }
   }, [activeThread, messages.length]);
-
-  // Raise the sheet the moment the counter empties, rather than leaving the
-  // composer silently disabled.
-  React.useEffect(() => {
-    if (outOfAnswers) setShowOutOf(true);
-  }, [outOfAnswers]);
 
   function send() {
     const value = input.trim();
@@ -480,12 +474,24 @@ export default function ChatScreen() {
           }}
         >
           {outOfAnswers ? (
+            // Out of questions: the composer becomes the way to more, in
+            // place, rather than a sheet over the letter they just got.
             <Enter preset="slideUp">
-              <View style={{ gap: space.sm }}>
-                <Text variant="caption" style={{ textAlign: "center" }}>
-                  Three questions is all a stranger gets.
-                </Text>
-                <Button label="See Pro" onPress={() => setShowOutOf(true)} />
+              <View style={{ gap: space.base }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: space.base }}>
+                  <IconBadge name="hourglass-outline" color={indigo.light} size={34} />
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text variant="label" style={{ fontSize: size.body }}>
+                      That was today&apos;s last free question.
+                    </Text>
+                    <Text variant="caption">
+                      {usage.data
+                        ? `Three new ones in ${Math.max(1, Math.ceil(usage.data.msUntilReset / 3_600_000))}h. Or keep going now:`
+                        : "Keep going now:"}
+                    </Text>
+                  </View>
+                </View>
+                <MoreQuestions />
               </View>
             </Enter>
           ) : (
@@ -560,11 +566,17 @@ export default function ChatScreen() {
           {usage.data && !usage.data.isPro ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
               <Text variant="caption" style={{ flex: 1 }}>
-                {usage.data.remaining} of {usage.data.limit} free answers left
+                {usage.data.remaining} of {usage.data.limit} free questions left today
               </Text>
-              <Touchable feel="chip" hitSlop={8} onPress={() => setShowOutOf(true)}>
+              <Touchable
+                feel="chip"
+                hitSlop={8}
+                onPress={() => setShowOutOf(true)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
+                <Icon name="add-circle-outline" size={14} color={indigo.light} />
                 <Text variant="caption" color={indigo.light}>
-                  Get unlimited
+                  More questions
                 </Text>
               </Touchable>
             </View>

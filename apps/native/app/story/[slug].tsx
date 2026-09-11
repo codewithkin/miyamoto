@@ -8,7 +8,7 @@ import { Blade } from "@/components/blade";
 import { Touchable } from "@/components/touchable";
 import { Enter } from "@/components/motion";
 import { Button, Screen, Text } from "@/components/ui";
-import { BackButton } from "@/components/icon";
+import { BackButton, Icon } from "@/components/icon";
 import { trpc } from "@/utils/trpc";
 import { gold, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -82,7 +82,12 @@ export default function StoryScreen() {
                 <Text variant="voice">
                   {s.master.name} has an answer to this one. It is behind Pro.
                 </Text>
-                <Button label="See Pro" onPress={() => router.push("/paywall")} />
+                <Button
+                  label="Read it with Pro"
+                  variant="pro"
+                  icon={<Icon name="diamond" size={20} color={ink.base} />}
+                  onPress={() => router.push("/paywall")}
+                />
               </View>
             </Enter>
           ) : (

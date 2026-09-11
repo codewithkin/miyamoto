@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
 
@@ -9,42 +10,18 @@ import { Sheet } from "@/components/sheet";
 import { Touchable } from "@/components/touchable";
 import { Button, Text } from "@/components/ui";
 import { Chevron, Icon, IconBadge } from "@/components/icon";
-import { showRewardedAd } from "@/lib/ads";
-import { usePurchases } from "@/lib/purchases";
+import { MoreQuestions, useBuyPro } from "@/components/more-questions";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, red, size, space, text as textColor } from "@/theme/tokens";
 import { MASTER_COUNT } from "@/content/onboarding-options";
 
 /**
- * Buying Pro from a sheet: shows the store opening on the button that opened
- * it, and closes the sheet once Pro has actually landed.
- */
-function useBuyPro(onBought: () => void) {
-  const qc = useQueryClient();
-  const { buy } = usePurchases();
-  const [buying, setBuying] = React.useState(false);
-
-  async function run() {
-    if (buying) return;
-    setBuying(true);
-    const bought = await buy().catch(() => false);
-    setBuying(false);
-    if (bought) {
-      void qc.invalidateQueries();
-      onBought();
-    }
-  }
-
-  return { buying, buyPro: () => void run() };
-}
-
-/**
  * 21 · Switch Master.
  *
  * "The thread stays. Only the hand writing it changes." Locked Masters are
- * listed but refused, and the server refuses them again — the sheet is a
- * courtesy, not the gate. Pressing a locked one gives the warning haptic,
- * so the refusal is felt before it is read.
+ * listed, and pressing one goes to the paywall: another Master is Pro,
+ * straight, with no ad route (plan 13). The server refuses a locked switch
+ * again, so the sheet is a courtesy, not the gate.
  */
 export function SwitchMasterSheet({
   visible,
@@ -61,6 +38,7 @@ export function SwitchMasterSheet({
   onRefused?: () => void;
 }) {
   const qc = useQueryClient();
+  const router = useRouter();
   const { buying, buyPro } = useBuyPro(onClose);
   const masters = useQuery(trpc.library.masters.queryOptions());
 
@@ -121,11 +99,17 @@ export function SwitchMasterSheet({
           return (
             <Enter key={m.id} preset="slideLeft">
               <Touchable
-                feel={m.available && !speaking ? "row" : "danger"}
+                feel="row"
                 disabled={speaking || switchTo.isPending}
                 dimWhenDisabled={!switching && !speaking}
                 onPress={() => {
-                  if (!m.available) return;
+                  // A locked Master is Pro, straight: no ad route to another
+                  // Master (plan 13). The paywall says what Pro includes.
+                  if (!m.available) {
+                    onClose();
+                    router.push("/paywall");
+                    return;
+                  }
                   if (threadId) switchTo.mutate({ threadId, masterSlug: m.slug });
                 }}
                 style={{
@@ -197,8 +181,9 @@ export function SwitchMasterSheet({
       ) : null}
 
       <Button
-        label="See Pro"
-        variant="secondary"
+        label="Every Master, now · Pro"
+        variant="pro"
+        icon={<Icon name="diamond" size={20} color={ink.base} />}
         loading={buying}
         loadingLabel="Opening the store…"
         disabled={switchTo.isPending}
@@ -312,13 +297,15 @@ export function AttachSheet({
 }
 
 /**
- * 23 · Out of answers.
+ * 23 · More questions.
  *
- * Three ways forward, in the order the design ranks them: Pro, an ad for
- * one more, or tomorrow.
+ * Three ways forward: an ad for three more, Pro for no counting, or
+ * tomorrow. The ad leads because it's free and the owner wants people to
+ * take it (plan 13); Pro follows in gold. Both come from MoreQuestions,
+ * the same pair the chat and the You tab show.
  *
- * The extra question is granted by the server and only after the reward was
- * actually earned — closing the ad early counts for nothing, and says so.
+ * The extra questions are granted by the server and only after the reward
+ * was actually earned. Closing the ad early counts for nothing, and says so.
  */
 export function OutOfAnswersSheet({
   visible,
@@ -327,69 +314,26 @@ export function OutOfAnswersSheet({
   visible: boolean;
   onClose: () => void;
 }) {
-  const qc = useQueryClient();
-  const { buying, buyPro } = useBuyPro(onClose);
-  const [watching, setWatching] = React.useState(false);
-  const [adFailed, setAdFailed] = React.useState(false);
-
-  const grant = useMutation(
-    trpc.chat.grantBonus.mutationOptions({
-      onSuccess: () => {
-        void qc.invalidateQueries();
-        onClose();
-      },
-    }),
-  );
-
-  async function watchAd() {
-    setWatching(true);
-    setAdFailed(false);
-    const earned = await showRewardedAd();
-    setWatching(false);
-    if (earned) grant.mutate();
-    else setAdFailed(true);
-  }
+  const usage = useQuery(trpc.chat.usage.queryOptions());
+  const hours = usage.data ? Math.max(1, Math.ceil(usage.data.msUntilReset / 3_600_000)) : null;
 
   return (
     <Sheet
       visible={visible}
       onClose={onClose}
       title="Three questions is all a stranger gets."
-      subtitle={`Step inside and the Masters answer without counting — all ${MASTER_COUNT}, every story, no ads.`}
+      subtitle={`Watch an ad for three more today. Or step inside, and the Masters answer without counting: all ${MASTER_COUNT}, every story, no ads.`}
     >
       <Enter preset="pop" delay={140}>
-        <Button
-          label="See Pro"
-          loading={buying}
-          loadingLabel="Opening the store…"
-          disabled={watching || grant.isPending}
-          onPress={buyPro}
-        />
+        <MoreQuestions onGranted={onClose} onBought={onClose} />
       </Enter>
 
-      <Enter preset="fade" delay={280}>
-        <Button
-          label="Watch an ad for +1"
-          variant="secondary"
-          loading={watching || grant.isPending}
-          loadingLabel={watching ? "Loading the ad…" : "Adding your question…"}
-          disabled={buying}
-          onPress={() => void watchAd()}
-        />
-      </Enter>
-
-      {adFailed ? (
-        <Enter preset="slideLeft">
-          <Text variant="caption" color={red.base}>
-            No ad was available, or you closed it early. Nothing was counted.
-          </Text>
-        </Enter>
-      ) : null}
-
-      <Enter preset="fade" delay={400}>
+      <Enter preset="fade" delay={300}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
           <Icon name="moon-outline" size={16} color={textColor.faintest} />
-          <Text variant="caption">Or wait until tomorrow.</Text>
+          <Text variant="caption">
+            {hours ? `Or wait: three new questions in ${hours}h.` : "Or wait until tomorrow."}
+          </Text>
         </View>
       </Enter>
     </Sheet>

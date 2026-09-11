@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Touchable, type PressFeel } from "@/components/touchable";
 
-import { ink, indigo, radius, size, space, text as textColor, font, tracking, leading, weight } from "@/theme/tokens";
+import { gold, ink, indigo, radius, size, space, text as textColor, font, tracking, leading, weight } from "@/theme/tokens";
 
 /**
  * The primitives every screen is built from.
@@ -169,7 +169,9 @@ export type ButtonVariant =
   /** Green fill. Confirming a trial — and only that. */
   | "confirm"
   /** Red text. Backing out. */
-  | "danger";
+  | "danger"
+  /** Gold fill. Pro, and only Pro: gold is premium (D-045). */
+  | "pro";
 
 const BUTTON: Record<ButtonVariant, { container: ViewStyle; color: string }> = {
   primary: {
@@ -197,6 +199,10 @@ const BUTTON: Record<ButtonVariant, { container: ViewStyle; color: string }> = {
     container: { backgroundColor: "transparent", minHeight: 44 },
     color: "#E0483B",
   },
+  pro: {
+    container: { backgroundColor: gold.base, minHeight: 56 },
+    color: ink.base,
+  },
 };
 
 /**
@@ -219,6 +225,10 @@ const DISABLED: Record<ButtonVariant, { container: ViewStyle; color: string }> =
     color: textColor.faintest,
   },
   danger: { container: {}, color: textColor.faintest },
+  pro: {
+    container: { backgroundColor: ink.high, borderWidth: 1, borderColor: ink.border },
+    color: textColor.faintest,
+  },
 };
 
 export type ButtonProps = Omit<PressableProps, "children" | "style"> & {

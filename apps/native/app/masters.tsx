@@ -80,12 +80,15 @@ export default function MastersScreen() {
             return (
               <Enter key={m.id} preset="swing">
                 <Touchable
-                  feel={m.available ? "row" : "danger"}
+                  feel="row"
                   disabled={createThread.isPending}
                   dimWhenDisabled={!opening}
                   accessibilityState={{ busy: opening }}
                   onPress={() => {
+                    // Locked is Pro, straight, whether the wait is for a day
+                    // or for Pro itself: Pro skips the wait (D-005).
                     if (m.available) createThread.mutate({ masterSlug: m.slug });
+                    else router.push("/paywall");
                   }}
                   style={{
                     padding: space.xl,
