@@ -17,9 +17,31 @@ function onError(error: unknown) {
   }
 }
 
+/**
+ * A refusal is an answer, not a hiccup: 4xx (signed out, not found, not
+ * allowed) comes back the same on every try, so it's shown at once instead
+ * of after three retries' worth of spinner. Network failures and 5xx get two
+ * more tries.
+ */
+function retry(failureCount: number, error: unknown) {
+  const status = error instanceof TRPCClientError ? error.data?.httpStatus : undefined;
+  if (typeof status === "number" && status >= 400 && status < 500) return false;
+  return failureCount < 2;
+}
+
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({ onError }),
   mutationCache: new MutationCache({ onError }),
+  defaultOptions: {
+    queries: {
+      // Fresh for 30 seconds. With the default of 0, every tab switch and
+      // screen mount refetched everything the screen read. Mutations still
+      // invalidate what they change, so nothing shows stale after the person
+      // acts.
+      staleTime: 30_000,
+      retry,
+    },
+  },
 });
 
 const trpcClient = createTRPCClient<AppRouter>({
