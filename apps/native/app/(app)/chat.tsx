@@ -30,6 +30,7 @@ import { Touchable } from "@/components/touchable";
 import { Button, Screen, Text } from "@/components/ui";
 import { Icon, IconBadge } from "@/components/icon";
 import { describeChatError } from "@/lib/chat-errors";
+import { letterArrived, useLettersReady } from "@/lib/letters";
 import { answeredIn, mergeHistory } from "@/lib/chat-history";
 import { serverFetch, streamingServerFetch } from "@/lib/server-fetch";
 import { track } from "@/lib/telemetry";
@@ -103,7 +104,24 @@ export default function ChatScreen() {
     // The counter moves on every send — spent, or refunded when the server
     // could not deliver — and the thread's title and charges may have moved
     // with it. All of it is re-read from the server rather than guessed.
-    onFinish: () => void qc.invalidateQueries(),
+    //
+    // A letter that arrived is confirmed to the server, so it isn't pushed
+    // as well, and if the app isn't in front, the phone announces it itself
+    // (lib/letters, plan 13).
+    onFinish: ({ message, isAbort, isDisconnect, isError }) => {
+      void qc.invalidateQueries();
+      const threadId = messagesFor.current;
+      if (isAbort || isDisconnect || isError || message.role !== "assistant" || !threadId) return;
+      const text = message.parts
+        .filter((p) => p.type === "text")
+        .map((p) => ("text" in p ? p.text : ""))
+        .join("");
+      void letterArrived({
+        threadId,
+        masterName: activeMasterName.current,
+        text,
+      });
+    },
     onError: () => void qc.invalidateQueries({ queryKey: trpc.chat.usage.queryKey() }),
   });
 
@@ -126,6 +144,10 @@ export default function ChatScreen() {
   activeIdRef.current = activeThread?.id;
   /** The thread the messages on screen belong to. */
   const messagesFor = React.useRef<string | null>(null);
+  /** For the notification a letter that arrives in the background shows. */
+  const activeMasterName = React.useRef("Your Master");
+  activeMasterName.current = activeThread?.master.name ?? "Your Master";
+  const lettersReady = useLettersReady();
   /**
    * Ids that came from saved history. A Master's message not among them
    * arrived on this visit, and writes itself out; history appears whole.
@@ -452,7 +474,7 @@ export default function ChatScreen() {
               slug={activeThread.master.slug}
               name={activeThread.master.name}
               since={waitingSince ?? Date.now()}
-              canLeave={false}
+              canLeave={lettersReady}
             />
           ) : null}
 

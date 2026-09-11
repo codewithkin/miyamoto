@@ -11,6 +11,7 @@ import { Enter, Stagger } from "@/components/motion";
 import { ScreenHero } from "@/components/screen-hero";
 import { Screen, Text } from "@/components/ui";
 import { authClient } from "@/lib/auth-client";
+import { forgetLetters } from "@/lib/letters";
 import { trpc } from "@/utils/trpc";
 import { gold, indigo, ink, radius, size, space, text as textColor } from "@/theme/tokens";
 
@@ -194,6 +195,9 @@ export default function YouScreen() {
               onPress={async () => {
                 if (signingOut) return;
                 setSigningOut(true);
+                // This phone stops receiving the account's letters first,
+                // while the session still exists to say so.
+                await forgetLetters();
                 // Signed out on this phone even if the server can't be
                 // reached: the plugin clears the stored session either way.
                 await authClient.signOut().catch(() => {});

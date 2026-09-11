@@ -17,14 +17,41 @@ const DENIED_KEY = "miyamoto.notifications.denied";
 /** Android needs a channel before anything can be delivered, or prompted. */
 export const TRIAL_CHANNEL = "trial";
 
+/**
+ * Letters from the Masters (plan 13): a letter that finished after the app
+ * was left. Its own channel, so someone can silence reminders and still
+ * hear from a Master they wrote to, or the other way round, in Android's
+ * settings. The server pushes on the same id (packages/api/src/lib/push.ts).
+ */
+export const LETTERS_CHANNEL = "letters";
+
 export type PermissionOutcome = "granted" | "denied" | "unavailable";
 
-async function ensureChannel() {
+/** Both channels. Creating an existing channel is a no-op, so this is safe to repeat. */
+export async function ensureChannels() {
   if (Platform.OS !== "android") return;
-  await Notifications.setNotificationChannelAsync(TRIAL_CHANNEL, {
-    name: "Trial reminders",
-    importance: Notifications.AndroidImportance.HIGH,
-  });
+  await Promise.all([
+    Notifications.setNotificationChannelAsync(TRIAL_CHANNEL, {
+      name: "Trial reminders",
+      importance: Notifications.AndroidImportance.HIGH,
+    }),
+    Notifications.setNotificationChannelAsync(LETTERS_CHANNEL, {
+      name: "Letters from the Masters",
+      description: "When a Master's letter arrives after you've left the app.",
+      importance: Notifications.AndroidImportance.HIGH,
+    }),
+  ]);
+}
+
+const ensureChannel = ensureChannels;
+
+/** Whether the OS prompt was refused before, so it's never raised again. */
+export async function notificationsRefused(): Promise<boolean> {
+  try {
+    return Boolean(await SecureStore.getItemAsync(DENIED_KEY));
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -207,14 +234,22 @@ export async function scheduleStreakWarning(args: {
 /**
  * A reminder arriving while the app is open is still shown, without sound —
  * the user is already here, and the trial is on the screen in front of them.
+ *
+ * A letter is not shown at all while the app is open (plan 13). The chat
+ * already has it, writing itself out, and a banner announcing the letter
+ * the person is reading is noise.
  */
 export function configureForegroundDisplay() {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-    }),
+    handleNotification: async (notification) => {
+      const data = notification.request.content.data as { kind?: string } | undefined;
+      const letter = data?.kind === "reply";
+      return {
+        shouldShowBanner: !letter,
+        shouldShowList: !letter,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+    },
   });
 }

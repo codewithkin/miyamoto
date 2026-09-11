@@ -6,6 +6,7 @@ import { View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { useClaimDraft } from "@/lib/claim-draft";
+import { useLetterRegistration, useOpenLettersFromNotifications } from "@/lib/letters";
 import { useOnboarding } from "@/lib/onboarding-store";
 import { useReminderSchedule } from "@/lib/use-reminders";
 import { ink, indigo, space, text as textColor } from "@/theme/tokens";
@@ -34,6 +35,10 @@ export default function AppLayout() {
   useClaimDraft();
   // Keeps the two daily reminders in step with the account's settings.
   useReminderSchedule(Boolean(session));
+  // Letters that find you (plan 13): register this install for pushes, and
+  // open the chat from a letter's notification.
+  useLetterRegistration(Boolean(session));
+  useOpenLettersFromNotifications(Boolean(session));
 
   // This layout is the gate (D-038). "/" resolves here — welcome lives at
   // /welcome precisely so that nothing else competes for it — so every
