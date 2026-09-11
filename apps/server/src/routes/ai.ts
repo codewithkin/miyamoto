@@ -1,6 +1,8 @@
 import { RequestContext } from "@mastra/core/di";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import db from "@miyamoto/db";
+import { awaitDelivery } from "@miyamoto/api/lib/deliveries";
+import { previewOf, sendPush } from "@miyamoto/api/lib/push";
 import { consumeQuestion, getUsage, refundQuestion } from "@miyamoto/api/lib/usage";
 import { auth } from "@miyamoto/auth";
 import type { Hono } from "hono";
@@ -45,6 +47,15 @@ type MessagePart = { type: string; text?: string };
  * charge silently stops reappearing under old letters.
  */
 const HANDED_PREFIX = "Charge handed over: ";
+
+/**
+ * How long a finished letter waits for the phone to say it arrived before
+ * it's pushed instead (plan 13). Long enough for a slow connection to
+ * finish reading the stream and send its confirmation; short enough that
+ * someone who closed the app hears about the letter while it's still the
+ * thing they asked.
+ */
+const DELIVERY_WAIT_MS = 30_000;
 
 function latestUserText(messages: { content?: unknown; parts?: MessagePart[] }[]): string {
   const latest = messages[messages.length - 1];
@@ -360,6 +371,30 @@ export function registerAiRoute(app: Hono) {
         title: thread.title ?? question.slice(0, 80),
       },
     });
+
+    // Letters that find you (plan 13). Everything above ran whether or not
+    // the phone is still connected, since nothing cancels it, so the letter
+    // is saved either way. The phone confirms each letter it receives
+    // (chat.replyReceived). One nobody confirms, or whose request is already
+    // aborted, is pushed: the Master's name and the letter's opening. A
+    // phone alive in the background shows its own notification and
+    // confirms, so it's one notification either way.
+    const notify = () =>
+      void sendPush(userId, {
+        title: thread.master.name,
+        body: previewOf(answer),
+        data: { kind: "reply", threadId: thread.id },
+      });
+    if (c.req.raw.signal?.aborted) {
+      notify();
+    } else {
+      awaitDelivery({
+        userId,
+        threadId: thread.id,
+        timeoutMs: DELIVERY_WAIT_MS,
+        onUndelivered: notify,
+      });
+    }
 
     // Released sentence by sentence so the letter still arrives as lines on
     // the device. No artificial delay: the wait already happened.
