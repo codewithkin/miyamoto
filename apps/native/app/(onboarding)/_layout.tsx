@@ -7,12 +7,15 @@ import { ink } from "@/theme/tokens";
 import { trpc } from "@/utils/trpc";
 
 /**
- * The onboarding stack. Reached only with a session (D-038).
+ * The onboarding stack: one screen, the first question (D-048). Reached only
+ * with a session (D-038).
  *
- * Signed out, it sends the user to welcome. Already onboarded — claimed on the
- * server, or finished on this device and waiting to be claimed — it sends them
- * to the app, so the quiz cannot be re-entered by the back gesture or a stale
- * deep link.
+ * Signed out, it sends the user to welcome. Already onboarded (claimed on the
+ * server, or finished on this device and waiting to be claimed), it sends
+ * them to the chat, so onboarding can't be re-entered by the back gesture or a
+ * stale deep link. The chat, not the Path: it's where the question they just
+ * answered lands, so a redirect racing the problem screen's own navigation
+ * still ends in the right place.
  */
 export default function OnboardingLayout() {
   const { data: session, isPending } = authClient.useSession();
@@ -25,7 +28,7 @@ export default function OnboardingLayout() {
 
   if (isPending) return null;
   if (!session) return <Redirect href="/welcome" />;
-  if (draft.finishedAt || status.data?.claimed) return <Redirect href="/(app)" />;
+  if (draft.finishedAt || status.data?.claimed) return <Redirect href="/(app)/chat" />;
 
   return (
     <Stack
