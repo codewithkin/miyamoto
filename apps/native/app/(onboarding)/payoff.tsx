@@ -119,7 +119,10 @@ export default function PayoffScreen() {
 
   const master = MASTERS.find((m) => m.slug === draft.firstMaster) ?? MASTERS[0];
   const pressure = PRESSURES.find((p) => p.value === draft.pressure);
-  const trialCount = draft.pressure === "UNBREAKABLE" ? 30 : draft.pressure === "FIRM" ? 16 : 10;
+  // The Path is thirty authored trials at every pressure, one a day (plan 11).
+  // This used to read 10, 16 or 30 depending on pressure, which the Path
+  // never was: pressure changes how hard each day is, not how many.
+  const trialCount = 30;
   // Everyone but the Master they start with. Was a hardcoded 5 from when
   // Mandela was on the roster (D-006).
   const toEarn = MASTERS.length - 1;

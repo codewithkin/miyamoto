@@ -33,14 +33,18 @@ function ForgingScreenBody() {
 
   const master = MASTERS.find((m) => m.slug === draft.firstMaster);
   const pressure = PRESSURES.find((p) => p.value === draft.pressure);
-  const trialCount = draft.pressure === "UNBREAKABLE" ? 30 : draft.pressure === "FIRM" ? 16 : 10;
 
+  // Two lines, true ones (plan 11). They used to say "Matched 3 wounds to
+  // Act I" and "Chose 16 trials at Firm pressure" — but the Path is authored
+  // and is thirty trials at every pressure, one a day; pressure sets how hard
+  // each day is, not how many. Still two steps, so the sequence's timing
+  // (STEP_MS per step) is exactly what it was.
   const steps = React.useMemo(
     () => [
-      `Matched ${draft.wounds.length} ${draft.wounds.length === 1 ? "wound" : "wounds"} to Act I`,
-      `Chose ${trialCount} trials at ${pressure?.label ?? "Firm"} pressure`,
+      `Noted your ${draft.wounds.length} ${draft.wounds.length === 1 ? "wound" : "wounds"}`,
+      `Set 30 days at ${pressure?.label ?? "Firm"} pressure`,
     ],
-    [draft.wounds.length, trialCount, pressure],
+    [draft.wounds.length, pressure],
   );
 
   const [done, setDone] = React.useState(0);
@@ -77,7 +81,7 @@ function ForgingScreenBody() {
             <View style={{ alignItems: "center", gap: space.md }}>
               {master ? <MasterAvatar slug={master.slug} name={master.name} size={44} active /> : null}
               <Text variant="lead" style={{ textAlign: "center" }}>
-                {master?.name ?? "Your Master"} is picking the first trial from what you told us.
+                {master?.name ?? "Your Master"} is setting out your first trial.
               </Text>
             </View>
           </Enter>
