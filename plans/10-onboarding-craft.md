@@ -1,6 +1,6 @@
 # 10 — Onboarding, held to welcome's bar
 
-**Status: in flight (session 7).**
+**Status: built (session 7).** Not yet seen on a device. Proof is still the owner's call.
 
 The owner asked for welcome's craft on onboarding as well as the app shell.
 Plan 08 covered the shell and deliberately left onboarding out, because
@@ -20,7 +20,7 @@ replacement rather than polished.
 
 ## A1 — One onboarding header
 
-- [ ] `pending-A1`
+- [x] `b451e10`
 - **Commit:** `feat(native): one header for the four quiz steps`
 - **Touches:** `apps/native/components/onboarding-header.tsx` (new),
   problem, carrying, master, pressure
@@ -32,7 +32,7 @@ replacement rather than polished.
 
 ## B1 — Problem: show who answers
 
-- [ ] `pending-B1`
+- [x] `1533481` (the screen also scrolls now; taller rows would have overflowed it)
 - **Commit:** `feat(native): show whose answer each sample problem gets`
 - **Done when:** each sample row carries the face and name of the Master
   who answers it, which is real information and a visual anchor. The
@@ -41,7 +41,7 @@ replacement rather than polished.
 
 ## B2 — Answer: the charge looks like a charge
 
-- [ ] `pending-B2`
+- [x] `5e57d42`
 - **Commit:** `feat(native): make the sample charge match the real one`
 - **Done when:** the charge card uses the same language as chat's
   `ChargeCard` (indigo edge, "Your charge", voice type), so the first
@@ -50,7 +50,7 @@ replacement rather than polished.
 
 ## B3 — Carrying: the lean has a face
 
-- [ ] `pending-B3`
+- [x] `6545307`
 - **Commit:** `feat(native): put a face on the carrying nudge`
 - **Done when:** when the picks lean towards a Master, the nudge is a row
   with that Master's face, not a caption. "Most people pick three" is
@@ -58,7 +58,7 @@ replacement rather than polished.
 
 ## B4 — Master: the art from welcome
 
-- [ ] `pending-B4`
+- [x] `e14e6b6` (crop checked offline with Pillow at a real card width)
 - **Commit:** `feat(native): open 3/4 on the same ink Musashi as welcome`
 - **Done when:** the starter card leads with the ink hero art the person
   saw on welcome, when the starter is Musashi, since it's the only Master
@@ -67,7 +67,7 @@ replacement rather than polished.
 
 ## B5 — Pressure: intensity you can see
 
-- [ ] `pending-B5`
+- [x] `d037501`
 - **Commit:** `feat(native): show pressure as intensity, not three titles`
 - **Done when:** each option carries a one-, two- or three-blade rail,
   the brand's own progress language, so the step up is visible at a
@@ -78,7 +78,7 @@ replacement rather than polished.
 
 ## C1
 
-- [ ] `pending-C1`
+- [x] this commit
 - **Commit:** `docs: record the onboarding craft pass`
 
 ---

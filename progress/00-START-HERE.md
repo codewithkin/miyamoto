@@ -25,7 +25,11 @@ lose it, and errors come back into the app instead of stranding the browser
 on the API's "OK" page (D-044, `systems/06-auth.md`). **Plan 08** (extending
 welcome's craft across the app) is built: ScreenHero, You, Adversity,
 Masters, chat's empty state; Settings reviewed and left as is. The rules a
-new screen is held to are D-045.
+new screen is held to are D-045. **Plan 10** (built) held onboarding to the
+same bar: one step header, whose-answer faces on the sample problems, a
+sample charge drawn like chat's, a face on the carrying nudge, welcome's
+ink Musashi on 3/4, and pressure shown as intensity. The proof screen is
+untouched and waiting on the owner (open item 4).
 
 **Session 5** (plan 07, done): welcome *is* the sign-in screen now, with
 one "Continue with Google" button and no `/sign-in` route (D-040). It was
@@ -266,9 +270,18 @@ notes do not survive a clone.
    kinds of notification, the charge card, history.
 4. **Figures the app cannot back.** "Your dojo is ready" says Firm-pressure
    users "finish 2.4× more often", with bars at 18% and 43%. The offer and
-   paywall quote named users ("Aisha", "Tomás"). All of it is design copy
-   with no data behind it. That is legal exposure once the app is live, so
-   it is the owner's call: replace with real numbers after launch, or cut.
+   paywall quote named users ("Aisha", "Tomás"). The **proof screen**
+   (`app/(onboarding)/proof.tsx`) is built entirely from them: "10,431
+   people are on a trial right now", "+10k", "4.8 from 2,140 ratings", and
+   two named testimonials. All of it is design copy with no data behind it.
+   That is legal exposure once the app is live (fake reviews and user counts
+   are the specific thing consumer-protection rules target), so it is the
+   owner's call: replace with real numbers after launch, or cut. The
+   recommended replacement for proof, raised in session 7, is "Your first
+   week": Days 1–7 at the pressure they chose, from the seeded Path. That is
+   real content, true today, and it previews what they're committing to.
+   Session 7 removed the two smaller claims in the quiz ("most people pick
+   three", "most people start at Firm").
 5. **Portrait quality and rights.** Curie's source is 120px and Sun Tzu's
    128px, so both go soft above about 64pt. The Musashi portraits, the
    welcome hero and the icon are *Vagabond* artwork. **The owner has chosen

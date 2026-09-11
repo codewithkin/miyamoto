@@ -16,6 +16,7 @@ diverge silently.
 | 03 | `03-revenuecat.md` | T00, T02 built; T01, T03 remain | RevenueCat keys, dashboard, a device |
 | 04 | `04-onboarding-claim.md` | **Done** | — |
 | 06 | `06-onboarding-rework.md` | **Built** (session 4), not run on a device | Google OAuth client + an HTTPS server URL; a device |
+| 10 | `10-onboarding-craft.md` | **Built** (session 7), not run on a device | The owner's read; the proof screen's figures |
 | 08 | `08-visual-craft.md` | **Built** (session 7), not run on a device | The owner's read on each screen |
 | 09 | `09-sign-in-round-trip.md` | **Built** (session 7), not run on a device | A development-build sign-in on the owner's phone |
 | 07 | `07-welcome-and-analytics.md` | **Built** (session 5), not run on a device | A device; the privacy policy line |
