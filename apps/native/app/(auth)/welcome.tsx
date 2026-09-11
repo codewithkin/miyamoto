@@ -4,6 +4,7 @@ import React from "react";
 import { ActivityIndicator, Image, Linking, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { EmailSignInSheet } from "@/components/email-sign-in";
 import { GoogleLogo } from "@/components/google-logo";
 import { Icon } from "@/components/icon";
 import { MasterAvatar } from "@/components/master-avatar";
@@ -50,6 +51,9 @@ export default function WelcomeScreen() {
     if (authError) router.setParams({ authError: undefined });
     void signIn("google");
   }
+  // Email sign-in, for seeded accounts like Play's reviewer (plan 14). A
+  // quiet text link, so the one filled action stays Google's (D-040).
+  const [emailOpen, setEmailOpen] = React.useState(false);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -220,8 +224,23 @@ export default function WelcomeScreen() {
             </Text>
             .
           </Text>
+
+          <Touchable
+            feel="row"
+            hitSlop={10}
+            disabled={busy !== null}
+            onPress={() => setEmailOpen(true)}
+            accessibilityRole="button"
+            style={{ alignSelf: "center", paddingVertical: space.xs }}
+          >
+            <Text variant="caption" color={textColor.muted}>
+              Sign in with email
+            </Text>
+          </Touchable>
         </Enter>
       </View>
+
+      <EmailSignInSheet visible={emailOpen} onClose={() => setEmailOpen(false)} />
     </View>
   );
 }
