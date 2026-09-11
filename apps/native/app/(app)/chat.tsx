@@ -184,6 +184,15 @@ export default function ChatScreen() {
     const value = input.trim();
     if (!value || !canSend) return;
     sendMessage({ text: value });
+    // "2 of 3 left" moves on the tap rather than after the letter (D-049).
+    // Only the count: whether they can still ask is the server's call, and
+    // predicting it would raise the out-of-answers sheet over the letter
+    // the last question paid for. onFinish and onError re-read the truth.
+    qc.setQueryData(trpc.chat.usage.queryKey(), (old) =>
+      old && !old.isPro && old.remaining !== null
+        ? { ...old, remaining: Math.max(0, old.remaining - 1) }
+        : old,
+    );
     // Counted when sent, not when answered: this measures people reaching
     // for a Master. Never the text — only who it went to and whether it
     // opened the thread.
@@ -456,6 +465,7 @@ export default function ChatScreen() {
         onClose={() => setShowSwitch(false)}
         threadId={activeThread?.id}
         currentSlug={activeThread?.master.slug}
+        onRefused={() => setShowSwitch(true)}
       />
       <AttachSheet visible={showAttach} onClose={() => setShowAttach(false)} />
       <OutOfAnswersSheet visible={showOutOf} onClose={() => setShowOutOf(false)} />
@@ -487,11 +497,11 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
     trpc.chat.respondToCharge.mutationOptions({ onSuccess: () => void qc.invalidateQueries() }),
   );
 
+  // The card moves on the tap (D-049) and moves back if the server refuses.
   function answer(status: "ACCEPTED" | "COMPLETED") {
-    respond.mutate(
-      { chargeId: charge.id, status },
-      { onSuccess: () => setState(status) },
-    );
+    const before = state;
+    setState(status);
+    respond.mutate({ chargeId: charge.id, status }, { onError: () => setState(before) });
   }
 
   return (
@@ -540,6 +550,12 @@ function ChargeCard({ charge }: { charge: HandedCharge }) {
 
       {state === "LATER" ? (
         <Text variant="caption">Left for later. It is still due today.</Text>
+      ) : null}
+
+      {respond.isError ? (
+        <Text variant="caption" color="#E0483B">
+          That didn&apos;t save. Try again.
+        </Text>
       ) : null}
 
       {state === "ACCEPTED" ? (

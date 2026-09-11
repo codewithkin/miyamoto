@@ -30,8 +30,37 @@ export default function SettingsScreen() {
   const { isPro, restore } = usePurchases();
 
   const account = useQuery(trpc.account.overview.queryOptions());
+  // The chosen time lights up on the tap (D-049), and the app shell's
+  // schedule follows the same cache, so the phone's reminders move with it.
+  // A refusal puts both back and says so.
+  const overviewKey = trpc.account.overview.queryKey();
   const setReminders = useMutation(
-    trpc.account.setReminders.mutationOptions({ onSuccess: () => void qc.invalidateQueries() }),
+    trpc.account.setReminders.mutationOptions({
+      onMutate: async (input) => {
+        await qc.cancelQueries({ queryKey: overviewKey });
+        const previous = qc.getQueryData(overviewKey);
+        qc.setQueryData(overviewKey, (old) =>
+          old
+            ? {
+                ...old,
+                reminders: {
+                  ...old.reminders,
+                  enabled: input.enabled,
+                  morning: input.morning ?? old.reminders.morning,
+                },
+              }
+            : old,
+        );
+        return { previous };
+      },
+      onError: (_error, _input, context) => {
+        if (context?.previous) qc.setQueryData(overviewKey, context.previous);
+        setReminderNote("That didn't save. Try again.");
+      },
+      onSettled: () => {
+        void qc.invalidateQueries({ queryKey: overviewKey });
+      },
+    }),
   );
 
   const [restoring, setRestoring] = React.useState(false);
@@ -51,6 +80,7 @@ export default function SettingsScreen() {
     setReminders.mutate({ enabled: true, morning: time });
   }
   const a = account.data;
+  const reminders = a?.reminders;
 
   return (
     <Screen scroll>
@@ -91,48 +121,59 @@ export default function SettingsScreen() {
         <Enter preset="rise" delay={360}>
           <Group title="Trial reminders">
             <View style={{ flexDirection: "row", gap: space.md, paddingTop: space.sm }}>
-              {REMINDER_TIMES.map((t) => (
-                <Touchable
-                  key={t}
-                  feel="chip"
-                  disabled={setReminders.isPending}
-                  dimWhenDisabled={setReminders.variables?.morning !== t}
-                  onPress={() => void remindAt(t)}
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    paddingVertical: space.base,
-                    borderRadius: radius.pill,
-                    backgroundColor: ink.high,
-                    borderWidth: 1,
-                    borderColor: ink.border,
-                  }}
-                >
-                  {setReminders.isPending && setReminders.variables?.morning === t ? (
-                    <ActivityIndicator size="small" color={textColor.body} />
-                  ) : (
-                    <Text variant="label" style={{ fontSize: size.body }}>
+              {REMINDER_TIMES.map((t) => {
+                const chosen = Boolean(reminders?.enabled) && reminders?.morning === t;
+                return (
+                  <Touchable
+                    key={t}
+                    feel="chip"
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: chosen }}
+                    disabled={setReminders.isPending}
+                    dimWhenDisabled={!chosen}
+                    onPress={() => void remindAt(t)}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      paddingVertical: space.base,
+                      borderRadius: radius.pill,
+                      backgroundColor: chosen ? indigo.tint : ink.high,
+                      borderWidth: chosen ? 1.5 : 1,
+                      borderColor: chosen ? indigo.base : ink.border,
+                    }}
+                  >
+                    <Text
+                      variant="label"
+                      color={chosen ? textColor.primary : undefined}
+                      style={{ fontSize: size.body }}
+                    >
                       {t}
                     </Text>
-                  )}
-                </Touchable>
-              ))}
+                  </Touchable>
+                );
+              })}
             </View>
             {reminderNote ? (
               <Text variant="caption" color={textColor.muted} style={{ paddingTop: space.sm }}>
                 {reminderNote}
               </Text>
             ) : null}
-            <Touchable
-              feel="row"
-              disabled={setReminders.isPending}
-              onPress={() => setReminders.mutate({ enabled: false })}
-              style={{ paddingTop: space.base }}
-            >
-              <Text variant="caption" color={textColor.muted}>
-                Turn reminders off entirely
+            {reminders?.enabled ? (
+              <Touchable
+                feel="row"
+                disabled={setReminders.isPending}
+                onPress={() => setReminders.mutate({ enabled: false })}
+                style={{ paddingTop: space.base }}
+              >
+                <Text variant="caption" color={textColor.muted}>
+                  Every morning at {reminders.morning}. Turn reminders off
+                </Text>
+              </Touchable>
+            ) : (
+              <Text variant="caption" style={{ paddingTop: space.base }}>
+                Off. Pick a time to be reminded each morning.
               </Text>
-            </Touchable>
+            )}
           </Group>
         </Enter>
 

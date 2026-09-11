@@ -51,21 +51,56 @@ export function SwitchMasterSheet({
   onClose,
   threadId,
   currentSlug,
+  onRefused,
 }: {
   visible: boolean;
   onClose: () => void;
   threadId?: string;
   currentSlug?: string;
+  /** The server refused a switch the sheet had already shown. Reopen it on the reason. */
+  onRefused?: () => void;
 }) {
   const qc = useQueryClient();
   const { buying, buyPro } = useBuyPro(onClose);
   const masters = useQuery(trpc.library.masters.queryOptions());
 
+  // The chat's header changes and the sheet closes on the tap (D-049). If
+  // the server refuses, the thread goes back to its Master and the sheet
+  // reopens with the reason under the list.
+  const threadsKey = trpc.chat.threads.queryKey();
   const switchTo = useMutation(
     trpc.chat.switchMaster.mutationOptions({
-      onSuccess: () => {
-        void qc.invalidateQueries();
+      onMutate: async ({ threadId: id, masterSlug }) => {
+        await qc.cancelQueries({ queryKey: threadsKey });
+        const previous = qc.getQueryData(threadsKey);
+        const next = masters.data?.find((m) => m.slug === masterSlug);
+        if (next) {
+          qc.setQueryData(threadsKey, (old) =>
+            old?.map((t) =>
+              t.id === id
+                ? {
+                    ...t,
+                    masterId: next.id,
+                    master: {
+                      slug: next.slug,
+                      name: next.name,
+                      title: next.title,
+                      accentColor: next.accentColor,
+                    },
+                  }
+                : t,
+            ),
+          );
+        }
         onClose();
+        return { previous };
+      },
+      onError: (_error, _input, context) => {
+        if (context?.previous) qc.setQueryData(threadsKey, context.previous);
+        onRefused?.();
+      },
+      onSettled: () => {
+        void qc.invalidateQueries();
       },
     }),
   );

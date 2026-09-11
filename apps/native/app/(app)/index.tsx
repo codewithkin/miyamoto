@@ -43,9 +43,22 @@ export default function PathHomeScreen() {
   const acts = useQuery(trpc.path.acts.queryOptions());
   const featured = useQuery(trpc.library.mostSearched.queryOptions());
 
+  // The card turns green the moment it's pressed (D-049). Only "done today"
+  // is predicted; the streak, score and acts come back from the server once
+  // it has counted them. A refusal puts the card back and says so.
+  const todayKey = trpc.path.today.queryKey();
   const complete = useMutation(
     trpc.path.completeTrial.mutationOptions({
-      onSuccess: () => {
+      onMutate: async () => {
+        await qc.cancelQueries({ queryKey: todayKey });
+        const previous = qc.getQueryData(todayKey);
+        qc.setQueryData(todayKey, (old) => (old ? { ...old, completedToday: true } : old));
+        return { previous };
+      },
+      onError: (_error, _input, context) => {
+        if (context?.previous) qc.setQueryData(todayKey, context.previous);
+      },
+      onSettled: () => {
         void qc.invalidateQueries();
       },
     }),
@@ -148,6 +161,12 @@ export default function PathHomeScreen() {
                 onPress={() => complete.mutate({})}
               />
             )}
+
+            {complete.isError && !d?.completedToday ? (
+              <Text variant="caption" color="#E0483B">
+                That didn&apos;t save. Mark it again.
+              </Text>
+            ) : null}
           </View>
         </Enter>
 
