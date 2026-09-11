@@ -49,6 +49,23 @@ get, and the new week screen would contradict it one screen later.
   show the real Day 1 trial at the chosen pressure, from the same query. The
   hardcoded Firm text stays only as the fallback when the query can't load.
 
+## B3 — The Path's real length
+
+**Note (session 7):** added mid-plan. Wiring B2 surfaced a third untrue
+number on the same two screens. Payoff says "16 trials waiting" at Firm
+(10 at Gentle, 30 at Unbreakable), and forging's step says "Chose 16 trials
+at Firm pressure". The seeded Path has 30 trials at every pressure, one per
+day (checked against the database): pressure changes how hard each day is,
+not how many days there are.
+
+- [ ] `pending-B3`
+- **Commit:** `fix(native): count the Path's real thirty days`
+- **Touches:** `app/(onboarding)/payoff.tsx`, `app/(onboarding)/forging.tsx` (copy only)
+- **Done when:** both say 30. Forging's two theatrical claims ("Matched 3
+  wounds to Act I", "…is picking the first trial from what you told us")
+  become true lines. **Its animation is untouched**: the owner called it
+  perfect, and this changes words only.
+
 ## C — Record it
 
 ## C1
